@@ -226,4 +226,71 @@ namespace DroneSwampPathfined
         }
     }
 
+    public class DiscreteGrid
+    {
+        public double cellSize;
+        public Vector3 SnapToGrid(Vector3 position)
+        {
+            if (cellSize == 0) return position;
+
+            return new Vector3(
+                Math.Round(position.x / cellSize) * cellSize,
+                Math.Round(position.y / cellSize) * cellSize,
+                Math.Round(position.z / cellSize) * cellSize
+            );
+        }
+    }
+
+    public class DroneTransform
+    {
+        public Vector3 position, rotation, size;
+        public DroneTransform(Vector3 position, Vector3 rotation, Vector3 size)
+        {
+            this.position = position;
+            this.rotation = rotation;
+            this.size = size;
+        }
+        public DroneTransform(Vector3 position, Vector3 rotation)
+        {
+            this.position = position;
+            this.rotation = rotation;
+            this.size = Vector3.One;
+        }
+        public DroneTransform(Vector3 position)
+        {
+            this.position = position;
+            this.rotation = Vector3.Zero;
+            this.size = Vector3.One;
+        }
+        public DroneTransform()
+        {
+            this.position = Vector3.Zero;
+            this.rotation = Vector3.Zero;
+            this.size = Vector3.One;
+        }
+    }
+    public class Drone
+    {
+        private static int idCounter;
+        public int ID { get; init; }
+        public DroneTransform transform;
+        public Vector3 Position { get => transform.position; set => transform.position = value; }
+        public Vector3 Rotation { get => transform.rotation; set => transform.rotation = value; }
+        public Vector3 Size { get => transform.size; set => transform.size = value; }
+        public int group;
+
+        public Drone(DroneTransform droneTransform, int group = 0)
+        {
+            this.ID = idCounter++;
+            this.transform = droneTransform;
+            this.group = group;
+        }
+    }
+}
+
+
+// This polyfill fixes the CS0518 error when using 'init' in Unity
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit { }
 }
