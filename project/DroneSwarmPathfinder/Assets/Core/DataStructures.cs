@@ -1,7 +1,7 @@
 using System;
 //using UnityEngine;
 
-namespace DroneSwampPathfined
+namespace DroneSwampPathfiner
 {
     /// <summary>
     /// An ordered triplet of doubles
@@ -11,7 +11,7 @@ namespace DroneSwampPathfined
         public double x; public double y; public double z;
         public Vector3(double x = 0, double y = 0, double z = 0) { this.x = x; this.y = y; this.z = z; }
         public static Vector3 Zero => new();
-        public static Vector3 Up => new(0,1);
+        public static Vector3 Up => new(0, 1);
         public static Vector3 Right => new(1);
         public static Vector3 Down => new(0, -1);
         public static Vector3 Left => new(-1);
@@ -25,7 +25,7 @@ namespace DroneSwampPathfined
         public static Vector3 operator -(Vector3 left, Vector3 right) => new(left.x - right.x, left.y - right.y, left.z - right.z);
         public static Vector3 operator *(Vector3 left, double right) => new(left.x * right, left.y * right, left.z * right);
         public static Vector3 operator ^(Vector3 left, double right) => new(Math.Pow(left.x, right), Math.Pow(left.y, right), Math.Pow(left.z, right));
-        public static Vector3 operator -(Vector3 left) => Vector3.Zero-left;
+        public static Vector3 operator -(Vector3 left) => Vector3.Zero - left;
         public static bool operator ==(Vector3 a, Vector3 b)
         {
             // Check for null before accessing properties
@@ -269,6 +269,9 @@ namespace DroneSwampPathfined
             this.size = Vector3.One;
         }
     }
+}
+namespace DroneSwampPathfiner.Drones 
+{ 
     public class Drone
     {
         private static int idCounter;
