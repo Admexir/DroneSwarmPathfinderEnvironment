@@ -1,0 +1,159 @@
+using DroneSwampPathfiner.Core.Models;
+using DroneSwampPathfiner.Core.Simulation;
+using DroneSwampPathfiner.Unity.Visuals;
+using System.Collections.Generic;
+using System.ComponentModel;
+using UnityEngine;
+
+namespace DroneSwampPathfiner.Unity.Managers
+{
+    public class SimulationPlaybackManager : MonoBehaviour
+    {
+        [Header("References")]
+        [SerializeField] private DroneManager droneManager;
+
+        [Header("Playback config")]
+        [Tooltip("Playback FPS")]
+        public float playbackSpeed = 2f;
+
+        [Header("State (Read Only)")]
+        public bool isPlaying = false;
+        public float currentTime = 0f;
+        public int maxSteps = 0;
+
+        private IReadOnlyDictionary<int, DronePath> _currentPaths;
+
+        private void Update()
+        {
+            if (isPlaying && _currentPaths != null)
+            {
+                currentTime += Time.deltaTime * playbackSpeed;
+
+                // End of simulation by reaching step count
+                if (currentTime >= maxSteps)
+                {
+                    currentTime = maxSteps;
+                    isPlaying = false;
+                }
+
+                UpdateDronesPositions(currentTime);
+            }
+        }
+
+        /// <summary>
+        /// Loads simulation results and prepares its simulation
+        /// </summary>
+        public void LoadSimulationResult(SimulationResult result)
+        {
+            _currentPaths = result.Paths;
+            currentTime = 0f;
+            maxSteps = 0;
+            isPlaying = false;
+
+            // Find longest path to know step count
+            foreach (var path in _currentPaths.Values)
+            {
+                if (path.Waypoints.Count > 0)
+                {
+                    int lastStep = path.Waypoints[^1].StepIndex;
+                    if (lastStep > maxSteps) maxSteps = lastStep;
+                }
+            }
+
+            UpdateDronesPositions(0f);
+        }
+
+        #region Playback controls (API)
+
+        public void Play() => isPlaying = true;
+        public void Pause() => isPlaying = false;
+        public void Stop()
+        {
+            isPlaying = false;
+            currentTime = 0f;
+            UpdateDronesPositions(currentTime);
+        }
+
+        public void StepForward()
+        {
+            isPlaying = false; // (pause simulation when stepping)
+            currentTime = Mathf.Min(Mathf.Floor(currentTime) + 1f, maxSteps);
+            UpdateDronesPositions(currentTime);
+        }
+
+        public void StepBackward()
+        {
+            isPlaying = false;
+            currentTime = Mathf.Max(Mathf.Ceil(currentTime) - 1f, 0f);
+            UpdateDronesPositions(currentTime);
+        }
+
+        /// <summary>
+        /// Time speed slider (TODO: untested)
+        /// </summary>
+        public void SetTime(float time)
+        {
+            currentTime = Mathf.Clamp(time, 0f, maxSteps);
+            UpdateDronesPositions(currentTime);
+        }
+
+        #endregion
+
+        #region Position interpolation
+
+        private void UpdateDronesPositions(float time)
+        {
+            if (_currentPaths == null) return;
+
+            foreach (var kvp in _currentPaths)
+            {
+                int droneId = kvp.Key;
+                DronePath path = kvp.Value;
+
+                DroneView droneView = droneManager.GetDrone(droneId);
+                if (droneView == null || path.Waypoints.Count == 0) continue;
+
+                TransformData interpolatedData = GetInterpolatedTransform(path.Waypoints, time);
+
+                droneView.transform.position = interpolatedData.Position.ToUnity(); // conversion extension methods
+                droneView.transform.rotation = interpolatedData.Rotation.ToUnity();
+            }
+        }
+
+        private TransformData GetInterpolatedTransform(List<Waypoint> waypoints, float time)
+        {
+            // Invalid values check
+            if (time <= waypoints[0].StepIndex)
+                return new TransformData { Position = waypoints[0].Position, Rotation = waypoints[0].Rotation };
+            if (time >= waypoints[^1].StepIndex)
+                return new TransformData { Position = waypoints[^1].Position, Rotation = waypoints[^1].Rotation };
+
+            // Find current waypoint
+            // TODO: find a better way to do this (constant time steps? ...or at least binsearch)
+            Waypoint wpA = waypoints[0];
+            Waypoint wpB = waypoints[^1];
+
+            for (int i = 0; i < waypoints.Count - 1; i++)
+            {
+                if (time >= waypoints[i].StepIndex && time <= waypoints[i + 1].StepIndex)
+                {
+                    wpA = waypoints[i];
+                    wpB = waypoints[i + 1];
+                    break;
+                }
+            }
+
+            float stepDuration = wpB.StepIndex - wpA.StepIndex;
+            float fraction = (stepDuration == 0) ? 0 : (time - wpA.StepIndex) / stepDuration;
+
+            return new TransformData
+            {
+                Position = System.Numerics.Vector3.Lerp(wpA.Position, wpB.Position, fraction),
+                Rotation = System.Numerics.Quaternion.Slerp(wpA.Rotation, wpB.Rotation, fraction),
+                Size = System.Numerics.Vector3.One
+            };
+        }
+
+        #endregion
+    }
+}

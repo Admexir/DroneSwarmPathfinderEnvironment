@@ -36,6 +36,9 @@ namespace DroneSwampPathfiner.Unity.Managers
             }
         }
 
+        /// <summary>
+        /// Deletes all active drones in the scene
+        /// </summary>
         public void ClearDrones()
         {
             foreach (var droneView in _activeDrones.Values)
@@ -43,6 +46,16 @@ namespace DroneSwampPathfiner.Unity.Managers
                 Destroy(droneView.gameObject);
             }
             _activeDrones.Clear();
+        }
+        
+        /// <summary>
+        /// Fetches an active drone by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public DroneView GetDrone(int id)
+        {
+            return _activeDrones.TryGetValue(id, out var drone) ? drone : null;
         }
     }
 }
