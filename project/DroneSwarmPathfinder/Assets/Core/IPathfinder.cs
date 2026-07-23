@@ -1,53 +1,40 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
+using System.Numerics;
 
-namespace DroneSwampPathfiner.Simulation
+namespace DroneSwampPathfiner.Core.Simulation
 {
-    /// <summary>
-    /// Class holding information about drones' transforms
-    /// </summary>
-    public class SimulationDronesTransformContext
-    {
-        public DroneTransform[] DronesTransformArray;
-    }
+    using Models;
+
     /// <summary>
     /// Record class to hold information about the simulations results
     /// </summary>
     public record SimulationResult
     {
-        //TODO: Add info about result of the simulation ... JSON/strings/...
+        public bool IsSuccessful { get; init; }
+        public string Message { get; init; }
+        public TimeSpan ComputationTime { get; init; }
+
+        public IReadOnlyDictionary<int, DronePath> Paths { get; init; }
     }
     /// <summary>
     /// Record class holding information about the environment and drones for a simulation
     /// </summary>
     public record SimulationContext
     {
-        public SimulationDronesTransformContext InitialDroneTransforms { get; set; }
-        public SimulationDronesTransformContext TargetDroneTransforms { get; set; }
-
+        public IReadOnlyDictionary<int, Drone> InitialState { get; init; }
+        public IReadOnlyDictionary<int, Drone> TargetState { get; init; }
+        public DiscreteGrid EnvironmentGrid { get; init; }
     }
 
     /// <summary>
     /// Interface with methods for external pathfinding scripts to call - API for actions of a drone
     /// </summary>
-    public interface IDronePathfinder
+    public interface IPathfindingAlgorithm
     {
-
-    }
-
-    /// <summary>
-    /// Interface for a simulation scenario, contains methods to calculate paths, run/pause simulation,...
-    /// </summary>
-    public interface ISimulation
-    {
+        string AlgorithmName { get; }
         Task<SimulationResult> CalculatePathsAsync(SimulationContext context);
-    }
-
-    /// <summary>
-    /// Interface for individual drones participating in a simulation
-    /// </summary>
-    public interface IDrone
-    {
-
     }
 
 }
