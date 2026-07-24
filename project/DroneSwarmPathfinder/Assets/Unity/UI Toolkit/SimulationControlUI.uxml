@@ -1,5 +1,9 @@
-<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:ListView style="top: 20%; left: 20px; height: 621px; width: 52px; position: absolute;"/>
-    <ui:Button text="Play Simulation" style="width: 212px; height: 129px;"/>
-    <ui:VisualElement enabled="false" style="flex-grow: 1; right: auto; bottom: auto; position: absolute; top: 20px; left: 20px; height: 428px; width: 81px;"/>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="tool-panel" style="width: 250px; height: 100%; background-color: rgba(45, 45, 45, 0.2); padding: 10px;">
+        <ui:Label text="Time Scale" style="margin-bottom: 2px; -unity-font-style: bold; color: rgb(220, 220, 220);" />
+        <ui:SliderInt value="100" high-value="100" name="time-scale-slider" style="margin-bottom: 15px;" />
+        <ui:Button text="Play" name="btn-play" />
+        <ui:Button text="Step &gt;" name="btn-step-forward" />
+        <ui:Button text="Step &lt;" name="btn-step-back" />
+    </ui:VisualElement>
 </ui:UXML>

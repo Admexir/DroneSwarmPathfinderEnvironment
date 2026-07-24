@@ -8,6 +8,7 @@ namespace DroneSwampPathfiner.Unity.Managers
 
     public class DroneManager : MonoBehaviour
     {
+        public static DroneManager instance; private void Awake() => instance = this;
         [Header("Config")]
         [SerializeField] private GameObject dronePrefab;
         [SerializeField] private Transform dronesHolder;

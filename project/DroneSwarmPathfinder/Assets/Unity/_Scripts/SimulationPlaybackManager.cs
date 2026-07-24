@@ -9,6 +9,7 @@ namespace DroneSwampPathfiner.Unity.Managers
 {
     public class SimulationPlaybackManager : MonoBehaviour
     {
+        public static SimulationPlaybackManager instance; private void Awake() => instance = this;
         [Header("References")]
         [SerializeField] private DroneManager droneManager;
 
@@ -91,7 +92,7 @@ namespace DroneSwampPathfiner.Unity.Managers
         /// <summary>
         /// Time speed slider (TODO: untested)
         /// </summary>
-        public void SetTime(float time)
+        public void SetTimeScale(float time)
         {
             currentTime = Mathf.Clamp(time, 0f, maxSteps);
             UpdateDronesPositions(currentTime);
