@@ -10,8 +10,6 @@ namespace DroneSwampPathfiner.Unity.Managers
     public class SimulationPlaybackManager : MonoBehaviour
     {
         public static SimulationPlaybackManager instance; private void Awake() => instance = this;
-        [Header("References")]
-        [SerializeField] private DroneManager droneManager;
 
         [Header("Playback config")]
         [Tooltip("Playback FPS")]
@@ -36,6 +34,8 @@ namespace DroneSwampPathfiner.Unity.Managers
                 {
                     currentTime = maxSteps;
                     isPlaying = false;
+                    Debug.Log("End of simulation");
+                    UIController.instance.RefreshPlayButtonState();
                 }
 
                 UpdateDronesPositions(currentTime);
@@ -69,16 +69,11 @@ namespace DroneSwampPathfiner.Unity.Managers
 
         public void Play() => isPlaying = true;
         public void Pause() => isPlaying = false;
-        public void Stop()
-        {
-            isPlaying = false;
-            currentTime = 0f;
-            UpdateDronesPositions(currentTime);
-        }
 
         public void StepForward()
         {
             isPlaying = false; // (pause simulation when stepping)
+            UIController.instance.RefreshPlayButtonState();
             currentTime = Mathf.Min(Mathf.Floor(currentTime) + 1f, maxSteps);
             UpdateDronesPositions(currentTime);
         }
@@ -86,7 +81,16 @@ namespace DroneSwampPathfiner.Unity.Managers
         public void StepBackward()
         {
             isPlaying = false;
+            UIController.instance.RefreshPlayButtonState();
             currentTime = Mathf.Max(Mathf.Ceil(currentTime) - 1f, 0f);
+            UpdateDronesPositions(currentTime);
+        }
+
+        public void Restart()
+        {
+            isPlaying = false;
+            UIController.instance.RefreshPlayButtonState();
+            currentTime = 0f;
             UpdateDronesPositions(currentTime);
         }
 
@@ -113,7 +117,7 @@ namespace DroneSwampPathfiner.Unity.Managers
                 int droneId = kvp.Key;
                 DronePath path = kvp.Value;
 
-                DroneView droneView = droneManager.GetDrone(droneId);
+                DroneView droneView = Managers.DroneManager.instance.GetDrone(droneId);
                 if (droneView == null || path.Waypoints.Count == 0) continue;
 
                 TransformData interpolatedData = GetInterpolatedTransform(path.Waypoints, time);

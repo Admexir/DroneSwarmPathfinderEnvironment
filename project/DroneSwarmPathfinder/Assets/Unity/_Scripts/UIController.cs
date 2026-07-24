@@ -22,6 +22,7 @@ public class UIController : MonoBehaviour
         _timeScaleSlider = root.Q<SliderInt>("time-scale-slider");
         var stepForwardButton = root.Q<Button>("btn-step-forward");
         var stepBackButton = root.Q<Button>("btn-step-back");
+        var restartButton = root.Q<Button>("btn-restart");
 
         if (_timeScaleSlider != null)
         {
@@ -47,6 +48,7 @@ public class UIController : MonoBehaviour
         if (_playButton != null) _playButton.clicked += OnPlayClicked;
         if (stepForwardButton != null) stepForwardButton.clicked += OnStepForwardClicked;
         if (stepBackButton != null) stepBackButton.clicked += OnStepBackClicked;
+        if (restartButton != null) restartButton.clicked += OnRestartClicked;
     }
 
     //// According to AI, it's good practice to unregister callbacks when the object is disabled
@@ -89,12 +91,14 @@ public class UIController : MonoBehaviour
         }
     }
 
+
+    public void RefreshPlayButtonState() => _playButton.text = SimulationPlaybackManager.instance.isPlaying ? "Pause" : "Play";
     private void OnPlayClicked()
     {
         if (SimulationPlaybackManager.instance.isPlaying)
         {
-            Debug.Log("Play Button Clicked - Stopping");
-            SimulationPlaybackManager.instance.Stop();
+            Debug.Log("Play Button Clicked - Pause");
+            SimulationPlaybackManager.instance.Pause();
             _playButton.text = "Play";
         }
         else
@@ -115,6 +119,11 @@ public class UIController : MonoBehaviour
     {
         Debug.Log("Step Back Clicked");
         SimulationPlaybackManager.instance.StepBackward();
+    }
+    private void OnRestartClicked()
+    {
+        Debug.Log("Restart Clicked");
+        SimulationPlaybackManager.instance.Restart();
     }
 
     // Double click on time scale number detection ----------------------
