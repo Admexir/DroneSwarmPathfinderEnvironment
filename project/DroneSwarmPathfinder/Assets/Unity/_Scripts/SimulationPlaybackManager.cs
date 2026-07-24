@@ -16,6 +16,7 @@ namespace DroneSwampPathfiner.Unity.Managers
         [Header("Playback config")]
         [Tooltip("Playback FPS")]
         public float playbackSpeed = 2f;
+        public float defaultPlaybackSpeed = 2f;
 
         [Header("State (Read Only)")]
         public bool isPlaying = false;
@@ -92,10 +93,11 @@ namespace DroneSwampPathfiner.Unity.Managers
         /// <summary>
         /// Time speed slider (TODO: untested)
         /// </summary>
-        public void SetTimeScale(float time)
+        public void SetTimeScale(float newSpeedPercentage)
         {
-            currentTime = Mathf.Clamp(time, 0f, maxSteps);
-            UpdateDronesPositions(currentTime);
+            playbackSpeed = defaultPlaybackSpeed * newSpeedPercentage;
+            //currentTime = Mathf.Clamp(time, 0f, maxSteps);
+            //UpdateDronesPositions(currentTime);
         }
 
         #endregion
