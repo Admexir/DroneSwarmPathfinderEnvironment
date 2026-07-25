@@ -142,6 +142,14 @@ public class UIController : MonoBehaviour
         _droneListView.Rebuild();
     }
 
+    /// <summary>
+    /// Updates the inspector fields for position
+    /// </summary>
+    public void UpdatePositionFields(Vector3 newPos)
+    {
+        if (_positionInput != null) _positionInput.SetValueWithoutNotify(newPos);
+    }
+
     #region Event Handlers
 
     public void SetPlaybackUIVisibility(bool isVisible)
@@ -250,16 +258,19 @@ public class UIController : MonoBehaviour
     /// <param name="selectedDroneIds"></param>
     private void HandleSceneSelectionChanged(List<int> selectedDroneIds)
     {
-        if(selectedDroneIds == null) { return; }
+        if (selectedDroneIds == null) { return; }
         if (selectedDroneIds.Count == 1)
         {
-            
+
             var drone = DroneManager.instance.GetDroneDataFromID(selectedDroneIds[0]);
-            if(drone == null) { Debug.LogError($"Tried selecting a drone with invalid ID {selectedDroneIds[0]} with click in scene!"); return; }
+            if (drone == null) { Debug.LogError($"Tried selecting a drone with invalid ID {selectedDroneIds[0]} with click in scene!"); return; }
             CurrentlySelectedDrone = drone;
 
             _idInput.value = drone.ID.ToString();
             _groupInput.value = drone.GroupId;
+
+            UpdatePositionFields(drone.Transform.Position.ToUnity());
+
             _droneDetailsPanel.style.display = DisplayStyle.Flex;
 
             var droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
@@ -300,7 +311,7 @@ public class UIController : MonoBehaviour
         _groupInput.value = selectedDrone.GroupId;
         Vector3 currentPos = selectedDrone.Transform.Position.ToUnity();
         // SetValueWithoutNotify makes this not trigger the UpdateDronePosition callback
-        _positionInput.SetValueWithoutNotify(currentPos);
+        UpdatePositionFields(currentPos);
 
         CurrentlySelectedDrone = selectedDrone;
 

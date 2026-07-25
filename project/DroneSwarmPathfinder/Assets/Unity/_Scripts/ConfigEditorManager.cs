@@ -55,6 +55,12 @@ namespace DroneSwampPathfiner.Unity.EditorTools
             }
 
             HandleInput();
+
+            // Moves gizmo with the drone in case user moves it using other ways (like changing values in inspector) TODO: not needed constantly, change only when position changes using the inspector  :)
+            if (!_isDraggingGizmo && _selectedDrones.Count > 0 && _gizmoRoot != null && _gizmoRoot.activeSelf)
+            {
+                UpdateGizmoState();
+            }
         }
 
         private void HandleInput()
@@ -339,11 +345,24 @@ namespace DroneSwampPathfiner.Unity.EditorTools
                     Vector3 startPos = kvp.Value;
 
                     // Apply gizmos movement to the gameobject
-                    drone.transform.position = startPos + constrainedMove;
+                    Vector3 targetPos = startPos + constrainedMove;
+
+                    // TEMP GRID SNAPPING, TODO: snap to the actual grid object
+                    targetPos.x = Mathf.Round(targetPos.x);
+                    targetPos.y = Mathf.Round(targetPos.y);
+                    targetPos.z = Mathf.Round(targetPos.z);
+
+                    drone.transform.position = targetPos;
                     newCenter += drone.transform.position;
                 }
 
                 _gizmoRoot.transform.position = newCenter / _selectedDrones.Count;
+
+                // Update inspector UI values while dragging gizmos
+                if (_selectedDrones.Count == 1 && UIController.instance != null)
+                {
+                    UIController.instance.UpdatePositionFields(_selectedDrones[0].transform.position);
+                }
             }
         }
 
