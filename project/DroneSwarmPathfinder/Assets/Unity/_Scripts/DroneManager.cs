@@ -6,6 +6,7 @@ using UnityEngine;
 
 using NumVector3 = System.Numerics.Vector3;
 using NumQuaternion = System.Numerics.Quaternion;
+using DroneSwampPathfiner.Unity.EditorTools;
 
 namespace DroneSwampPathfiner.Unity.Managers
 {
@@ -23,6 +24,8 @@ namespace DroneSwampPathfiner.Unity.Managers
 
         // Config drone data for config editor
         public IEnumerable<Drone> AllDroneModels => _droneModels.Values;
+        //// Gameobject drone data
+        //public IEnumerable<DroneView> AllDroneGameObjects => _activeDrones.Values;
 
         // Unique ID counter
         private int _nextDroneId = 0;
@@ -113,6 +116,25 @@ namespace DroneSwampPathfiner.Unity.Managers
             }
         }
 
+        //public record DroneInfo(int ID, int GroupId, Vector3 Position, Quaternion Rotation, Vector3 Size);
+        //public DroneInfo GetDroneConfigInfo(int id)
+        //{
+        //    if (_droneModels.TryGetValue(id, out Drone val))
+        //    {
+        //        return new(id, val.GroupId, val.Transform.Position.ToUnity(), val.Transform.Rotation.ToUnity(), val.Transform.Size.ToUnity());
+        //    }
+        //    else { return null; }
+        //}
+
+        public Drone GetDroneDataFromID(int id)
+        {
+            if (_droneModels.TryGetValue(id, out Drone val))
+            {
+                return val;
+            }
+            else { return null; }
+        }
+
         /// <summary>
         /// Adds a drone from config to the scene
         /// </summary>
@@ -120,6 +142,7 @@ namespace DroneSwampPathfiner.Unity.Managers
         private void AddExistingDrone(Drone coreDrone)
         {
             GameObject droneObj = Instantiate(dronePrefab, dronesHolder);
+            //droneObj.layer = ConfigEditorManager.instance.droneLayer;
 
             droneObj.transform.position = coreDrone.Transform.Position.ToUnity();
             droneObj.transform.rotation = coreDrone.Transform.Rotation.ToUnity();

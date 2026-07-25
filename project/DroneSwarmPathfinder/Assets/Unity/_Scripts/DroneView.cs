@@ -1,3 +1,4 @@
+using DroneSwampPathfiner.Core.Models;
 using UnityEngine;
 
 namespace DroneSwampPathfiner.Unity.Visuals

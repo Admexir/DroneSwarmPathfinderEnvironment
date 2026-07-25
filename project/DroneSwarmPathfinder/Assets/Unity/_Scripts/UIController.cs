@@ -1,5 +1,6 @@
 using DroneSwampPathfiner.Core.Models;
 using DroneSwampPathfiner.Unity;
+using DroneSwampPathfiner.Unity.EditorTools;
 using DroneSwampPathfiner.Unity.Managers;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,23 @@ public class UIController : MonoBehaviour
     private VisualElement _droneDetailsPanel;
 
     public Drone CurrentlySelectedDrone { get; private set; }
+
+    /// <summary>
+    /// Gets if mouse is currently over an interactible UI element (equivalent of EventSystem.Current.IsPointerOverGameObject())
+    /// </summary>
+    public bool IsPointerOverUI()
+    {
+        if (_uiDocument == null || _uiDocument.rootVisualElement == null || _uiDocument.rootVisualElement.panel == null)
+            return false;
+
+        // Input.mosepos coordinates are from bottom left corner, while UI coordinates from top left -> transform
+        Vector2 mousePos = Input.mousePosition;
+        Vector2 uiPos = new Vector2(mousePos.x, Screen.height - mousePos.y);
+
+        VisualElement picked = _uiDocument.rootVisualElement.panel.Pick(uiPos);
+
+        return picked != null;
+    }
 
     private void OnEnable()
     {
@@ -82,6 +100,8 @@ public class UIController : MonoBehaviour
         };
 
         _droneListView.selectionChanged += SelectDrone;
+        ConfigEditorManager.instance.OnSelectionChanged += HandleSceneSelectionChanged;
+
 
         _groupInput.RegisterValueChangedCallback(evt =>
         {
@@ -224,6 +244,46 @@ public class UIController : MonoBehaviour
     #endregion
 
     #region Config editor Handlers
+    /// <summary>
+    /// Called using a callback for selecting drones by clicking on them/box selection
+    /// </summary>
+    /// <param name="selectedDroneIds"></param>
+    private void HandleSceneSelectionChanged(List<int> selectedDroneIds)
+    {
+        if(selectedDroneIds == null) { return; }
+        if (selectedDroneIds.Count == 1)
+        {
+            
+            var drone = DroneManager.instance.GetDroneDataFromID(selectedDroneIds[0]);
+            if(drone == null) { Debug.LogError($"Tried selecting a drone with invalid ID {selectedDroneIds[0]} with click in scene!"); return; }
+            CurrentlySelectedDrone = drone;
+
+            _idInput.value = drone.ID.ToString();
+            _groupInput.value = drone.GroupId;
+            _droneDetailsPanel.style.display = DisplayStyle.Flex;
+
+            var droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
+            droneListView.SetSelectionWithoutNotify(new List<int> { GetIndexOfDrone(drone.ID) });
+        }
+        else
+        {
+            CurrentlySelectedDrone = null;
+            _droneDetailsPanel.style.display = DisplayStyle.None;
+
+            var droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
+            droneListView.ClearSelection();
+        }
+    }
+    /// <summary>
+    /// Goes through DroneManager's list of all drone data and finds at which index the one with the given id is
+    /// </summary>
+    private int GetIndexOfDrone(int id)
+    {
+        var models = DroneManager.instance.AllDroneModels.ToList();
+        for (int i = 0; i < models.Count; i++)
+            if (models[i].ID == id) return i;
+        return -1;
+    }
     private void SelectDrone(IEnumerable<object> selectedItems)
     {
         var selectedObject = selectedItems.FirstOrDefault();
