@@ -46,9 +46,12 @@
                 <ui:Label text="Selected Drone Properties" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 10px;" />
                 
                 <!-- Built-in input fields automatically format to a Label on the left, Input on the right -->
-                <ui:TextField label="Drone ID" name="input-drone-id" style="margin-bottom: 5px;" />
-                <ui:TextField label="Group" name="input-drone-group" style="margin-bottom: 5px;" />
-                <ui:Vector3Field label="Position" name="input-drone-position" style="margin-bottom: 5px;" />
+                <ui:TextField label="Drone ID" name="input-drone-id" readonly="true" style="margin-bottom: 5px;" />
+                <ui:IntegerField label="Group" name="input-drone-group" style="margin-bottom: 5px;" />
+                <ui:VisualElement style="margin-bottom: 5px;">
+                    <ui:Label text="Position" style="margin-bottom: 2px;" />
+                    <ui:Vector3Field name="input-drone-position" />
+                </ui:VisualElement>
                 <ui:FloatField label="Battery" name="input-drone-battery" style="margin-bottom: 5px;" />
                 
             </ui:VisualElement>

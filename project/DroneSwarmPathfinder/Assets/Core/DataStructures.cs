@@ -269,7 +269,27 @@ namespace DroneSwampPathfiner.Core.Models
             Rotation = Quaternion.Identity;
             Size = Vector3.One;
         }
+        public TransformData(Vector3 position, Quaternion rotation)
+        {
+            this = default;
+            Position = position;
+            Rotation = rotation;
+            Size = Vector3.One;
+        }
+        public TransformData(Vector3 position, Quaternion rotation, Vector3 size)
+        {
+            this = default;
+            Position = position;
+            Rotation = rotation;
+            Size = size;
+        }
     }
+    public static class TransformExtensions
+    {
+        public static TransformData WithPosition(this TransformData t, Vector3 newPosition) => new TransformData(newPosition, t.Rotation, t.Size);
+        
+    }
+        
 
     /// <summary>
     /// Class representing one agent in the simulation

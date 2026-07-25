@@ -64,6 +64,7 @@ namespace DroneSwampPathfiner.Unity.Testing
 
             // Load the simulation
             Managers.SimulationPlaybackManager.instance.LoadSimulationResult(dummyResult);
+            UIController.instance.RefreshDroneList();
 
             Debug.Log("Mock test data loaded, use UI to control the simulation or use space to play and side arrow keys to step");
         }

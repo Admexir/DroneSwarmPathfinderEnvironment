@@ -117,7 +117,7 @@ namespace DroneSwampPathfiner.Unity.Managers
                 int droneId = kvp.Key;
                 DronePath path = kvp.Value;
 
-                DroneView droneView = Managers.DroneManager.instance.GetDrone(droneId);
+                DroneView droneView = Managers.DroneManager.instance.GetDroneView(droneId);
                 if (droneView == null || path.Waypoints.Count == 0) continue;
 
                 TransformData interpolatedData = GetInterpolatedTransform(path.Waypoints, time);

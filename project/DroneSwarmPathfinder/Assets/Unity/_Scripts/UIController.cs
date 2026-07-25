@@ -1,4 +1,5 @@
 using DroneSwampPathfiner.Core.Models;
+using DroneSwampPathfiner.Unity;
 using DroneSwampPathfiner.Unity.Managers;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,10 @@ public class UIController : MonoBehaviour
     private Label _timeScaleLabel;
     private SliderInt _timeScaleSlider;
     private IntegerField _timeScaleInput;
-    private Label _idInput;
+    private TextField _idInput;
+    private ListView _droneListView;
     private IntegerField _groupInput;
-
-    // --- NEW: Variables for visibility toggling ---
+    private Vector3Field _positionInput;
     private Button _stepForwardButton;
     private Button _stepBackButton;
     private Button _restartButton;
@@ -64,26 +65,34 @@ public class UIController : MonoBehaviour
         if (_restartButton != null) _restartButton.clicked += OnRestartClicked;
 
         // Config editor UI
-        var droneListView = root.Q<ListView>("drone-list-view");
-        _idInput = root.Q<Label>("input-drone-id");
+        _droneListView = root.Q<ListView>("drone-list-view");
+        _idInput = root.Q<TextField>("input-drone-id");
         _groupInput = root.Q<IntegerField>("input-drone-group");
+        _positionInput = root.Q<Vector3Field>("input-drone-position");
         _droneDetailsPanel = root.Q<VisualElement>("drone-details-panel");
 
-        droneListView.itemsSource = DroneManager.instance.ActiveDrones.ToList();
-        droneListView.makeItem = () => new Label();
-        droneListView.bindItem = (element, index) =>
+        _droneListView.itemsSource = DroneManager.instance.AllDroneModels.ToList();
+
+        _droneListView.makeItem = () => new Label();
+        _droneListView.bindItem = (element, index) =>
         {
             var label = element as Label;
-            var drone = DroneManager.instance.ActiveDrones.ElementAt(index);
-            label.text = $"Drone {drone.DroneID} (group: {drone.DroneGroup})";
+            var drone = DroneManager.instance.AllDroneModels.ElementAt(index);
+            label.text = $"Drone {drone.ID} (group: {drone.GroupId})";
         };
 
-        droneListView.selectionChanged += SelectDrone;
+        _droneListView.selectionChanged += SelectDrone;
 
         _groupInput.RegisterValueChangedCallback(evt =>
         {
-            CurrentlySelectedDrone.GroupId = evt.newValue;
-            droneListView.RefreshItems();
+            if (CurrentlySelectedDrone == null) return;
+            DroneManager.instance.UpdateDroneGroup(CurrentlySelectedDrone.ID, evt.newValue);
+            RefreshDroneList();
+        });
+        _positionInput.RegisterValueChangedCallback(evt =>
+        {
+            if (CurrentlySelectedDrone == null) return;
+            DroneManager.instance.UpdateDronePosition(CurrentlySelectedDrone.ID, evt.newValue);
         });
 
         var addDroneButton = root.Q<Button>("btn-add-drone");
@@ -100,6 +109,17 @@ public class UIController : MonoBehaviour
 
         if (_droneDetailsPanel != null) _droneDetailsPanel.style.display = DisplayStyle.None;
         SetPlaybackUIVisibility(false);
+        RefreshDroneList();
+    }
+
+    /// <summary>
+    /// Helper method to refresh drone list
+    /// </summary>
+    public void RefreshDroneList() //TODO: make private (public because of TestRunner )
+    {
+        _droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
+        _droneListView.itemsSource = DroneManager.instance.AllDroneModels.ToList();
+        _droneListView.Rebuild();
     }
 
     #region Event Handlers
@@ -208,56 +228,74 @@ public class UIController : MonoBehaviour
     {
         var selectedObject = selectedItems.FirstOrDefault();
 
-        // If clicked empty space to deselect, hide panel
         if (selectedObject == null)
         {
-            CurrentlySelectedDrone = null;
-            if (_droneDetailsPanel != null) _droneDetailsPanel.style.display = DisplayStyle.None;
-            return;
-        }
-
-        if (selectedObject is not Drone)
-        {
-            Debug.LogError($"Error selecting drone in hierarchy window: {(selectedObject == null ? "Selected drone is null" : selectedObject.ToString() + " is not of type Drone")}");
+            _droneDetailsPanel.style.display = DisplayStyle.None;
             return;
         }
 
         Drone selectedDrone = (Drone)selectedObject;
 
-        _idInput.text = selectedDrone.ID.ToString();
+        _idInput.value = selectedDrone.ID.ToString();
         _groupInput.value = selectedDrone.GroupId;
+        Vector3 currentPos = selectedDrone.Transform.Position.ToUnity();
+        // SetValueWithoutNotify makes this not trigger the UpdateDronePosition callback
+        _positionInput.SetValueWithoutNotify(currentPos);
+
         CurrentlySelectedDrone = selectedDrone;
 
-        // Show panel when a drone is selected
-        if (_droneDetailsPanel != null) _droneDetailsPanel.style.display = DisplayStyle.Flex;
+        _droneDetailsPanel.style.display = DisplayStyle.Flex;
     }
 
     private void OnAddDroneClicked()
     {
-        Debug.Log("Add Drone Clicked");
+        Debug.Log("Adding new drone...");
+        DroneManager.instance.CreateNewDrone(Vector3.zero);
+        RefreshDroneList();
     }
 
     private void OnRemoveDroneClicked()
     {
-        Debug.Log("Remove Drone Clicked");
+        if (CurrentlySelectedDrone == null) return;
+
+        Debug.Log($"Removing drone {CurrentlySelectedDrone.ID}");
+        DroneManager.instance.RemoveDrone(CurrentlySelectedDrone.ID);
+
+        RefreshDroneList(); // Update the list
+
+        _droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
+        _droneListView.ClearSelection(); // This calls SelectDrone(null) 
     }
 
     private void OnLoadConfigClicked()
     {
-        Debug.Log("Load Configuration Clicked");
+        Debug.Log("Loading Configuration...");
+
+        // Something like: var config = ConfigSerializer.LoadFromFile("config.json");
+        // DroneManager.instance.SpawnDrones(config);
+        // RefreshDroneList();
     }
 
     private void OnPlaySimulationClicked()
     {
-        Debug.Log("Play Simulation Clicked");
-
-        // Show playback controls when starting simulation
+        Debug.Log("Starting Simulation Algorithm...");
         SetPlaybackUIVisibility(true);
+
+        // TODO: Run the pathfinding algorithm here!!
+        // something like:
+        // var config = DroneManager.instance.AllDroneModels.ToList(); // Create the data
+        // var result = PathfindingEngine.Solve(config); // Run the pathfinding algo
+        // SimulationPlaybackManager.instance.LoadSimulationResult(result); // Load the results into the simulator
+        // SimulationPlaybackManager.instance.Play(); // Autoplay it
     }
 
     private void OnExportConfigClicked()
     {
-        Debug.Log("Export Configuration Clicked");
+        Debug.Log("Exporting Configuration...");
+        var config = DroneManager.instance.AllDroneModels.ToList();
+
+        // Save config to JSON
+        // Something like: ConfigSerializer.SaveToFile(config, "latest_config.json");
     }
     #endregion
 
