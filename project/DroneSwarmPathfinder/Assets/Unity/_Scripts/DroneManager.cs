@@ -14,6 +14,7 @@ namespace DroneSwampPathfiner.Unity.Managers
         [SerializeField] private Transform dronesHolder;
 
         private Dictionary<int, DroneView> _activeDrones = new(); // TODO: use for moving drones later
+        public IEnumerable<DroneView> ActiveDrones => _activeDrones.Values;
 
         /// <summary>
         /// Visualizes a collection of drones and destroys old drones
