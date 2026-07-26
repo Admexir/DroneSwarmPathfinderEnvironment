@@ -6,6 +6,7 @@ using System.Numerics;
 namespace DroneSwampPathfiner.Core.Simulation
 {
     using Models;
+    using Environment;
 
     /// <summary>
     /// Record class to hold information about the simulations results
