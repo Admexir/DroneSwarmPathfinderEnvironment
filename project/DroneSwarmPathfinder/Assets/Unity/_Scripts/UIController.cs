@@ -48,6 +48,7 @@ public class UIController : MonoBehaviour
     {
         _uiDocument = GetComponent<UIDocument>();
         var root = _uiDocument.rootVisualElement;
+        root.RegisterCallback<NavigationMoveEvent>(evt => evt.PreventDefault()); // Should make all UI ignore arrow key-navigation
 
         // Simulation controls UI
         _playButton = root.Q<Button>("btn-play");
@@ -258,10 +259,18 @@ public class UIController : MonoBehaviour
     /// <param name="selectedDroneIds"></param>
     private void HandleSceneSelectionChanged(List<int> selectedDroneIds)
     {
-        if (selectedDroneIds == null) { return; }
-        if (selectedDroneIds.Count == 1)
-        {
+        var droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
 
+        if (selectedDroneIds == null || selectedDroneIds.Count == 0)
+        {
+            CurrentlySelectedDrone = null;
+            _droneDetailsPanel.style.display = DisplayStyle.None;
+
+            // Clear selection without causing a cycle :)
+            droneListView.SetSelectionWithoutNotify(new List<int>());
+        }
+        else
+        {
             var drone = DroneManager.instance.GetDroneDataFromID(selectedDroneIds[0]);
             if (drone == null) { Debug.LogError($"Tried selecting a drone with invalid ID {selectedDroneIds[0]} with click in scene!"); return; }
             CurrentlySelectedDrone = drone;
@@ -273,16 +282,9 @@ public class UIController : MonoBehaviour
 
             _droneDetailsPanel.style.display = DisplayStyle.Flex;
 
-            var droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
-            droneListView.SetSelectionWithoutNotify(new List<int> { GetIndexOfDrone(drone.ID) });
-        }
-        else
-        {
-            CurrentlySelectedDrone = null;
-            _droneDetailsPanel.style.display = DisplayStyle.None;
-
-            var droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
-            droneListView.ClearSelection();
+            // Select all selected drones in the scene
+            var indices = selectedDroneIds.Select(id => GetIndexOfDrone(id)).Where(index => index != -1).ToList();
+            droneListView.SetSelectionWithoutNotify(indices);
         }
     }
     /// <summary>
@@ -297,14 +299,16 @@ public class UIController : MonoBehaviour
     }
     private void SelectDrone(IEnumerable<object> selectedItems)
     {
-        var selectedObject = selectedItems.FirstOrDefault();
-
-        if (selectedObject == null)
+        if (selectedItems == null || !selectedItems.Any())
         {
             _droneDetailsPanel.style.display = DisplayStyle.None;
+            CurrentlySelectedDrone = null;
+            // Cancel in-scene selection too
+            ConfigEditorManager.instance.SetSelectionFromUI(new List<int>());
             return;
         }
 
+        var selectedObject = selectedItems.FirstOrDefault();
         Drone selectedDrone = (Drone)selectedObject;
 
         _idInput.value = selectedDrone.ID.ToString();
@@ -316,6 +320,10 @@ public class UIController : MonoBehaviour
         CurrentlySelectedDrone = selectedDrone;
 
         _droneDetailsPanel.style.display = DisplayStyle.Flex;
+
+        // Select the selected drones in the scene too
+        var selectedIds = selectedItems.Cast<Drone>().Select(d => d.ID).ToList();
+        ConfigEditorManager.instance.SetSelectionFromUI(selectedIds);
     }
 
     private void OnAddDroneClicked()

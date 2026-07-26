@@ -182,6 +182,30 @@ namespace DroneSwampPathfiner.Unity.EditorTools
             OnSelectionChanged?.Invoke(_selectedDrones.Select(d => d.DroneID).ToList());
         }
 
+        /// <summary>
+        /// Selects drones in the scene by interacting with the UI (drone list)
+        /// (doesn't cause cycle by calling selection callbacks)
+        /// </summary>
+        public void SetSelectionFromUI(IEnumerable<int> droneIds)
+        {
+            _selectedDrones.Clear();
+
+            if (droneIds != null)
+            {
+                foreach (int id in droneIds)
+                {
+                    var view = DroneManager.instance.GetDroneView(id);
+                    if (view != null)
+                    {
+                        _selectedDrones.Add(view);
+                    }
+                }
+            }
+
+            // Update only the visuals, nbot the logic
+            UpdateGizmoState();
+        }
+
         #endregion
 
         #region Box Selection (group drone selection)
