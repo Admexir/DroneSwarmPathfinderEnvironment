@@ -1,5 +1,7 @@
 using DroneSwampPathfiner.Unity.EditorTools;
+using DroneSwampPathfiner.Unity.Managers;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -22,10 +24,30 @@ namespace DroneSwampPathfiner.Unity.Visuals
         // Dict of distance -> opacity
         private Dictionary<Vector3Int, float> _nodeAlphas = new Dictionary<Vector3Int, float>();
 
+        // "Cache" so that alpha dict doesn't recalculate every frame (check whether the state has changed)
+        private List<Vector3> _lastDronePositions = new List<Vector3>();
+        private float _lastGridSize = -1f;
+        private float _lastFadeDistance = -1f;
+
         #region SUPPORT FOR URP
-        // private void OnEnable() { RenderPipelineManager.endCameraRendering += OnEndCameraRendering; }
-        // private void OnDisable() { RenderPipelineManager.endCameraRendering -= OnEndCameraRendering; }
-        // private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera) { if (camera == Camera.main) DrawGrid(); }
+        //// Just in case I'd want to switch it later, since it's only a few lines and I know how to do it... :)
+
+        //private void OnEnable()
+        //{
+        //    // URP event subscription
+        //    RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
+        //}
+
+        //private void OnDisable()
+        //{
+        //    RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
+        //}
+
+        //// (called every frame, subscribed to endCameraRendering URP event)
+        //private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
+        //{
+        //    if (camera == Camera.main) DrawGrid();
+        //}
         #endregion
 
         #region SUPPORT FOR DEFAULT RENDER PIPELINE
@@ -40,13 +62,17 @@ namespace DroneSwampPathfiner.Unity.Visuals
         /// </summary>
         private void DrawGrid()
         {
-            // End if no drones are selected
+            // (draw only when there's a drone or multiple drones selected)
             if (ConfigEditorManager.instance == null || ConfigEditorManager.instance.SelectedDrones.Count == 0) return;
 
             float gridSize = ConfigEditorManager.instance.gridSize;
             if (gridSize <= 0.01f) return;
 
-            CalculateNodeAlphas(gridSize);
+            // Recalculate node alphas (position->alpha dictionary) only when something changed
+            if (NeedsRecalculation(gridSize))
+            {
+                CalculateNodeAlphas(gridSize);
+            }
 
             Material matToUse = gridMaterial;
             if (matToUse == null)
@@ -97,17 +123,50 @@ namespace DroneSwampPathfiner.Unity.Visuals
         }
 
         /// <summary>
-        /// Calculates how opaque (how high alpha) a line should have at certain coordinates, depending on its distance from the selected drones
+        /// Returns true iff any selected drone moved or their count changed or the grid changed -> We need to recalculate alphas dictionary
+        /// </summary>
+        private bool NeedsRecalculation(float currentGridSize)
+        {
+            var selectedDrones = ConfigEditorManager.instance.SelectedDrones;
+
+            if (currentGridSize != _lastGridSize || fadeDistance != _lastFadeDistance || selectedDrones.Count != _lastDronePositions.Count)
+            {
+                return true;
+            }
+
+            //TODO: test if the performance improvement of not recalculating every frame is worth going through the list of all drones (...should be...)
+            for (int i = 0; i < selectedDrones.Count; i++)
+            {
+                if (selectedDrones[i].transform.position != _lastDronePositions[i])
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Calculates how opaique (how high alpha) a line should have at certain coordinates, depending on it's distance from the nearest drone
         /// </summary>
         /// <param name="gridSize"></param>
         private void CalculateNodeAlphas(float gridSize)
         {
             _nodeAlphas.Clear();
-            int searchRadius = Mathf.CeilToInt(fadeDistance / gridSize);
 
-            foreach (var selectedDrone in ConfigEditorManager.instance.SelectedDrones)
+            // Clear cache and save state for which this dict applies
+            _lastDronePositions.Clear();
+            _lastGridSize = gridSize;
+            _lastFadeDistance = fadeDistance;
+
+            int searchRadius = Mathf.CeilToInt(fadeDistance / gridSize);
+            var selectedDrones = ConfigEditorManager.instance.SelectedDrones.ToArray();
+
+            // Go through all selected drones and calculate the distance dict
+            foreach (var selectedDrone in selectedDrones)
             {
                 Vector3 centerPos = selectedDrone.transform.position;
+                _lastDronePositions.Add(centerPos); // save to cache
 
                 Vector3Int centerNode = new Vector3Int(
                     Mathf.RoundToInt(centerPos.x / gridSize),

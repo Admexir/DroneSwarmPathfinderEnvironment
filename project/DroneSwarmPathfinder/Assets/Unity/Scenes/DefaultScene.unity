@@ -424,7 +424,7 @@ MonoBehaviour:
   droneLayer:
     serializedVersion: 2
     m_Bits: 64
-  gridSize: 1
+  gridSize: 3
   selectionBoxColor: {r: 0.2, g: 0.6, b: 1, a: 0.3}
   selectionBoxBorderColor: {r: 0.2, g: 0.6, b: 1, a: 1}
 --- !u!1 &936507967
@@ -439,6 +439,7 @@ GameObject:
   - component: {fileID: 936507969}
   - component: {fileID: 936507968}
   - component: {fileID: 936507971}
+  - component: {fileID: 936507972}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -535,6 +536,21 @@ MonoBehaviour:
   moveSpeed: 30
   sprintMultiplier: 3
   lookSensitivity: 2
+--- !u!114 &936507972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 936507967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00effca03837ef9429da76596678da83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  gridColor: {r: 0.2, g: 0.6, b: 1, a: 0.4}
+  fadeDistance: 5
+  gridMaterial: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
 --- !u!1 &1144592977
 GameObject:
   m_ObjectHideFlags: 0
