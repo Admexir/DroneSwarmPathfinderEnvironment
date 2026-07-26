@@ -48,7 +48,7 @@ public class UIController : MonoBehaviour
     {
         _uiDocument = GetComponent<UIDocument>();
         var root = _uiDocument.rootVisualElement;
-        root.RegisterCallback<NavigationMoveEvent>(evt => evt.PreventDefault()); // Should make all UI ignore arrow key-navigation
+        root.RegisterCallback<NavigationMoveEvent>(evt => evt.PreventDefault()); // Should make all UI ignore arrow key-navigation //TODO: use a non-depricated function
 
         // Simulation controls UI
         _playButton = root.Q<Button>("btn-play");

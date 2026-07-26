@@ -26,6 +26,7 @@ namespace DroneSwampPathfiner.Unity.EditorTools
 
         private Camera _cam;
         private List<DroneView> _selectedDrones = new();
+        public IReadOnlyList<DroneView> SelectedDrones => _selectedDrones;
         private DiscreteGrid _grid;
 
         // State variables
@@ -225,7 +226,8 @@ namespace DroneSwampPathfiner.Unity.EditorTools
             if (selectionRect.width < 10 && selectionRect.height < 10) return;
 
             // Go through all drones and get their views
-            foreach (var coreDrone in DroneManager.instance.AllDroneModels)
+            var arr = DroneManager.instance.AllDroneModels.ToArray(); //copy to prevent modifying collection when the for loop is running
+            foreach (var coreDrone in arr)
             {
                 var droneView = DroneManager.instance.GetDroneView(coreDrone.ID);
                 if (droneView == null) continue;
