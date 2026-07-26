@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using DroneSwampPathfiner.Unity.Managers;
 using DroneSwampPathfiner.Unity.Visuals;
+using DroneSwampPathfiner.Core.Environment; // grid
 using UnityEditor.PackageManager;
 
 namespace DroneSwampPathfiner.Unity.EditorTools
@@ -15,6 +16,7 @@ namespace DroneSwampPathfiner.Unity.EditorTools
 
         [Header("Editor Config")]
         public LayerMask droneLayer;
+        public float gridSize = 1f;
 
         public Color selectionBoxColor = new Color(0.2f, 0.6f, 1f, 0.3f);
         public Color selectionBoxBorderColor = new Color(0.2f, 0.6f, 1f, 1f);
@@ -24,6 +26,7 @@ namespace DroneSwampPathfiner.Unity.EditorTools
 
         private Camera _cam;
         private List<DroneView> _selectedDrones = new();
+        private DiscreteGrid _grid;
 
         // State variables
         private bool _isBoxSelecting;
@@ -42,6 +45,7 @@ namespace DroneSwampPathfiner.Unity.EditorTools
         private void Start()
         {
             _cam = Camera.main;
+            _grid = new DiscreteGrid(gridSize);
             CreateRuntimeGizmo();
             UpdateGizmoState();
         }
@@ -371,10 +375,8 @@ namespace DroneSwampPathfiner.Unity.EditorTools
                     // Apply gizmos movement to the gameobject
                     Vector3 targetPos = startPos + constrainedMove;
 
-                    // TEMP GRID SNAPPING, TODO: snap to the actual grid object
-                    targetPos.x = Mathf.Round(targetPos.x);
-                    targetPos.y = Mathf.Round(targetPos.y);
-                    targetPos.z = Mathf.Round(targetPos.z);
+                    // Snapping to the grid object (from .Core.Environment)
+                    if (_grid != null) targetPos = _grid.ConstrainPosition(targetPos.ToNumerics()).ToUnity();
 
                     drone.transform.position = targetPos;
                     newCenter += drone.transform.position;
