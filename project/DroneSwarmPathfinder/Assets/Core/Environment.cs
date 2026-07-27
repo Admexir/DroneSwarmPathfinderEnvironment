@@ -103,13 +103,13 @@ namespace DroneSwampPathfiner.Core.Environment
     /// <summary>
     /// Class representing an obstacle in the 3D scene
     /// </summary>
-    public class ObstacleModel : IObstacleVolume
+    public class BoxObstacle : IObstacleVolume
     {
         public int ID { get; }
         public Vector3 Center { get; set; }
         public Vector3 Size { get; set; }
 
-        public ObstacleModel(int id, Vector3 center, Vector3 size)
+        public BoxObstacle(int id, Vector3 center, Vector3 size)
         {
             ID = id;
             Center = center;
