@@ -1,67 +1,8 @@
+using DroneSwampPathfiner.Core.Environment;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-
-namespace DroneSwampPathfiner.Core.Environment
-{
-    /// <summary>
-    /// Interface used for limiting valid drone positions in space
-    /// </summary>
-    public interface ISpatialEnvironment
-    {
-        Vector3 ConstrainPosition(Vector3 position);
-    }
-
-    /// <summary>
-    /// A basic 3D square discrete grid
-    /// </summary>
-    public class DiscreteGrid : ISpatialEnvironment
-    {
-        public float CellSize { get; init; }
-
-        public DiscreteGrid(float cellSize = 1f)
-        {
-            CellSize = cellSize;
-        }
-
-        /// <summary>
-        /// Snaps a position to the closest spot on the grid
-        /// </summary>
-        public Vector3 ConstrainPosition(Vector3 position)
-        {
-            if (CellSize <= 0.001f) return position;
-
-            return new Vector3(
-                (float)Math.Round(position.X / CellSize, MidpointRounding.AwayFromZero) * CellSize,
-                (float)Math.Round(position.Y / CellSize, MidpointRounding.AwayFromZero) * CellSize,
-                (float)Math.Round(position.Z / CellSize, MidpointRounding.AwayFromZero) * CellSize
-            );
-        }
-
-        /// <summary>
-        /// Converts world space coordinates to grid space coordinates (node indices)
-        /// </summary>
-        public (int X, int Y, int Z) GetNodeIndex(Vector3 position)
-        {
-            if (CellSize <= 0.001f) return (0, 0, 0); // Invalid/Empty grid check
-
-            return (
-                (int)Math.Round(position.X / CellSize, MidpointRounding.AwayFromZero),
-                (int)Math.Round(position.Y / CellSize, MidpointRounding.AwayFromZero),
-                (int)Math.Round(position.Z / CellSize, MidpointRounding.AwayFromZero)
-            );
-        }
-
-        /// <summary>
-        /// Converts grid-space coordinates (node indices) to world space coordinates
-        /// </summary>
-        public Vector3 GetWorldPosition(int x, int y, int z)
-        {
-            return new Vector3(x * CellSize, y * CellSize, z * CellSize);
-        }
-    }
-}
 
 namespace DroneSwampPathfiner.Core.Models
 {
@@ -106,17 +47,36 @@ namespace DroneSwampPathfiner.Core.Models
     /// <summary>
     /// Class representing one agent in the simulation
     /// </summary>
-    public class Drone
+    public class Drone : IObstacleVolume
     {
         public int ID { get; init; }
         public int GroupId { get; set; }
         public TransformData Transform { get; set; }
+        /// <summary>
+        /// Takes the largest dimension from Transform and divides it by two
+        /// </summary>
+        public float CollisionRadius
+        {
+            get
+            {
+                float maxDimension = Math.Max(Math.Max(Transform.Size.X, Transform.Size.Y), Transform.Size.Z);
+                return maxDimension / 2f;
+            }
+        }
 
         public Drone(int id, TransformData transform, int groupId = 0)
         {
             ID = id;
             Transform = transform;
             GroupId = groupId;
+        }
+
+        public bool Contains(Vector3 point)
+        {
+            float currentRadius = CollisionRadius;
+            float radiusSquared = currentRadius * currentRadius;
+
+            return Vector3.DistanceSquared(Transform.Position, point) <= radiusSquared; // (squared math to prevent calculating a lot of square roots)
         }
     }
 
