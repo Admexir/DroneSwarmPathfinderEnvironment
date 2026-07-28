@@ -1,7 +1,7 @@
-using DroneSwampPathfiner.Core.Models;
+using DroneSwampPathfinder.Core.Models;
 using UnityEngine;
 
-namespace DroneSwampPathfiner.Unity.Visuals
+namespace DroneSwampPathfinder.Unity.Visuals
 {
     /// <summary>
     /// Representation of the dynamic visuals of a drone in a simulation

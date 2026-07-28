@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using DroneSwampPathfiner.Unity.Managers;
-using DroneSwampPathfiner.Unity.Visuals;
-using DroneSwampPathfiner.Core.Environment; // grid
+using DroneSwampPathfinder.Unity.Managers;
+using DroneSwampPathfinder.Unity.Visuals;
+using DroneSwampPathfinder.Core.Environment; // grid
 using UnityEditor.PackageManager;
 
-namespace DroneSwampPathfiner.Unity.EditorTools
+namespace DroneSwampPathfinder.Unity.EditorTools
 {
     public class ConfigEditorManager : MonoBehaviour
     {

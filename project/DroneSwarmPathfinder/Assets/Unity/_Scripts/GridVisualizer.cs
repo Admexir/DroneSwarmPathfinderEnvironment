@@ -1,11 +1,11 @@
-using DroneSwampPathfiner.Unity.EditorTools;
-using DroneSwampPathfiner.Unity.Managers;
+using DroneSwampPathfinder.Unity.EditorTools;
+using DroneSwampPathfinder.Unity.Managers;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace DroneSwampPathfiner.Unity.Visuals
+namespace DroneSwampPathfinder.Unity.Visuals
 {
     /// <summary>
     /// Uses the GL library (-> graphics card) to render the transparent grid around selected drones

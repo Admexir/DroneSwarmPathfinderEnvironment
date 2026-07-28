@@ -1,11 +1,11 @@
-using DroneSwampPathfiner.Core.Environment;
-using DroneSwampPathfiner.Core.Models;
-using DroneSwampPathfiner.Unity.Environment;
+using DroneSwampPathfinder.Core.Environment;
+using DroneSwampPathfinder.Core.Models;
+using DroneSwampPathfinder.Unity.Environment;
 using System.Collections.Generic;
 using UnityEngine;
 using NumVector3 = System.Numerics.Vector3;
 
-namespace DroneSwampPathfiner.Unity.Managers
+namespace DroneSwampPathfinder.Unity.Managers
 {
     /// <summary>
     /// Script serving as a bridge between Unity/Core versions of obstacles, mostly mirrors DroneManager.cs

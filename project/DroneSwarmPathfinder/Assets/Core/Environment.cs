@@ -1,10 +1,10 @@
-using DroneSwampPathfiner.Core.Models;
+using DroneSwampPathfinder.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 
 
-namespace DroneSwampPathfiner.Core.Environment
+namespace DroneSwampPathfinder.Core.Environment
 {
     public class WorldEnvironment
     {

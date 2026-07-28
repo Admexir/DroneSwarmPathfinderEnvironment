@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
-using DroneSwampPathfiner.Core.Models;
-using DroneSwampPathfiner.Core.Simulation;
+using DroneSwampPathfinder.Core.Models;
+using DroneSwampPathfinder.Core.Simulation;
 
 // (to prevent Unity.Vector3 collisions)
 using NumVector3 = System.Numerics.Vector3;
 using NumQuaternion = System.Numerics.Quaternion;
 
-namespace DroneSwampPathfiner.Unity.Testing
+namespace DroneSwampPathfinder.Unity.Testing
 {
     /// <summary>
     /// Creates mock drone pathing data for tests before implementing actual pathfinding algorithms and JSON serialization

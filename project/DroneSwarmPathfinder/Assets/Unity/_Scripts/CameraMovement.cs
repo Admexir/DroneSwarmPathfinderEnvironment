@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DroneSwampPathfiner.Unity.Controls
+namespace DroneSwampPathfinder.Unity.Controls
 {
     /// <summary>
     /// Simple fly movement script for the camera

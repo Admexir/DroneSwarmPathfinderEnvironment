@@ -1,10 +1,10 @@
-using DroneSwampPathfiner.Core.Environment;
+using DroneSwampPathfinder.Core.Environment;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 
 
-namespace DroneSwampPathfiner.Core.Models
+namespace DroneSwampPathfinder.Core.Models
 {
     /// <summary>
     /// Struct representing the position, rotation and size of a drone (agent)

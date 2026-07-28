@@ -1,11 +1,11 @@
-using DroneSwampPathfiner.Core.Models;
-using DroneSwampPathfiner.Core.Simulation;
-using DroneSwampPathfiner.Unity.Visuals;
+using DroneSwampPathfinder.Core.Models;
+using DroneSwampPathfinder.Core.Simulation;
+using DroneSwampPathfinder.Unity.Visuals;
 using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
 
-namespace DroneSwampPathfiner.Unity.Managers
+namespace DroneSwampPathfinder.Unity.Managers
 {
     public class SimulationPlaybackManager : MonoBehaviour
     {

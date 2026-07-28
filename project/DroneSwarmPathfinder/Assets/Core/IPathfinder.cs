@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System;
 using System.Numerics;
 
-namespace DroneSwampPathfiner.Core.Simulation
+namespace DroneSwampPathfinder.Core.Simulation
 {
     using Models;
     using Environment;

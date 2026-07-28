@@ -3,7 +3,7 @@ using UnityQuaternion = UnityEngine.Quaternion;
 using NumVector3 = System.Numerics.Vector3;
 using NumQuaternion = System.Numerics.Quaternion;
 
-namespace DroneSwampPathfiner.Unity
+namespace DroneSwampPathfinder.Unity
 {
     public static class VectorExtensions
     {

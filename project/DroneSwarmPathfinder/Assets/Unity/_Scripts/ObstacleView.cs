@@ -1,7 +1,7 @@
 using UnityEngine;
-using DroneSwampPathfiner.Core.Environment;
+using DroneSwampPathfinder.Core.Environment;
 
-namespace DroneSwampPathfiner.Unity.Environment
+namespace DroneSwampPathfinder.Unity.Environment
 {
     /// <summary>
     /// Visual representation of an obstacle in the unity scene
