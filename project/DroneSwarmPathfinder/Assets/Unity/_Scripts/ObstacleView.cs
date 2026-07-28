@@ -1,26 +1,21 @@
 using UnityEngine;
-using DroneSwampPathfinder.Core.Environment;
 
-namespace DroneSwampPathfinder.Unity.Environment
+namespace DroneSwarmPathfinder.Unity.Environment
 {
     /// <summary>
-    /// Visual representation of an obstacle in the unity scene
+    /// Visual representation of an obstacle in the unity scene.
     /// </summary>
     public class ObstacleView : MonoBehaviour
     {
-        public int obstacleID;
-        public BoxObstacle Model { get; private set; }
+        public int ObstacleID { get; private set; } // (only ID just like DroneView)
 
-        public void Initialize(BoxObstacle coreModel)
+        public void Initialize(int id)
         {
-            obstacleID = coreModel.ID;
-            Model = coreModel;
+            ObstacleID = id;
         }
 
         private void OnDrawGizmos()
         {
-            if (Model == null) return;
-
             Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
             Gizmos.DrawCube(transform.position, transform.localScale);
             Gizmos.color = Color.red;

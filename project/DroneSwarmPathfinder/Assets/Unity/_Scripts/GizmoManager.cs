@@ -1,12 +1,12 @@
-using DroneSwampPathfinder.Core.Environment;
-using DroneSwampPathfinder.Unity;
-using DroneSwampPathfinder.Unity.Managers;
-using DroneSwampPathfinder.Unity.Visuals;
+using DroneSwarmPathfinder.Core.Environment;
+using DroneSwarmPathfinder.Unity;
+using DroneSwarmPathfinder.Unity.Managers;
+using DroneSwarmPathfinder.Unity.Visuals;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DroneSwampPathfinder.Unity.EditorTools
+namespace DroneSwarmPathfinder.Unity.EditorTools
 {
     [RequireComponent(typeof(SelectionManager))]
     public class GizmoManager : MonoBehaviour

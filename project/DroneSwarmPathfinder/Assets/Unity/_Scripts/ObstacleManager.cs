@@ -1,11 +1,12 @@
-using DroneSwampPathfinder.Core.Environment;
-using DroneSwampPathfinder.Core.Models;
-using DroneSwampPathfinder.Unity.Environment;
+using DroneSwarmPathfinder.Core.Environment;
+using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Unity;
+using DroneSwarmPathfinder.Unity.Environment;
 using System.Collections.Generic;
 using UnityEngine;
 using NumVector3 = System.Numerics.Vector3;
 
-namespace DroneSwampPathfinder.Unity.Managers
+namespace DroneSwarmPathfinder.Unity.Managers
 {
     /// <summary>
     /// Script serving as a bridge between Unity/Core versions of obstacles, mostly mirrors DroneManager.cs
@@ -141,7 +142,9 @@ namespace DroneSwampPathfinder.Unity.Managers
             obsObj.transform.rotation = Quaternion.identity; // TODO: no rotation currently allowed due to collision detection
 
             ObstacleView view = obsObj.GetComponent<ObstacleView>();
-            view.Initialize(coreObstacle);
+
+            // Pass only the ID to keep the view decoupled from the Core model
+            view.Initialize(coreObstacle.ID);
 
             _activeObstacles.Add(coreObstacle.ID, view);
             _obstacleModels.Add(coreObstacle.ID, coreObstacle);

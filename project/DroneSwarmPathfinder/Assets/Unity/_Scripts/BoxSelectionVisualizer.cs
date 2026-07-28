@@ -1,9 +1,9 @@
-using DroneSwampPathfinder.Unity.Managers;
-using DroneSwampPathfinder.Unity.Visuals;
+using DroneSwarmPathfinder.Unity.Managers;
+using DroneSwarmPathfinder.Unity.Visuals;
 using System.Linq;
 using UnityEngine;
 
-namespace DroneSwampPathfinder.Unity.EditorTools
+namespace DroneSwarmPathfinder.Unity.EditorTools
 {
     [RequireComponent(typeof(SelectionManager))]
     public class BoxSelectionVisualizer : MonoBehaviour

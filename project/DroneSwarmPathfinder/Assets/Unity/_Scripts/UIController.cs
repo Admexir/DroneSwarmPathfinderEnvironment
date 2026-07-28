@@ -1,7 +1,7 @@
-using DroneSwampPathfinder.Core.Models;
-using DroneSwampPathfinder.Unity;
-using DroneSwampPathfinder.Unity.EditorTools;
-using DroneSwampPathfinder.Unity.Managers;
+using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Unity;
+using DroneSwarmPathfinder.Unity.EditorTools;
+using DroneSwarmPathfinder.Unity.Managers;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;

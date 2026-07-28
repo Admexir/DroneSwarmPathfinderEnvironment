@@ -1,9 +1,9 @@
-using DroneSwampPathfinder.Unity.Visuals;
+using DroneSwarmPathfinder.Unity.Visuals;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DroneSwampPathfinder.Unity.EditorTools
+namespace DroneSwarmPathfinder.Unity.EditorTools
 {
     [RequireComponent(typeof(SelectionManager), typeof(GizmoManager), typeof(BoxSelectionVisualizer))]
     [RequireComponent(typeof(EditorInputManager))]

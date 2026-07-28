@@ -1,14 +1,14 @@
-using DroneSwampPathfinder.Core.Models;
-using DroneSwampPathfinder.Unity.Visuals;
+using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Unity.Visuals;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 using NumVector3 = System.Numerics.Vector3;
 using NumQuaternion = System.Numerics.Quaternion;
-using DroneSwampPathfinder.Unity.EditorTools;
+using DroneSwarmPathfinder.Unity.EditorTools;
 
-namespace DroneSwampPathfinder.Unity.Managers
+namespace DroneSwarmPathfinder.Unity.Managers
 {
     public class DroneManager : MonoBehaviour
     {
