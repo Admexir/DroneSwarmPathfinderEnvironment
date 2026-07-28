@@ -40,7 +40,9 @@ namespace DroneSwampPathfiner.Core.Models
     public static class TransformExtensions
     {
         public static TransformData WithPosition(this TransformData t, Vector3 newPosition) => new TransformData(newPosition, t.Rotation, t.Size);
-        
+        public static TransformData WithRotation(this TransformData t, Quaternion newRotation) => new TransformData(t.Position, newRotation, t.Size);
+        public static TransformData WithSize(this TransformData t, Vector3 newSize) => new TransformData(t.Position, t.Rotation, newSize);
+
     }
         
 

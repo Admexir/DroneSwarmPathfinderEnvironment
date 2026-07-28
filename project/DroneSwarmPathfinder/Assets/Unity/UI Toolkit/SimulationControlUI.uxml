@@ -11,6 +11,7 @@
                 <ui:Button text="Restart" name="btn-restart" style="margin-bottom: 15px;"/>
                 <ui:Label text="EDITOR TOOLS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
                 <ui:Button text="Add Drone" name="btn-add-drone"/>
+                <ui:Button text="Add Obstacle" name="btn-add-obstacle"/>
                 <ui:Button text="Remove Selected" name="btn-remove-drone"/>
             </ui:VisualElement>
             <ui:VisualElement name="main-actions-panel" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px;">

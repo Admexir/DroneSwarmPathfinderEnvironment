@@ -1,3 +1,4 @@
+using DroneSwampPathfiner.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -106,14 +107,12 @@ namespace DroneSwampPathfiner.Core.Environment
     public class BoxObstacle : IObstacleVolume
     {
         public int ID { get; }
-        public Vector3 Center { get; set; }
-        public Vector3 Size { get; set; }
+        public TransformData Transform { get; set; }
 
-        public BoxObstacle(int id, Vector3 center, Vector3 size)
+        public BoxObstacle(int id, TransformData transform)
         {
             ID = id;
-            Center = center;
-            Size = size;
+            Transform = transform;
         }
 
         /// <summary>
@@ -122,10 +121,10 @@ namespace DroneSwampPathfiner.Core.Environment
         /// </summary>
         public bool Contains(Vector3 point)
         {
-            Vector3 halfSize = Size / 2f;
-            return Math.Abs(point.X - Center.X) <= halfSize.X &&
-                   Math.Abs(point.Y - Center.Y) <= halfSize.Y &&
-                   Math.Abs(point.Z - Center.Z) <= halfSize.Z;
+            Vector3 halfSize = Transform.Size / 2f;
+            return Math.Abs(point.X - Transform.Position.X) <= halfSize.X &&
+                   Math.Abs(point.Y - Transform.Position.Y) <= halfSize.Y &&
+                   Math.Abs(point.Z - Transform.Position.Z) <= halfSize.Z;
         }
     }
 }

@@ -117,12 +117,14 @@ public class UIController : MonoBehaviour
         });
 
         var addDroneButton = root.Q<Button>("btn-add-drone");
+        var addObstacleButton = root.Q<Button>("btn-add-obstacle");
         var removeDroneButton = root.Q<Button>("btn-remove-drone");
         var loadConfigButton = root.Q<Button>("btn-load-config");
         var playSimulationButton = root.Q<Button>("btn-play-sim");
         var exportConfigButton = root.Q<Button>("btn-export-config");
 
         if (addDroneButton != null) addDroneButton.clicked += OnAddDroneClicked;
+        if (addObstacleButton != null) addObstacleButton.clicked += OnAddObstacleClicked;
         if (removeDroneButton != null) removeDroneButton.clicked += OnRemoveDroneClicked;
         if (loadConfigButton != null) loadConfigButton.clicked += OnLoadConfigClicked;
         if (playSimulationButton != null) playSimulationButton.clicked += OnPlaySimulationClicked;
@@ -330,6 +332,13 @@ public class UIController : MonoBehaviour
     {
         Debug.Log("Adding new drone...");
         DroneManager.instance.CreateNewDrone(Vector3.zero);
+        RefreshDroneList();
+    }
+
+    private void OnAddObstacleClicked()
+    {
+        Debug.Log("Adding new obstacle...");
+        ObstacleManager.instance.CreateNewObstacle(Vector3.zero);
         RefreshDroneList();
     }
 
