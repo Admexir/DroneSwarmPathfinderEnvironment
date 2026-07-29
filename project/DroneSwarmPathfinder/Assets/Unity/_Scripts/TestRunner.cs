@@ -6,6 +6,7 @@ using DroneSwarmPathfinder.Core.Simulation;
 // (to prevent Unity.Vector3 collisions)
 using NumVector3 = System.Numerics.Vector3;
 using NumQuaternion = System.Numerics.Quaternion;
+using DroneSwarmPathfinder.Unity.UI;
 
 namespace DroneSwarmPathfinder.Unity.Testing
 {
@@ -14,7 +15,6 @@ namespace DroneSwarmPathfinder.Unity.Testing
     /// </summary>
     public class SimulationTester : MonoBehaviour
     {
-
         private void Start()
         {
             Debug.LogWarning("USING MOCK TEST DATA!!! ----------------");
@@ -64,7 +64,7 @@ namespace DroneSwarmPathfinder.Unity.Testing
 
             // Load the simulation
             Managers.SimulationPlaybackManager.instance.LoadSimulationResult(dummyResult);
-            UIController.instance.RefreshDroneList();
+            //UIController.instance.RefreshDroneList();
 
             Debug.Log("Mock test data loaded, use UI to control the simulation or use space to play and side arrow keys to step");
         }

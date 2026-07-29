@@ -1,4 +1,5 @@
 using DroneSwarmPathfinder.Unity.Managers;
+using DroneSwarmPathfinder.Unity.UI;
 using DroneSwarmPathfinder.Unity.Visuals;
 using System.Linq;
 using UnityEngine;
@@ -16,12 +17,15 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         private BoxSelectionVisualizer _boxSelectionVisualizer;
         private Camera _cam;
 
+        private IPointerStateProvider _pointerStateProvider;
+
         private void Awake()
         {
             _selectionManager = GetComponent<SelectionManager>();
             _gizmoController = GetComponent<GizmoManager>();
             _boxSelectionVisualizer = GetComponent<BoxSelectionVisualizer>();
             _cam = Camera.main;
+            _pointerStateProvider = FindAnyObjectByType<UIController>();
         }
 
         private void Update()
@@ -45,7 +49,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         private void HandleInput()
         {
             // Ignore clicks through UI
-            if (Input.GetMouseButtonDown(0) && UIController.instance != null && UIController.instance.IsPointerOverUI())
+            if (Input.GetMouseButtonDown(0) && _pointerStateProvider != null && _pointerStateProvider.IsPointerOverUI())
             {
                 return;
             }

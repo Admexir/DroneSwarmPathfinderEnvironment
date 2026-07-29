@@ -17,7 +17,12 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         private SelectionManager _selectionManager;
         private GizmoManager _gizmoController;
 
-        // Facade pass-throughs for external scripts
+        public event Action<Vector3> OnGizmoDragged
+        {
+            add => _gizmoController.OnGizmoDragged += value;
+            remove => _gizmoController.OnGizmoDragged -= value;
+        }
+
         public IReadOnlyList<DroneView> SelectedDrones => _selectionManager.SelectedDrones;
         public event Action<List<int>> OnSelectionChanged
         {
@@ -35,9 +40,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         private void Start()
         {
             _gizmoController.InitializeGrid(gridSize);
-
-            // Here we re-couple the UI updating logic via events instead of hardcoding it in the Gizmo class
-            _gizmoController.OnGizmoDragged += HandleGizmoDragged;
+            //_gizmoController.OnGizmoDragged += HandleGizmoDragged;
         }
 
         public void SetSelectionFromUI(IEnumerable<int> droneIds)
@@ -45,13 +48,13 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             _selectionManager.SetSelectionFromUI(droneIds);
         }
 
-        private void HandleGizmoDragged(Vector3 newCenterPosition)
-        {
-            // Update inspector UI values while dragging gizmos
-            if (SelectedDrones.Count == 1 && UIController.instance != null)
-            {
-                UIController.instance.UpdatePositionFields(SelectedDrones[0].transform.position);
-            }
-        }
+        //private void HandleGizmoDragged(Vector3 newCenterPosition)
+        //{
+        //    // Update inspector UI values while dragging gizmos
+        //    if (SelectedDrones.Count == 1 && UIController.instance != null)
+        //    {
+        //        UIController.instance.UpdatePositionFields(SelectedDrones[0].transform.position);
+        //    }
+        //}
     }
 }

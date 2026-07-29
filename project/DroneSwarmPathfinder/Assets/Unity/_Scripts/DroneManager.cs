@@ -19,6 +19,8 @@ namespace DroneSwarmPathfinder.Unity.Managers
         [SerializeField] private GameObject dronePrefab;
         [SerializeField] private Transform dronesHolder;
 
+        public event System.Action OnDroneRosterChanged; // Callback for UI
+
         private Dictionary<int, DroneView> _activeDrones = new(); // Visualisation drone data
         private Dictionary<int, Drone> _droneModels = new(); // Config drone data
 
@@ -38,6 +40,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
                 AddExistingDrone(coreDrone);
                 if (coreDrone.ID >= _nextDroneId) _nextDroneId = coreDrone.ID + 1;
             }
+            OnDroneRosterChanged?.Invoke();
         }
 
         public void ClearDrones()
@@ -49,6 +52,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
             _activeDrones.Clear();
             _droneModels.Clear();
             _nextDroneId = 0;
+            OnDroneRosterChanged?.Invoke();
         }
 
         /// <summary>
@@ -63,7 +67,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
             Drone newDrone = new Drone(newId, transformData, groupId: 0);
 
             AddExistingDrone(newDrone);
-
+            OnDroneRosterChanged?.Invoke();
             return newDrone;
         }
 
@@ -78,6 +82,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
                 _activeDrones.Remove(id);
             }
             _droneModels.Remove(id);
+            OnDroneRosterChanged?.Invoke();
         }
 
         /// <summary>

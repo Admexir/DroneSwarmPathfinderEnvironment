@@ -388,6 +388,10 @@ GameObject:
   - component: {fileID: 339913120}
   - component: {fileID: 339913121}
   - component: {fileID: 339913122}
+  - component: {fileID: 339913126}
+  - component: {fileID: 339913125}
+  - component: {fileID: 339913124}
+  - component: {fileID: 339913123}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -438,7 +442,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   playbackSpeed: 2
   defaultPlaybackSpeed: 2
-  isPlaying: 0
+  _isPlaying: 0
   currentTime: 0
   maxSteps: 0
 --- !u!114 &339913121
@@ -453,12 +457,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdc069604be4b14489f71bd3720a9e10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  droneLayer:
-    serializedVersion: 2
-    m_Bits: 64
   gridSize: 3
-  selectionBoxColor: {r: 0.2, g: 0.6, b: 1, a: 0.3}
-  selectionBoxBorderColor: {r: 0.2, g: 0.6, b: 1, a: 1}
 --- !u!114 &339913122
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -473,6 +472,59 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObstacleManager
   obstaclePrefab: {fileID: 6619716331931940229, guid: 697ecc75bd003674690b2bc07e4f63db, type: 3}
   obstaclesHolder: {fileID: 76646624}
+--- !u!114 &339913123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339913117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3fbe29919fd6874094e30fb6d9f9c0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  droneLayer:
+    serializedVersion: 2
+    m_Bits: 64
+--- !u!114 &339913124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339913117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4c6957c6b482fa43a6195f07a70ea97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  selectionBoxColor: {r: 0.2, g: 0.6, b: 1, a: 0.3}
+  selectionBoxBorderColor: {r: 0.2, g: 0.6, b: 1, a: 1}
+--- !u!114 &339913125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339913117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 387097d87f8a45941ab87254355a02c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+--- !u!114 &339913126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339913117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cc377f506fb1cd478b05341f8dd991d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &936507967
 GameObject:
   m_ObjectHideFlags: 0
@@ -1044,6 +1096,7 @@ GameObject:
   - component: {fileID: 1685369833}
   - component: {fileID: 1685369832}
   - component: {fileID: 1685369834}
+  - component: {fileID: 1685369835}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -1099,6 +1152,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 97387cc72201c5148a20c83fe0d33e9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+--- !u!114 &1685369835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1685369831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e28b87ad9935ec34dbda8dc50d6e95a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
 --- !u!1 &1776861653

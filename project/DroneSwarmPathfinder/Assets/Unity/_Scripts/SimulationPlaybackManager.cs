@@ -1,6 +1,7 @@
 using DroneSwarmPathfinder.Core.Models;
 using DroneSwarmPathfinder.Core.Simulation;
 using DroneSwarmPathfinder.Unity.Visuals;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
@@ -17,9 +18,23 @@ namespace DroneSwarmPathfinder.Unity.Managers
         public float defaultPlaybackSpeed = 2f;
 
         [Header("State (Read Only)")]
-        public bool isPlaying = false;
+        [SerializeField] private bool _isPlaying = false;
+        public bool isPlaying // Automatically calls OnPlaybackStateChanged to update UI
+        {
+            get => _isPlaying;
+            private set
+            {
+                if (_isPlaying != value)
+                {
+                    _isPlaying = value;
+                    OnPlaybackStateChanged?.Invoke(_isPlaying);
+                }
+            }
+        }
         public float currentTime = 0f;
         public int maxSteps = 0;
+
+        public event Action<bool> OnPlaybackStateChanged; // used for updating play button state
 
         private IReadOnlyDictionary<int, DronePath> _currentPaths;
 
@@ -35,7 +50,6 @@ namespace DroneSwarmPathfinder.Unity.Managers
                     currentTime = maxSteps;
                     isPlaying = false;
                     Debug.Log("End of simulation");
-                    UIController.instance.RefreshPlayButtonState();
                 }
 
                 UpdateDronesPositions(currentTime);
@@ -73,7 +87,6 @@ namespace DroneSwarmPathfinder.Unity.Managers
         public void StepForward()
         {
             isPlaying = false; // (pause simulation when stepping)
-            UIController.instance.RefreshPlayButtonState();
             currentTime = Mathf.Min(Mathf.Floor(currentTime) + 1f, maxSteps);
             UpdateDronesPositions(currentTime);
         }
@@ -81,7 +94,6 @@ namespace DroneSwarmPathfinder.Unity.Managers
         public void StepBackward()
         {
             isPlaying = false;
-            UIController.instance.RefreshPlayButtonState();
             currentTime = Mathf.Max(Mathf.Ceil(currentTime) - 1f, 0f);
             UpdateDronesPositions(currentTime);
         }
@@ -89,7 +101,6 @@ namespace DroneSwarmPathfinder.Unity.Managers
         public void Restart()
         {
             isPlaying = false;
-            UIController.instance.RefreshPlayButtonState();
             currentTime = 0f;
             UpdateDronesPositions(currentTime);
         }

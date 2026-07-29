@@ -1,391 +1,255 @@
-using DroneSwarmPathfinder.Core.Models;
-using DroneSwarmPathfinder.Unity;
-using DroneSwarmPathfinder.Unity.EditorTools;
-using DroneSwarmPathfinder.Unity.Managers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
+using DroneSwarmPathfinder.Core.Models;
 
-[RequireComponent(typeof(UIDocument))]
-public class UIController : MonoBehaviour
+namespace DroneSwarmPathfinder.Unity.UI
 {
-    public static UIController instance; private void Awake() => instance = this;
-    private UIDocument _uiDocument;
-    private Button _playButton;
-    private Label _timeScaleLabel;
-    private SliderInt _timeScaleSlider;
-    private IntegerField _timeScaleInput;
-    private TextField _idInput;
-    private ListView _droneListView;
-    private IntegerField _groupInput;
-    private Vector3Field _positionInput;
-    private Button _stepForwardButton;
-    private Button _stepBackButton;
-    private Button _restartButton;
-    private VisualElement _droneDetailsPanel;
-
-    public Drone CurrentlySelectedDrone { get; private set; }
-
     /// <summary>
-    /// Gets if mouse is currently over an interactible UI element (equivalent of EventSystem.Current.IsPointerOverGameObject())
+    /// Interface for any class that can determine if mouse is currently over it (TODO: currently only for UIController to improve architecture, maybe remove?)
     /// </summary>
-    public bool IsPointerOverUI()
+    public interface IPointerStateProvider
     {
-        if (_uiDocument == null || _uiDocument.rootVisualElement == null || _uiDocument.rootVisualElement.panel == null)
-            return false;
-
-        // Input.mosepos coordinates are from bottom left corner, while UI coordinates from top left -> transform
-        Vector2 mousePos = Input.mousePosition;
-        Vector2 uiPos = new Vector2(mousePos.x, Screen.height - mousePos.y);
-
-        VisualElement picked = _uiDocument.rootVisualElement.panel.Pick(uiPos);
-
-        return picked != null;
+        bool IsPointerOverUI();
     }
-
-    private void OnEnable()
+    [RequireComponent(typeof(UIDocument))]
+    public class UIController : MonoBehaviour, IPointerStateProvider
     {
-        _uiDocument = GetComponent<UIDocument>();
-        var root = _uiDocument.rootVisualElement;
-        root.RegisterCallback<NavigationMoveEvent>(evt => evt.PreventDefault()); // Should make all UI ignore arrow key-navigation //TODO: use a non-depricated function
+        private UIDocument _uiDocument;
 
-        // Simulation controls UI
-        _playButton = root.Q<Button>("btn-play");
-        _timeScaleLabel = root.Q<Label>("time-scale-label");
-        _timeScaleSlider = root.Q<SliderInt>("time-scale-slider");
-        _stepForwardButton = root.Q<Button>("btn-step-forward");
-        _stepBackButton = root.Q<Button>("btn-step-back");
-        _restartButton = root.Q<Button>("btn-restart");
+        // UI Elements
+        private Button _playButton;
+        private Label _timeScaleLabel;
+        private SliderInt _timeScaleSlider;
+        private IntegerField _timeScaleInput;
+        private TextField _idInput;
+        private ListView _droneListView;
+        private IntegerField _groupInput;
+        private Vector3Field _positionInput;
+        private Button _stepForwardButton;
+        private Button _stepBackButton;
+        private Button _restartButton;
+        private VisualElement _droneDetailsPanel;
 
-        if (_timeScaleSlider != null)
+        // Events for other scripts to subscribe to
+        public event Action<int> OnTimeScaleChangedEvent;
+        public event Action OnPlayClickedEvent;
+        public event Action OnStepForwardClickedEvent;
+        public event Action OnStepBackClickedEvent;
+        public event Action OnRestartClickedEvent;
+
+        public event Action<int> OnDroneGroupChangedEvent;
+        public event Action<Vector3> OnDronePositionChangedEvent;
+
+        public event Action OnAddDroneClickedEvent;
+        public event Action OnAddObstacleClickedEvent;
+        public event Action OnRemoveDroneClickedEvent;
+        public event Action OnLoadConfigClickedEvent;
+        public event Action OnPlaySimulationClickedEvent;
+        public event Action OnExportConfigClickedEvent;
+
+        public event Action<IEnumerable<object>> OnDroneListSelectionChangedEvent;
+
+        /// <summary>
+        /// Gets if mouse is currently over an interactible UI element (equivalent of EventSystem.Current.IsPointerOverGameObject())
+        /// </summary>
+        public bool IsPointerOverUI()
         {
-            _timeScaleSlider.RegisterValueChangedCallback(OnTimeScaleChanged);
-            if (_timeScaleLabel != null)
-                _timeScaleLabel.text = $"Time Scale: {_timeScaleSlider.value}%";
+            if (_uiDocument == null || _uiDocument.rootVisualElement == null || _uiDocument.rootVisualElement.panel == null)
+                return false;
+
+            // Input.mousePosition coordinates are from bottom left corner, while UI coordinates from top left -> transform
+            Vector2 mousePos = Input.mousePosition;
+            Vector2 uiPos = new Vector2(mousePos.x, Screen.height - mousePos.y);
+
+            VisualElement picked = _uiDocument.rootVisualElement.panel.Pick(uiPos);
+            return picked != null;
         }
 
-        if (_timeScaleLabel != null && this._timeScaleSlider != null)
+        private void OnEnable()
         {
-            _timeScaleInput = new IntegerField();
-            _timeScaleInput.style.display = DisplayStyle.None;
-            _timeScaleInput.style.marginBottom = 2;
+            _uiDocument = GetComponent<UIDocument>();
+            var root = _uiDocument.rootVisualElement;
+            root.RegisterCallback<NavigationMoveEvent>(evt => evt.PreventDefault()); // Should make all UI ignore arrow key-navigation
 
-            _timeScaleLabel.parent.Insert(_timeScaleLabel.parent.IndexOf(_timeScaleLabel), _timeScaleInput);
+            // Simulation controls UI
+            _playButton = root.Q<Button>("btn-play");
+            _timeScaleLabel = root.Q<Label>("time-scale-label");
+            _timeScaleSlider = root.Q<SliderInt>("time-scale-slider");
+            _stepForwardButton = root.Q<Button>("btn-step-forward");
+            _stepBackButton = root.Q<Button>("btn-step-back");
+            _restartButton = root.Q<Button>("btn-restart");
 
-            _timeScaleLabel.RegisterCallback<PointerDownEvent>(OnLabelClicked);
-            _timeScaleInput.RegisterCallback<KeyDownEvent>(OnInputKeyDown);
-            _timeScaleInput.RegisterCallback<FocusOutEvent>(OnInputFocusOut);
-        }
-
-        if (_playButton != null) _playButton.clicked += OnPlayClicked;
-        if (_stepForwardButton != null) _stepForwardButton.clicked += OnStepForwardClicked;
-        if (_stepBackButton != null) _stepBackButton.clicked += OnStepBackClicked;
-        if (_restartButton != null) _restartButton.clicked += OnRestartClicked;
-
-        // Config editor UI
-        _droneListView = root.Q<ListView>("drone-list-view");
-        _idInput = root.Q<TextField>("input-drone-id");
-        _groupInput = root.Q<IntegerField>("input-drone-group");
-        _positionInput = root.Q<Vector3Field>("input-drone-position");
-        _droneDetailsPanel = root.Q<VisualElement>("drone-details-panel");
-
-        _droneListView.itemsSource = DroneManager.instance.AllDroneModels.ToList();
-
-        _droneListView.makeItem = () => new Label();
-        _droneListView.bindItem = (element, index) =>
-        {
-            var label = element as Label;
-            var drone = DroneManager.instance.AllDroneModels.ElementAt(index);
-            label.text = $"Drone {drone.ID} (group: {drone.GroupId})";
-        };
-
-        _droneListView.selectionChanged += SelectDrone;
-        ConfigEditorManager.instance.OnSelectionChanged += HandleSceneSelectionChanged;
-
-
-        _groupInput.RegisterValueChangedCallback(evt =>
-        {
-            if (CurrentlySelectedDrone == null) return;
-            DroneManager.instance.UpdateDroneGroup(CurrentlySelectedDrone.ID, evt.newValue);
-            RefreshDroneList();
-        });
-        _positionInput.RegisterValueChangedCallback(evt =>
-        {
-            if (CurrentlySelectedDrone == null) return;
-            DroneManager.instance.UpdateDronePosition(CurrentlySelectedDrone.ID, evt.newValue);
-        });
-
-        var addDroneButton = root.Q<Button>("btn-add-drone");
-        var addObstacleButton = root.Q<Button>("btn-add-obstacle");
-        var removeDroneButton = root.Q<Button>("btn-remove-drone");
-        var loadConfigButton = root.Q<Button>("btn-load-config");
-        var playSimulationButton = root.Q<Button>("btn-play-sim");
-        var exportConfigButton = root.Q<Button>("btn-export-config");
-
-        if (addDroneButton != null) addDroneButton.clicked += OnAddDroneClicked;
-        if (addObstacleButton != null) addObstacleButton.clicked += OnAddObstacleClicked;
-        if (removeDroneButton != null) removeDroneButton.clicked += OnRemoveDroneClicked;
-        if (loadConfigButton != null) loadConfigButton.clicked += OnLoadConfigClicked;
-        if (playSimulationButton != null) playSimulationButton.clicked += OnPlaySimulationClicked;
-        if (exportConfigButton != null) exportConfigButton.clicked += OnExportConfigClicked;
-
-        if (_droneDetailsPanel != null) _droneDetailsPanel.style.display = DisplayStyle.None;
-        SetPlaybackUIVisibility(false);
-        RefreshDroneList();
-    }
-
-    /// <summary>
-    /// Helper method to refresh drone list
-    /// </summary>
-    public void RefreshDroneList() //TODO: make private (public because of TestRunner )
-    {
-        _droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
-        _droneListView.itemsSource = DroneManager.instance.AllDroneModels.ToList();
-        _droneListView.Rebuild();
-    }
-
-    /// <summary>
-    /// Updates the inspector fields for position
-    /// </summary>
-    public void UpdatePositionFields(Vector3 newPos)
-    {
-        if (_positionInput != null) _positionInput.SetValueWithoutNotify(newPos);
-    }
-
-    #region Event Handlers
-
-    public void SetPlaybackUIVisibility(bool isVisible)
-    {
-        var displayState = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
-
-        if (_playButton != null) _playButton.style.display = displayState;
-        if (_timeScaleLabel != null) _timeScaleLabel.style.display = displayState;
-        if (_timeScaleSlider != null) _timeScaleSlider.style.display = displayState;
-        if (_stepForwardButton != null) _stepForwardButton.style.display = displayState;
-        if (_stepBackButton != null) _stepBackButton.style.display = displayState;
-        if (_restartButton != null) _restartButton.style.display = displayState;
-
-        // If we are hiding UI while currently editing the time scale, hide the input field too
-        if (!isVisible && _timeScaleInput != null) _timeScaleInput.style.display = DisplayStyle.None;
-    }
-
-    #region Simulation Control Handlers
-    private void OnTimeScaleChanged(ChangeEvent<int> evt)
-    {
-        Debug.Log($"Time Scale changed from {evt.previousValue} to {evt.newValue}");
-        SimulationPlaybackManager.instance.SetTimeScale(evt.newValue / 100f);
-        if (_timeScaleLabel != null)
-        {
-            _timeScaleLabel.text = $"Time Scale: {evt.newValue}%";
-        }
-    }
-
-    public void RefreshPlayButtonState() => _playButton.text = SimulationPlaybackManager.instance.isPlaying ? "Pause" : "Play";
-    private void OnPlayClicked()
-    {
-        if (SimulationPlaybackManager.instance.isPlaying)
-        {
-            Debug.Log("Play Button Clicked - Pause");
-            SimulationPlaybackManager.instance.Pause();
-            _playButton.text = "Play";
-        }
-        else
-        {
-            Debug.Log("Play Button Clicked - Playing");
-            SimulationPlaybackManager.instance.Play();
-            _playButton.text = "Pause";
-        }
-    }
-
-    private void OnStepForwardClicked()
-    {
-        Debug.Log("Step Forward Clicked");
-        SimulationPlaybackManager.instance.StepForward();
-    }
-
-    private void OnStepBackClicked()
-    {
-        Debug.Log("Step Back Clicked");
-        SimulationPlaybackManager.instance.StepBackward();
-    }
-
-    private void OnRestartClicked()
-    {
-        Debug.Log("Restart Clicked");
-        SimulationPlaybackManager.instance.Restart();
-    }
-
-    private void OnLabelClicked(PointerDownEvent evt)
-    {
-        if (evt.clickCount == 2)
-        {
-            _timeScaleLabel.style.display = DisplayStyle.None;
-            _timeScaleInput.style.display = DisplayStyle.Flex;
-            _timeScaleInput.value = _timeScaleSlider.value;
-            _timeScaleInput.schedule.Execute(() =>
+            if (_timeScaleSlider != null)
             {
-                _timeScaleInput.Focus();
-                _timeScaleInput.SelectAll();
-            }).StartingIn(10);
-        }
-    }
+                _timeScaleSlider.RegisterValueChangedCallback(evt => OnTimeScaleChangedEvent?.Invoke(evt.newValue));
+                if (_timeScaleLabel != null)
+                    _timeScaleLabel.text = $"Time Scale: {_timeScaleSlider.value}%";
+            }
 
-    private void OnInputKeyDown(KeyDownEvent evt)
-    {
-        if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
+            if (_timeScaleLabel != null && _timeScaleSlider != null)
+            {
+                _timeScaleInput = new IntegerField();
+                _timeScaleInput.style.display = DisplayStyle.None;
+                _timeScaleInput.style.marginBottom = 2;
+
+                _timeScaleLabel.parent.Insert(_timeScaleLabel.parent.IndexOf(_timeScaleLabel), _timeScaleInput);
+
+                _timeScaleLabel.RegisterCallback<PointerDownEvent>(OnLabelClicked);
+                _timeScaleInput.RegisterCallback<KeyDownEvent>(OnInputKeyDown);
+                _timeScaleInput.RegisterCallback<FocusOutEvent>(OnInputFocusOut);
+            }
+
+            if (_playButton != null) _playButton.clicked += () => OnPlayClickedEvent?.Invoke();
+            if (_stepForwardButton != null) _stepForwardButton.clicked += () => OnStepForwardClickedEvent?.Invoke();
+            if (_stepBackButton != null) _stepBackButton.clicked += () => OnStepBackClickedEvent?.Invoke();
+            if (_restartButton != null) _restartButton.clicked += () => OnRestartClickedEvent?.Invoke();
+
+            // Config editor UI
+            _droneListView = root.Q<ListView>("drone-list-view");
+            _idInput = root.Q<TextField>("input-drone-id");
+            _groupInput = root.Q<IntegerField>("input-drone-group");
+            _positionInput = root.Q<Vector3Field>("input-drone-position");
+            _droneDetailsPanel = root.Q<VisualElement>("drone-details-panel");
+
+            _droneListView.makeItem = () => new Label();
+            _droneListView.bindItem = (element, index) =>
+            {
+                var label = element as Label;
+                var drone = (Drone)_droneListView.itemsSource[index];
+                label.text = $"Drone {drone.ID} (group: {drone.GroupId})";
+            };
+
+            _droneListView.selectionChanged += (selection) => OnDroneListSelectionChangedEvent?.Invoke(selection);
+
+            _groupInput.RegisterValueChangedCallback(evt => OnDroneGroupChangedEvent?.Invoke(evt.newValue));
+            _positionInput.RegisterValueChangedCallback(evt => OnDronePositionChangedEvent?.Invoke(evt.newValue));
+
+            var addDroneButton = root.Q<Button>("btn-add-drone");
+            var addObstacleButton = root.Q<Button>("btn-add-obstacle");
+            var removeDroneButton = root.Q<Button>("btn-remove-drone");
+            var loadConfigButton = root.Q<Button>("btn-load-config");
+            var playSimulationButton = root.Q<Button>("btn-play-sim");
+            var exportConfigButton = root.Q<Button>("btn-export-config");
+
+            if (addDroneButton != null) addDroneButton.clicked += () => OnAddDroneClickedEvent?.Invoke();
+            if (addObstacleButton != null) addObstacleButton.clicked += () => OnAddObstacleClickedEvent?.Invoke();
+            if (removeDroneButton != null) removeDroneButton.clicked += () => OnRemoveDroneClickedEvent?.Invoke();
+            if (loadConfigButton != null) loadConfigButton.clicked += () => OnLoadConfigClickedEvent?.Invoke();
+            if (playSimulationButton != null) playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
+            if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
+
+            if (_droneDetailsPanel != null) _droneDetailsPanel.style.display = DisplayStyle.None;
+            SetPlaybackUIVisibility(false);
+        }
+
+        #region Public View API (For Presenter)
+
+        public void PopulateDroneList(List<Drone> drones)
+        {
+            _droneListView.itemsSource = drones;
+            _droneListView.Rebuild();
+        }
+
+        public void SetListSelectionWithoutNotify(List<int> indices)
+        {
+            _droneListView.SetSelectionWithoutNotify(indices);
+        }
+
+        public void ClearListSelection()
+        {
+            _droneListView.ClearSelection();
+        }
+
+        public void ShowDroneDetails(Drone drone, Vector3 unityPosition)
+        {
+            _idInput.value = drone.ID.ToString();
+            _groupInput.SetValueWithoutNotify(drone.GroupId);
+            _positionInput.SetValueWithoutNotify(unityPosition);
+            _droneDetailsPanel.style.display = DisplayStyle.Flex;
+        }
+
+        public void HideDroneDetails()
+        {
+            _droneDetailsPanel.style.display = DisplayStyle.None;
+        }
+
+        /// <summary>
+        /// Updates the inspector fields for position without triggering the change event
+        /// </summary>
+        public void UpdatePositionFields(Vector3 newPos)
+        {
+            if (_positionInput != null) _positionInput.SetValueWithoutNotify(newPos);
+        }
+
+        public void UpdateTimeScaleDisplay(int value)
+        {
+            if (_timeScaleLabel != null) _timeScaleLabel.text = $"Time Scale: {value}%";
+        }
+
+        public void RefreshPlayButtonState(bool isPlaying)
+        {
+            if (_playButton != null) _playButton.text = isPlaying ? "Pause" : "Play";
+        }
+
+        public void SetPlaybackUIVisibility(bool isVisible)
+        {
+            var displayState = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
+
+            if (_playButton != null) _playButton.style.display = displayState;
+            if (_timeScaleLabel != null) _timeScaleLabel.style.display = displayState;
+            if (_timeScaleSlider != null) _timeScaleSlider.style.display = displayState;
+            if (_stepForwardButton != null) _stepForwardButton.style.display = displayState;
+            if (_stepBackButton != null) _stepBackButton.style.display = displayState;
+            if (_restartButton != null) _restartButton.style.display = displayState;
+
+            // If we are hiding UI while currently editing the time scale, hide the input field too
+            if (!isVisible && _timeScaleInput != null) _timeScaleInput.style.display = DisplayStyle.None;
+        }
+
+        #endregion
+
+        #region Internal Time Scale Input Logic
+
+        private void OnLabelClicked(PointerDownEvent evt)
+        {
+            if (evt.clickCount == 2)
+            {
+                _timeScaleLabel.style.display = DisplayStyle.None;
+                _timeScaleInput.style.display = DisplayStyle.Flex;
+                _timeScaleInput.value = _timeScaleSlider.value;
+                _timeScaleInput.schedule.Execute(() =>
+                {
+                    _timeScaleInput.Focus();
+                    _timeScaleInput.SelectAll();
+                }).StartingIn(10);
+            }
+        }
+
+        private void OnInputKeyDown(KeyDownEvent evt)
+        {
+            if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
+            {
+                CommitTimeScaleInput();
+            }
+        }
+
+        private void OnInputFocusOut(FocusOutEvent evt)
         {
             CommitTimeScaleInput();
         }
-    }
 
-    private void OnInputFocusOut(FocusOutEvent evt)
-    {
-        CommitTimeScaleInput();
-    }
-
-    private void CommitTimeScaleInput()
-    {
-        if (_timeScaleInput.style.display == DisplayStyle.None) return;
-        int clampedValue = Mathf.Clamp(_timeScaleInput.value, 0, 100);
-        _timeScaleSlider.value = clampedValue;
-        _timeScaleInput.style.display = DisplayStyle.None;
-        _timeScaleLabel.style.display = DisplayStyle.Flex;
-    }
-    #endregion
-
-    #region Config editor Handlers
-    /// <summary>
-    /// Called using a callback for selecting drones by clicking on them/box selection
-    /// </summary>
-    /// <param name="selectedDroneIds"></param>
-    private void HandleSceneSelectionChanged(List<int> selectedDroneIds)
-    {
-        var droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
-
-        if (selectedDroneIds == null || selectedDroneIds.Count == 0)
+        private void CommitTimeScaleInput()
         {
-            CurrentlySelectedDrone = null;
-            _droneDetailsPanel.style.display = DisplayStyle.None;
-
-            // Clear selection without causing a cycle :)
-            droneListView.SetSelectionWithoutNotify(new List<int>());
-        }
-        else
-        {
-            var drone = DroneManager.instance.GetDroneDataFromID(selectedDroneIds[0]);
-            if (drone == null) { Debug.LogError($"Tried selecting a drone with invalid ID {selectedDroneIds[0]} with click in scene!"); return; }
-            CurrentlySelectedDrone = drone;
-
-            _idInput.value = drone.ID.ToString();
-            _groupInput.value = drone.GroupId;
-
-            UpdatePositionFields(drone.Transform.Position.ToUnity());
-
-            _droneDetailsPanel.style.display = DisplayStyle.Flex;
-
-            // Select all selected drones in the scene
-            var indices = selectedDroneIds.Select(id => GetIndexOfDrone(id)).Where(index => index != -1).ToList();
-            droneListView.SetSelectionWithoutNotify(indices);
-        }
-    }
-    /// <summary>
-    /// Goes through DroneManager's list of all drone data and finds at which index the one with the given id is
-    /// </summary>
-    private int GetIndexOfDrone(int id)
-    {
-        var models = DroneManager.instance.AllDroneModels.ToList();
-        for (int i = 0; i < models.Count; i++)
-            if (models[i].ID == id) return i;
-        return -1;
-    }
-    private void SelectDrone(IEnumerable<object> selectedItems)
-    {
-        if (selectedItems == null || !selectedItems.Any())
-        {
-            _droneDetailsPanel.style.display = DisplayStyle.None;
-            CurrentlySelectedDrone = null;
-            // Cancel in-scene selection too
-            ConfigEditorManager.instance.SetSelectionFromUI(new List<int>());
-            return;
+            if (_timeScaleInput.style.display == DisplayStyle.None) return;
+            int clampedValue = Mathf.Clamp(_timeScaleInput.value, 0, 100);
+            _timeScaleSlider.value = clampedValue; // This triggers the slider callback automatically
+            _timeScaleInput.style.display = DisplayStyle.None;
+            _timeScaleLabel.style.display = DisplayStyle.Flex;
         }
 
-        var selectedObject = selectedItems.FirstOrDefault();
-        Drone selectedDrone = (Drone)selectedObject;
-
-        _idInput.value = selectedDrone.ID.ToString();
-        _groupInput.value = selectedDrone.GroupId;
-        Vector3 currentPos = selectedDrone.Transform.Position.ToUnity();
-        // SetValueWithoutNotify makes this not trigger the UpdateDronePosition callback
-        UpdatePositionFields(currentPos);
-
-        CurrentlySelectedDrone = selectedDrone;
-
-        _droneDetailsPanel.style.display = DisplayStyle.Flex;
-
-        // Select the selected drones in the scene too
-        var selectedIds = selectedItems.Cast<Drone>().Select(d => d.ID).ToList();
-        ConfigEditorManager.instance.SetSelectionFromUI(selectedIds);
+        #endregion
     }
-
-    private void OnAddDroneClicked()
-    {
-        Debug.Log("Adding new drone...");
-        DroneManager.instance.CreateNewDrone(Vector3.zero);
-        RefreshDroneList();
-    }
-
-    private void OnAddObstacleClicked()
-    {
-        Debug.Log("Adding new obstacle...");
-        ObstacleManager.instance.CreateNewObstacle(Vector3.zero);
-        RefreshDroneList();
-    }
-
-    private void OnRemoveDroneClicked()
-    {
-        if (CurrentlySelectedDrone == null) return;
-
-        Debug.Log($"Removing drone {CurrentlySelectedDrone.ID}");
-        DroneManager.instance.RemoveDrone(CurrentlySelectedDrone.ID);
-
-        RefreshDroneList(); // Update the list
-
-        _droneListView = _uiDocument.rootVisualElement.Q<ListView>("drone-list-view");
-        _droneListView.ClearSelection(); // This calls SelectDrone(null) 
-    }
-
-    private void OnLoadConfigClicked()
-    {
-        Debug.Log("Loading Configuration...");
-
-        // Something like: var config = ConfigSerializer.LoadFromFile("config.json");
-        // DroneManager.instance.SpawnDrones(config);
-        // RefreshDroneList();
-    }
-
-    private void OnPlaySimulationClicked()
-    {
-        Debug.Log("Starting Simulation Algorithm...");
-        SetPlaybackUIVisibility(true);
-
-        // TODO: Run the pathfinding algorithm here!!
-        // something like:
-        // var config = DroneManager.instance.AllDroneModels.ToList(); // Create the data
-        // var result = PathfindingEngine.Solve(config); // Run the pathfinding algo
-        // SimulationPlaybackManager.instance.LoadSimulationResult(result); // Load the results into the simulator
-        // SimulationPlaybackManager.instance.Play(); // Autoplay it
-    }
-
-    private void OnExportConfigClicked()
-    {
-        Debug.Log("Exporting Configuration...");
-        var config = DroneManager.instance.AllDroneModels.ToList();
-
-        // Save config to JSON
-        // Something like: ConfigSerializer.SaveToFile(config, "latest_config.json");
-    }
-    #endregion
-
-    #endregion
 }
