@@ -1,7 +1,7 @@
 using DroneSwarmPathfinder.Core.Environment;
-using DroneSwarmPathfinder.Unity;
 using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.Visuals;
+using DroneSwarmPathfinder.Unity.Environment;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,7 +25,8 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         private Vector3 _dragAxis;
         private Plane _dragPlane;
         private Vector3 _dragStartIntersection;
-        private Dictionary<DroneView, Vector3> _dragStartPositions = new();
+
+        private Dictionary<ISelectableView, Vector3> _dragStartPositions = new();
 
         private void Awake()
         {
@@ -36,7 +37,10 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         private void Start()
         {
             CreateRuntimeGizmo();
-            _selectionManager.OnSelectionChanged += (_) => UpdateGizmoState();
+
+            // Listen to selection changes for (currently...) both arrays
+            _selectionManager.OnDroneSelectionChanged += (_) => UpdateGizmoState();
+            _selectionManager.OnObstacleSelectionChanged += (_) => UpdateGizmoState();
         }
 
         public void InitializeGrid(float gridSize)
@@ -76,7 +80,9 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
         public void UpdateGizmoState()
         {
-            if (_selectionManager.SelectedDrones.Count == 0)
+            int totalSelectedCount = _selectionManager.SelectedDrones.Count + _selectionManager.SelectedObstacles.Count;
+
+            if (totalSelectedCount == 0)
             {
                 _gizmoRoot.SetActive(false);
                 return;
@@ -85,8 +91,12 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             _gizmoRoot.SetActive(true);
 
             Vector3 center = Vector3.zero;
+
+            // Combine positions from both drones and obstacles
             foreach (var d in _selectionManager.SelectedDrones) center += d.transform.position;
-            center /= _selectionManager.SelectedDrones.Count;
+            foreach (var o in _selectionManager.SelectedObstacles) center += o.transform.position;
+
+            center /= totalSelectedCount;
 
             _gizmoRoot.transform.position = center;
         }
@@ -94,7 +104,9 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         public bool RaycastGizmo(out Vector3 axis)
         {
             axis = Vector3.zero;
-            if (_selectionManager.SelectedDrones.Count == 0 || !_gizmoRoot.activeSelf) return false;
+
+            int totalSelectedCount = _selectionManager.SelectedDrones.Count + _selectionManager.SelectedObstacles.Count;
+            if (totalSelectedCount == 0 || !_gizmoRoot.activeSelf) return false;
 
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
@@ -123,10 +135,10 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             }
 
             _dragStartPositions.Clear();
-            foreach (var d in _selectionManager.SelectedDrones)
-            {
-                _dragStartPositions[d] = d.transform.position;
-            }
+
+            // Store start positions
+            foreach (var d in _selectionManager.SelectedDrones) _dragStartPositions[d] = d.transform.position;
+            foreach (var o in _selectionManager.SelectedObstacles) _dragStartPositions[o] = o.transform.position;
         }
 
         public void UpdateGizmoDrag()
@@ -144,20 +156,20 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
                 foreach (var kvp in _dragStartPositions)
                 {
-                    DroneView drone = kvp.Key;
+                    ISelectableView view = kvp.Key;
                     Vector3 startPos = kvp.Value;
 
                     Vector3 targetPos = startPos + constrainedMove;
 
                     if (_grid != null) targetPos = _grid.ConstrainPosition(targetPos.ToNumerics()).ToUnity();
 
-                    drone.transform.position = targetPos;
-                    newCenter += drone.transform.position;
+                    view.transform.position = targetPos;
+                    newCenter += view.transform.position;
                 }
 
-                _gizmoRoot.transform.position = newCenter / _selectionManager.SelectedDrones.Count;
+                _gizmoRoot.transform.position = newCenter / _dragStartPositions.Count;
 
-                // Fire event so UI or other systems can react without tight coupling
+                // Fire event so UI or other systems can react
                 OnGizmoDragged?.Invoke(_gizmoRoot.transform.position);
             }
         }
@@ -166,10 +178,17 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         {
             IsDraggingGizmo = false;
 
-            // Update core data
-            foreach (var drone in _selectionManager.SelectedDrones)
+            // Update core data by pattern matching types of views
+            foreach (var view in _dragStartPositions.Keys)
             {
-                DroneManager.instance.UpdateDronePosition(drone.DroneID, drone.transform.position);
+                if (view is DroneView drone)
+                {
+                    DroneManager.instance.UpdateDronePosition(drone.ID, drone.transform.position);
+                }
+                else if (view is ObstacleView obstacle)
+                {
+                    ObstacleManager.instance.UpdateObstaclePosition(obstacle.ID, obstacle.transform.position);
+                }
             }
         }
     }

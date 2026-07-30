@@ -1,3 +1,4 @@
+using DroneSwarmPathfinder.Unity.Visuals;
 using UnityEngine;
 
 namespace DroneSwarmPathfinder.Unity.Environment
@@ -5,13 +6,13 @@ namespace DroneSwarmPathfinder.Unity.Environment
     /// <summary>
     /// Visual representation of an obstacle in the unity scene.
     /// </summary>
-    public class ObstacleView : MonoBehaviour
+    public class ObstacleView : MonoBehaviour, ISelectableView
     {
-        public int ObstacleID { get; private set; } // (only ID just like DroneView)
+        public int ID { get; private set; }
 
         public void Initialize(int id)
         {
-            ObstacleID = id;
+            ID = id;
         }
 
         private void OnDrawGizmos()

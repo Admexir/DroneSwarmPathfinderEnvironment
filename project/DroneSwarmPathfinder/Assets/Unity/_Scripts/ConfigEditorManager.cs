@@ -1,3 +1,4 @@
+using DroneSwarmPathfinder.Unity.Environment;
 using DroneSwarmPathfinder.Unity.Visuals;
 using System;
 using System.Collections.Generic;
@@ -24,10 +25,18 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         }
 
         public IReadOnlyList<DroneView> SelectedDrones => _selectionManager.SelectedDrones;
-        public event Action<List<int>> OnSelectionChanged
+        public IReadOnlyList<ObstacleView> SelectedObstacles => _selectionManager.SelectedObstacles;
+
+        public event Action<List<int>> OnDroneSelectionChanged
         {
-            add => _selectionManager.OnSelectionChanged += value;
-            remove => _selectionManager.OnSelectionChanged -= value;
+            add => _selectionManager.OnDroneSelectionChanged += value;
+            remove => _selectionManager.OnDroneSelectionChanged -= value;
+        }
+
+        public event Action<List<int>> OnObstacleSelectionChanged
+        {
+            add => _selectionManager.OnObstacleSelectionChanged += value;
+            remove => _selectionManager.OnObstacleSelectionChanged -= value;
         }
 
         private void Awake()
@@ -43,10 +52,8 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             //_gizmoController.OnGizmoDragged += HandleGizmoDragged;
         }
 
-        public void SetSelectionFromUI(IEnumerable<int> droneIds)
-        {
-            _selectionManager.SetSelectionFromUI(droneIds);
-        }
+        public void SetDroneSelectionFromUI(IEnumerable<int> ids) => _selectionManager.SetDroneSelectionFromUI(ids);
+        public void SetObstacleSelectionFromUI(IEnumerable<int> ids) => _selectionManager.SetObstacleSelectionFromUI(ids);
 
         //private void HandleGizmoDragged(Vector3 newCenterPosition)
         //{

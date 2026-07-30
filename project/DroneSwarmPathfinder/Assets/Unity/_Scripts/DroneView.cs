@@ -6,12 +6,12 @@ namespace DroneSwarmPathfinder.Unity.Visuals
     /// <summary>
     /// Representation of the dynamic visuals of a drone in a simulation
     /// </summary>
-    public class DroneView : MonoBehaviour
+    public class DroneView : MonoBehaviour, ISelectableView
     {
         // Note: doesn't hold a reference to the source Models.Drone object, as that is a different "kind of representation",
         //      this is for the active visualisation, while Models.Drone is for the persistent config storage
-        public int DroneID { get; private set; }
-        public int DroneGroup { get; private set;  }
+        public int ID { get; private set; }
+        public int DroneGroup { get; private set; }
         private MeshRenderer _renderer;
         private static MaterialPropertyBlock _propBlock;
 
@@ -23,7 +23,7 @@ namespace DroneSwarmPathfinder.Unity.Visuals
         // Called shortly after spawning (but not instantly... do not switch to Start() )
         public void Initialize(int id, int groupId)
         {
-            DroneID = id;
+            ID = id;
             SetColorByGroup(groupId);
         }
 

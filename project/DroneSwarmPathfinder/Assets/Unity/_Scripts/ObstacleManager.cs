@@ -1,7 +1,7 @@
 using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Core.Models;
-using DroneSwarmPathfinder.Unity;
 using DroneSwarmPathfinder.Unity.Environment;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using NumVector3 = System.Numerics.Vector3;
@@ -20,6 +20,9 @@ namespace DroneSwarmPathfinder.Unity.Managers
         [SerializeField] private GameObject obstaclePrefab;
         [SerializeField] private Transform obstaclesHolder;
 
+        // Event for the UI to listen to
+        public event Action OnObstacleRosterChanged;
+
         private Dictionary<int, ObstacleView> _activeObstacles = new(); // Visualisation obstacle data
         private Dictionary<int, BoxObstacle> _obstacleModels = new(); // Config obstacle data
 
@@ -37,6 +40,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
                 AddExistingObstacle(coreObstacle);
                 if (coreObstacle.ID >= _nextObstacleId) _nextObstacleId = coreObstacle.ID + 1;
             }
+            OnObstacleRosterChanged?.Invoke();
         }
 
         public void ClearObstacles()
@@ -48,6 +52,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
             _activeObstacles.Clear();
             _obstacleModels.Clear();
             _nextObstacleId = 0;
+            OnObstacleRosterChanged?.Invoke();
         }
 
         /// <summary>
@@ -64,6 +69,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
             AddExistingObstacle(newObstacle);
 
+            OnObstacleRosterChanged?.Invoke();
             return newObstacle;
         }
 
@@ -78,6 +84,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
                 _activeObstacles.Remove(id);
             }
             _obstacleModels.Remove(id);
+            OnObstacleRosterChanged?.Invoke();
         }
 
         /// <summary>

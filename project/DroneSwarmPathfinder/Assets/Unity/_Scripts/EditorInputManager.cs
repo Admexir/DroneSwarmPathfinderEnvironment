@@ -10,7 +10,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
     public class EditorInputManager : MonoBehaviour
     {
         [Header("Input Config")]
-        public LayerMask droneLayer;
+        public LayerMask selectableLayers;
 
         private SelectionManager _selectionManager;
         private GizmoManager _gizmoController;
@@ -33,14 +33,15 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             // Block editor input if simulation is playing
             if (SimulationPlaybackManager.instance != null && SimulationPlaybackManager.instance.isPlaying)
             {
-                if (_selectionManager.SelectedDrones.Count > 0) _selectionManager.ClearSelection();
+                if (_selectionManager.SelectedDrones.Count > 0 || _selectionManager.SelectedObstacles.Count > 0)
+                    _selectionManager.ClearSelection();
                 return;
             }
 
             HandleInput();
 
             // Moves gizmo with the drone in case user moves it using other ways
-            if (!_gizmoController.IsDraggingGizmo && _selectionManager.SelectedDrones.Count > 0)
+            if (!_gizmoController.IsDraggingGizmo && (_selectionManager.SelectedDrones.Count > 0 || _selectionManager.SelectedObstacles.Count > 0))
             {
                 _gizmoController.UpdateGizmoState();
             }
@@ -62,16 +63,18 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                     return;
                 }
 
-                if (RaycastDrone(out DroneView drone))
+                if (RaycastSelectable(out ISelectableView selectable))
                 {
                     if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
                     {
-                        if (_selectionManager.SelectedDrones.Contains(drone)) _selectionManager.RemoveFromSelection(drone);
-                        else _selectionManager.AddToSelection(drone);
+                        if (_selectionManager.IsSelected(selectable))
+                            _selectionManager.RemoveFromSelection(selectable);
+                        else
+                            _selectionManager.AddToSelection(selectable);
                     }
                     else
                     {
-                        _selectionManager.SelectSingle(drone);
+                        _selectionManager.SelectSingle(selectable);
                     }
                     return;
                 }
@@ -92,15 +95,15 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             }
         }
 
-        private bool RaycastDrone(out DroneView drone)
+        private bool RaycastSelectable(out ISelectableView selectable)
         {
-            drone = null;
+            selectable = null;
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
 
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, droneLayer))
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, selectableLayers))
             {
-                drone = hit.collider.GetComponentInParent<DroneView>();
-                return drone != null;
+                selectable = hit.collider.GetComponentInParent<ISelectableView>();
+                return selectable != null;
             }
             return false;
         }

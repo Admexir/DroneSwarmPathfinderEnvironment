@@ -69,8 +69,9 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
             if (selectionRect.width < 10 && selectionRect.height < 10) return;
 
-            var arr = DroneManager.instance.AllDroneModels.ToArray();
-            foreach (var coreDrone in arr)
+            // Box select drones
+            var droneArr = DroneManager.instance.AllDroneModels.ToArray();
+            foreach (var coreDrone in droneArr)
             {
                 var droneView = DroneManager.instance.GetDroneView(coreDrone.ID);
                 if (droneView == null) continue;
@@ -80,6 +81,21 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                 if (screenPos.z > 0 && selectionRect.Contains(new Vector2(screenPos.x, screenPos.y)))
                 {
                     _selectionManager.AddToSelection(droneView);
+                }
+            }
+
+            // Box select obstacles
+            var obsArr = ObstacleManager.instance.AllObstacleModels.ToArray();
+            foreach (var coreObs in obsArr)
+            {
+                var obsView = ObstacleManager.instance.GetObstacleView(coreObs.ID);
+                if (obsView == null) continue;
+
+                Vector3 screenPos = _cam.WorldToScreenPoint(obsView.transform.position);
+
+                if (screenPos.z > 0 && selectionRect.Contains(new Vector2(screenPos.x, screenPos.y)))
+                {
+                    _selectionManager.AddToSelection(obsView);
                 }
             }
         }

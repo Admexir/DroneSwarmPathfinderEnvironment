@@ -29,7 +29,10 @@
                     <ui:VisualElement name="drone-details-panel" style="-unity-font-style: normal;">
                         <ui:TextField label="Drone ID" name="input-drone-id" readonly="true" style="margin-bottom: 5px;"/>
                         <ui:IntegerField label="Group" name="input-drone-group" style="margin-bottom: 5px;"/>
-                        <ui:Vector3Field label="Position" name="input-drone-position" style="margin-bottom: 5px;"/>
+                        <ui:VisualElement style="margin-bottom: 5px;">
+                            <ui:Label text="Position" style="margin-bottom: 2px;"/>
+                            <ui:Vector3Field name="input-drone-position"/>
+                        </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:Foldout>
 
@@ -37,8 +40,14 @@
                     <ui:ListView name="obstacle-list-view" selection-type="Multiple" style="min-height: 100px; max-height: 250px; background-color: rgba(0, 0, 0, 0.3); margin-bottom: 5px; border-radius: 5px; -unity-font-style: normal;"/>
                     <ui:VisualElement name="obstacle-details-panel" style="-unity-font-style: normal;">
                         <ui:TextField label="Obstacle ID" name="input-obstacle-id" readonly="true" style="margin-bottom: 5px;"/>
-                        <ui:Vector3Field label="Position" name="input-obstacle-position" style="margin-bottom: 5px;"/>
-                        <ui:Vector3Field label="Size" name="input-obstacle-size" style="margin-bottom: 5px;"/>
+                            <ui:VisualElement style="margin-bottom: 5px;">
+                                <ui:Label text="Position" style="margin-bottom: 2px;"/>
+                                <ui:Vector3Field name="input-obstacle-position"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement style="margin-bottom: 5px;">
+                                <ui:Label text="Size" style="margin-bottom: 2px;"/>
+                                <ui:Vector3Field name="input-obstacle-size"/>
+                            </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:Foldout>
             </ui:ScrollView>

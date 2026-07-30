@@ -1,3 +1,4 @@
+using DroneSwarmPathfinder.Unity.Environment;
 using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.Visuals;
 using System;
@@ -9,68 +10,97 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 {
     public class SelectionManager : MonoBehaviour
     {
-        private List<DroneView> _selectedDrones = new();
-        public IReadOnlyList<DroneView> SelectedDrones => _selectedDrones;
+        public List<DroneView> SelectedDrones { get; } = new();
+        public List<ObstacleView> SelectedObstacles { get; } = new();
 
-        // Event for when selection changes (used by UI and Gizmos)
-        public event Action<List<int>> OnSelectionChanged;
-
-        public void SelectSingle(DroneView drone)
-        {
-            _selectedDrones.Clear();
-            _selectedDrones.Add(drone);
-            NotifySelectionChanged();
-        }
-
-        public void AddToSelection(DroneView drone)
-        {
-            if (!_selectedDrones.Contains(drone))
-            {
-                _selectedDrones.Add(drone);
-                NotifySelectionChanged();
-            }
-        }
-
-        public void RemoveFromSelection(DroneView drone)
-        {
-            _selectedDrones.Remove(drone);
-            NotifySelectionChanged();
-        }
-
-        public void ClearSelection()
-        {
-            if (_selectedDrones.Count == 0) return;
-
-            _selectedDrones.Clear();
-            NotifySelectionChanged();
-        }
+        public event Action<List<int>> OnDroneSelectionChanged;
+        public event Action<List<int>> OnObstacleSelectionChanged;
 
         /// <summary>
-        /// Selects drones in the scene by interacting with the UI (drone list)
+        /// Checks if a generic view is currently in any of our selection lists
         /// </summary>
-        public void SetSelectionFromUI(IEnumerable<int> droneIds)
+        public bool IsSelected(ISelectableView view)
         {
-            _selectedDrones.Clear();
+            if (view is DroneView drone) return SelectedDrones.Contains(drone);
+            if (view is ObstacleView obstacle) return SelectedObstacles.Contains(obstacle);
+            return false;
+        }
 
-            if (droneIds != null)
+        public void SelectSingle(ISelectableView view)
+        {
+            ClearSelection(notify: false);
+            AddToSelection(view);
+        }
+
+        public void AddToSelection(ISelectableView view)
+        {
+            if (view is DroneView drone && !SelectedDrones.Contains(drone))
             {
-                foreach (int id in droneIds)
+                SelectedDrones.Add(drone);
+                OnDroneSelectionChanged?.Invoke(SelectedDrones.Select(d => d.ID).ToList());
+            }
+            else if (view is ObstacleView obstacle && !SelectedObstacles.Contains(obstacle))
+            {
+                SelectedObstacles.Add(obstacle);
+                OnObstacleSelectionChanged?.Invoke(SelectedObstacles.Select(o => o.ID).ToList());
+            }
+        }
+
+        public void RemoveFromSelection(ISelectableView view)
+        {
+            if (view is DroneView drone)
+            {
+                SelectedDrones.Remove(drone);
+                OnDroneSelectionChanged?.Invoke(SelectedDrones.Select(d => d.ID).ToList());
+            }
+            else if (view is ObstacleView obstacle)
+            {
+                SelectedObstacles.Remove(obstacle);
+                OnObstacleSelectionChanged?.Invoke(SelectedObstacles.Select(o => o.ID).ToList());
+            }
+        }
+
+        public void ClearSelection(bool notify = true)
+        {
+            bool dronesChanged = SelectedDrones.Count > 0;
+            bool obstaclesChanged = SelectedObstacles.Count > 0;
+
+            SelectedDrones.Clear();
+            SelectedObstacles.Clear();
+
+            if (notify)
+            {
+                if (dronesChanged) OnDroneSelectionChanged?.Invoke(new List<int>());
+                if (obstaclesChanged) OnObstacleSelectionChanged?.Invoke(new List<int>());
+            }
+        }
+
+        public void SetDroneSelectionFromUI(IEnumerable<int> ids)
+        {
+            SelectedDrones.Clear();
+            if (ids != null)
+            {
+                foreach (int id in ids)
                 {
                     var view = DroneManager.instance.GetDroneView(id);
-                    if (view != null)
-                    {
-                        _selectedDrones.Add(view);
-                    }
+                    if (view != null) SelectedDrones.Add(view);
                 }
             }
-
-            // Invoke an update here so Gizmos update without calling OnSelectionChanged to prevent UI cycle
             SendMessage("UpdateGizmoState", SendMessageOptions.DontRequireReceiver);
         }
 
-        private void NotifySelectionChanged()
+        public void SetObstacleSelectionFromUI(IEnumerable<int> ids)
         {
-            OnSelectionChanged?.Invoke(_selectedDrones.Select(d => d.DroneID).ToList());
+            SelectedObstacles.Clear();
+            if (ids != null)
+            {
+                foreach (int id in ids)
+                {
+                    var view = ObstacleManager.instance.GetObstacleView(id);
+                    if (view != null) SelectedObstacles.Add(view);
+                }
+            }
+            SendMessage("UpdateGizmoState", SendMessageOptions.DontRequireReceiver);
         }
     }
 }

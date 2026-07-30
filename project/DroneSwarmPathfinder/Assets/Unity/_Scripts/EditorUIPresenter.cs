@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.EditorTools;
-using DroneSwarmPathfinder.Unity.UI;
 
 namespace DroneSwarmPathfinder.Unity.UI
 {
@@ -19,6 +19,7 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         private UIController _view;
         private Drone _currentlySelectedDrone;
+        private BoxObstacle _currentlySelectedObstacle;
 
         private void Awake()
         {
@@ -32,7 +33,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Subscribe to the config manager's selection state changes
             if (ConfigEditorManager.instance != null)
             {
-                ConfigEditorManager.instance.OnSelectionChanged += HandleSceneSelectionChanged;
+                ConfigEditorManager.instance.OnDroneSelectionChanged += HandleDroneSceneSelectionChanged;
+                ConfigEditorManager.instance.OnObstacleSelectionChanged += HandleObstacleSceneSelectionChanged;
                 ConfigEditorManager.instance.OnGizmoDragged += HandleGizmoDragged;
             }
 
@@ -40,11 +42,14 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (SimulationPlaybackManager.instance != null)
                 SimulationPlaybackManager.instance.OnPlaybackStateChanged += HandlePlaybackStateChanged;
 
-            // Subscribe to the drone manager's drone list changes
+            // Subscribe to the managers' roster list changes
             if (DroneManager.instance != null)
                 DroneManager.instance.OnDroneRosterChanged += RefreshDroneList;
+            if (ObstacleManager.instance != null)
+                ObstacleManager.instance.OnObstacleRosterChanged += RefreshObstacleList;
 
             RefreshDroneList();
+            RefreshObstacleList();
         }
 
         private void SubscribeToViewEvents()
@@ -59,25 +64,22 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Editor actions
             _view.OnAddDroneClickedEvent += OnAddDroneClicked;
             _view.OnAddObstacleClickedEvent += OnAddObstacleClicked;
-            _view.OnRemoveDroneClickedEvent += OnRemoveDroneClicked;
+            _view.OnRemoveSelectedClickedEvent += OnRemoveSelectedClicked;
 
             // Config and simulation
             _view.OnLoadConfigClickedEvent += OnLoadConfigClicked;
             _view.OnPlaySimulationClickedEvent += OnPlaySimulationClicked;
             _view.OnExportConfigClickedEvent += OnExportConfigClicked;
 
-            // Details panel editing
+            // Details panel editing (Drones)
             _view.OnDroneGroupChangedEvent += OnDroneGroupChanged;
             _view.OnDronePositionChangedEvent += OnDronePositionChanged;
             _view.OnDroneListSelectionChangedEvent += OnDroneListSelectionChanged;
-        }
 
-        /// <summary>
-        /// Updates the inspector fields for position (used by GizmoController)
-        /// </summary>
-        public void UpdatePositionFields(Vector3 newPos)
-        {
-            _view.UpdatePositionFields(newPos);
+            // Details panel editing (Obstacles)
+            _view.OnObstaclePositionChangedEvent += OnObstaclePositionChanged;
+            _view.OnObstacleSizeChangedEvent += OnObstacleSizeChanged;
+            _view.OnObstacleListSelectionChangedEvent += OnObstacleListSelectionChanged;
         }
 
         /// <summary>
@@ -89,7 +91,16 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.PopulateDroneList(drones);
         }
 
-        #region View event callbacks
+        /// <summary>
+        /// Helper method to refresh the obstacle list visually
+        /// </summary>
+        public void RefreshObstacleList()
+        {
+            var obstacles = ObstacleManager.instance.AllObstacleModels.ToList();
+            _view.PopulateObstacleList(obstacles);
+        }
+
+        #region View event callbacks (Simulation & Global)
 
         private void OnTimeScaleChanged(int newValue)
         {
@@ -130,49 +141,12 @@ namespace DroneSwarmPathfinder.Unity.UI
             SimulationPlaybackManager.instance.Restart();
         }
 
-        private void OnDroneGroupChanged(int newGroup)
-        {
-            if (_currentlySelectedDrone == null) return;
-            DroneManager.instance.UpdateDroneGroup(_currentlySelectedDrone.ID, newGroup);
-            RefreshDroneList();
-        }
-
-        private void OnDronePositionChanged(Vector3 newPosition)
-        {
-            if (_currentlySelectedDrone == null) return;
-            DroneManager.instance.UpdateDronePosition(_currentlySelectedDrone.ID, newPosition);
-        }
-
-        private void OnAddDroneClicked()
-        {
-            Debug.Log("Adding new drone...");
-            DroneManager.instance.CreateNewDrone(Vector3.zero);
-            RefreshDroneList();
-        }
-
-        private void OnAddObstacleClicked()
-        {
-            Debug.Log("Adding new obstacle...");
-            ObstacleManager.instance.CreateNewObstacle(Vector3.zero);
-            RefreshDroneList();
-        }
-
-        private void OnRemoveDroneClicked()
-        {
-            if (_currentlySelectedDrone == null) return;
-
-            Debug.Log($"Removing drone {_currentlySelectedDrone.ID}");
-            DroneManager.instance.RemoveDrone(_currentlySelectedDrone.ID);
-
-            RefreshDroneList();
-            _view.ClearListSelection();
-        }
-
         private void OnLoadConfigClicked()
         {
             Debug.Log("Loading Configuration...");
             // ConfigSerializer.LoadFromFile("config.json");
             // RefreshDroneList();
+            // RefreshObstacleList();
         }
 
         private void OnPlaySimulationClicked()
@@ -184,7 +158,6 @@ namespace DroneSwarmPathfinder.Unity.UI
             // var result = PathfindingEngine.Solve(config); 
             // SimulationPlaybackManager.instance.LoadSimulationResult(result); 
             // SimulationPlaybackManager.instance.Play(); 
-            // _view.RefreshPlayButtonState(SimulationPlaybackManager.instance.isPlaying);
         }
 
         private void OnExportConfigClicked()
@@ -194,13 +167,57 @@ namespace DroneSwarmPathfinder.Unity.UI
             // ConfigSerializer.SaveToFile(config, "latest_config.json");
         }
 
+        private void OnRemoveSelectedClicked()
+        {
+            if (_currentlySelectedDrone != null)
+            {
+                Debug.Log($"Removing drone {_currentlySelectedDrone.ID}");
+                DroneManager.instance.RemoveDrone(_currentlySelectedDrone.ID);
+                _view.ClearDroneListSelection();
+            }
+
+            if (_currentlySelectedObstacle != null)
+            {
+                Debug.Log($"Removing obstacle {_currentlySelectedObstacle.ID}");
+                ObstacleManager.instance.RemoveObstacle(_currentlySelectedObstacle.ID);
+                _view.ClearObstacleListSelection();
+            }
+        }
+
+        #endregion
+
+        #region View event callbacks (drones)
+
+        private void OnAddDroneClicked()
+        {
+            Debug.Log("Adding new drone...");
+            var newDrone = DroneManager.instance.CreateNewDrone(Vector3.zero);
+
+            // auto-select the newly created drone
+            var selectedIds = new List<int> { newDrone.ID };
+            ConfigEditorManager.instance.SetDroneSelectionFromUI(selectedIds);
+            HandleDroneSceneSelectionChanged(selectedIds);
+        }
+
+        private void OnDroneGroupChanged(int newGroup)
+        {
+            if (_currentlySelectedDrone == null) return;
+            DroneManager.instance.UpdateDroneGroup(_currentlySelectedDrone.ID, newGroup);
+        }
+
+        private void OnDronePositionChanged(Vector3 newPosition)
+        {
+            if (_currentlySelectedDrone == null) return;
+            DroneManager.instance.UpdateDronePosition(_currentlySelectedDrone.ID, newPosition);
+        }
+
         private void OnDroneListSelectionChanged(IEnumerable<object> selectedItems)
         {
             if (selectedItems == null || !selectedItems.Any())
             {
                 _view.HideDroneDetails();
                 _currentlySelectedDrone = null;
-                ConfigEditorManager.instance.SetSelectionFromUI(new List<int>());
+                ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
                 return;
             }
 
@@ -211,7 +228,55 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.ShowDroneDetails(selectedDrone, currentPos);
 
             var selectedIds = selectedItems.Cast<Drone>().Select(d => d.ID).ToList();
-            ConfigEditorManager.instance.SetSelectionFromUI(selectedIds);
+            ConfigEditorManager.instance.SetDroneSelectionFromUI(selectedIds);
+        }
+
+        #endregion
+
+        #region View event callbacks (obstacles)
+
+        private void OnAddObstacleClicked()
+        {
+            Debug.Log("Adding new obstacle...");
+            var newObs = ObstacleManager.instance.CreateNewObstacle(Vector3.zero);
+
+            // auto-select the newly created obstacle
+            var selectedIds = new List<int> { newObs.ID };
+            ConfigEditorManager.instance.SetObstacleSelectionFromUI(selectedIds);
+            HandleObstacleSceneSelectionChanged(selectedIds);
+        }
+
+        private void OnObstaclePositionChanged(Vector3 newPosition)
+        {
+            if (_currentlySelectedObstacle == null) return;
+            ObstacleManager.instance.UpdateObstaclePosition(_currentlySelectedObstacle.ID, newPosition);
+        }
+
+        private void OnObstacleSizeChanged(Vector3 newSize)
+        {
+            if (_currentlySelectedObstacle == null) return;
+            ObstacleManager.instance.UpdateObstacleSize(_currentlySelectedObstacle.ID, newSize);
+        }
+
+        private void OnObstacleListSelectionChanged(IEnumerable<object> selectedItems)
+        {
+            if (selectedItems == null || !selectedItems.Any())
+            {
+                _view.HideObstacleDetails();
+                _currentlySelectedObstacle = null;
+                ConfigEditorManager.instance.SetObstacleSelectionFromUI(new List<int>());
+                return;
+            }
+
+            var selectedObstacle = (BoxObstacle)selectedItems.FirstOrDefault();
+            _currentlySelectedObstacle = selectedObstacle;
+
+            Vector3 currentPos = selectedObstacle.Transform.Position.ToUnity();
+            Vector3 currentSize = selectedObstacle.Transform.Size.ToUnity();
+            _view.ShowObstacleDetails(selectedObstacle, currentPos, currentSize);
+
+            var selectedIds = selectedItems.Cast<BoxObstacle>().Select(o => o.ID).ToList();
+            ConfigEditorManager.instance.SetObstacleSelectionFromUI(selectedIds);
         }
 
         #endregion
@@ -221,13 +286,13 @@ namespace DroneSwarmPathfinder.Unity.UI
         /// <summary>
         /// Called when selecting drones by clicking on them/box selection in the 3D scene
         /// </summary>
-        private void HandleSceneSelectionChanged(List<int> selectedDroneIds)
+        private void HandleDroneSceneSelectionChanged(List<int> selectedDroneIds)
         {
             if (selectedDroneIds == null || selectedDroneIds.Count == 0)
             {
                 _currentlySelectedDrone = null;
                 _view.HideDroneDetails();
-                _view.SetListSelectionWithoutNotify(new List<int>());
+                _view.SetDroneListSelectionWithoutNotify(new List<int>());
             }
             else
             {
@@ -242,19 +307,40 @@ namespace DroneSwarmPathfinder.Unity.UI
                 _view.ShowDroneDetails(drone, drone.Transform.Position.ToUnity());
 
                 // Select all selected drones in the UI list
-                var indices = selectedDroneIds.Select(id => GetIndexOfDrone(id)).Where(index => index != -1).ToList();
-                _view.SetListSelectionWithoutNotify(indices);
+                var models = DroneManager.instance.AllDroneModels.ToList();
+                var indices = selectedDroneIds.Select(id => models.FindIndex(m => m.ID == id)).Where(index => index != -1).ToList();
+                _view.SetDroneListSelectionWithoutNotify(indices);
             }
         }
 
-        private int GetIndexOfDrone(int id)
+        /// <summary>
+        /// Called when selecting obstacles by clicking on them/box selection in the 3D scene
+        /// </summary>
+        private void HandleObstacleSceneSelectionChanged(List<int> selectedObstacleIds)
         {
-            var models = DroneManager.instance.AllDroneModels.ToList();
-            for (int i = 0; i < models.Count; i++)
+            if (selectedObstacleIds == null || selectedObstacleIds.Count == 0)
             {
-                if (models[i].ID == id) return i;
+                _currentlySelectedObstacle = null;
+                _view.HideObstacleDetails();
+                _view.SetObstacleListSelectionWithoutNotify(new List<int>());
             }
-            return -1;
+            else
+            {
+                var obstacle = ObstacleManager.instance.GetObstacleDataFromID(selectedObstacleIds[0]);
+                if (obstacle == null)
+                {
+                    Debug.LogError($"Tried selecting an obstacle with invalid ID {selectedObstacleIds[0]}!");
+                    return;
+                }
+
+                _currentlySelectedObstacle = obstacle;
+                _view.ShowObstacleDetails(obstacle, obstacle.Transform.Position.ToUnity(), obstacle.Transform.Size.ToUnity());
+
+                // Select all selected obstacles in the UI list
+                var models = ObstacleManager.instance.AllObstacleModels.ToList();
+                var indices = selectedObstacleIds.Select(id => models.FindIndex(m => m.ID == id)).Where(index => index != -1).ToList();
+                _view.SetObstacleListSelectionWithoutNotify(indices);
+            }
         }
 
         private void HandlePlaybackStateChanged(bool isNowPlaying)
@@ -265,10 +351,15 @@ namespace DroneSwarmPathfinder.Unity.UI
         private void HandleGizmoDragged(Vector3 newPos)
         {
             // Update inspector UI values while dragging gizmos
-            // (update the position field iff one drone is selected)
+            // (update the position field iff exactly one item of a type is selected)
             if (_currentlySelectedDrone != null && ConfigEditorManager.instance.SelectedDrones.Count == 1)
             {
-                _view.UpdatePositionFields(newPos);
+                _view.UpdateDronePositionField(newPos);
+            }
+
+            if (_currentlySelectedObstacle != null && ConfigEditorManager.instance.SelectedObstacles.Count == 1)
+            {
+                _view.UpdateObstaclePositionField(newPos);
             }
         }
 
