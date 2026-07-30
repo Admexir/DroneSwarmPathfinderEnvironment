@@ -8,7 +8,7 @@ namespace DroneSwarmPathfinder.Core.Environment
 {
     public class WorldEnvironment
     {
-        public List<IObstacleVolume> Obstacles { get; } = new(); // TODO: maybe one generalized ISpatialVolume list and add an void Apply method?
+        public List<ISpatialVolume> Obstacles { get; } = new();
         // Later can use something like List<IForceVolume> ForceFields { get; } = new();
 
         /// <summary>
@@ -104,11 +104,12 @@ namespace DroneSwarmPathfinder.Core.Environment
     /// <summary>
     /// Class representing an obstacle in the 3D scene
     /// </summary>
-    public class BoxObstacle : IObstacleVolume
+    public class BoxObstacle : IObstacleVolume, Serialization.IConfigItem
     {
-        public int ID { get; }
+        public int ID { get; init; }
         public TransformData Transform { get; set; }
 
+        [Newtonsoft.Json.JsonConstructor]
         public BoxObstacle(int id, TransformData transform)
         {
             ID = id;

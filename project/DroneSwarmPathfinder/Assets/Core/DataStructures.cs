@@ -1,8 +1,9 @@
 using DroneSwarmPathfinder.Core.Environment;
+using DroneSwarmPathfinder.Core.Serialization;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-
 
 namespace DroneSwarmPathfinder.Core.Models
 {
@@ -22,6 +23,7 @@ namespace DroneSwarmPathfinder.Core.Models
             Rotation = Quaternion.Identity;
             Size = Vector3.One;
         }
+
         public TransformData(Vector3 position, Quaternion rotation)
         {
             this = default;
@@ -29,6 +31,8 @@ namespace DroneSwarmPathfinder.Core.Models
             Rotation = rotation;
             Size = Vector3.One;
         }
+
+        [JsonConstructor]
         public TransformData(Vector3 position, Quaternion rotation, Vector3 size)
         {
             this = default;
@@ -37,26 +41,27 @@ namespace DroneSwarmPathfinder.Core.Models
             Size = size;
         }
     }
+
     public static class TransformExtensions
     {
         public static TransformData WithPosition(this TransformData t, Vector3 newPosition) => new TransformData(newPosition, t.Rotation, t.Size);
         public static TransformData WithRotation(this TransformData t, Quaternion newRotation) => new TransformData(t.Position, newRotation, t.Size);
         public static TransformData WithSize(this TransformData t, Vector3 newSize) => new TransformData(t.Position, t.Rotation, newSize);
-
     }
-        
 
     /// <summary>
     /// Class representing one agent in the simulation
     /// </summary>
-    public class Drone : IObstacleVolume
+    public class Drone : IObstacleVolume, IConfigItem
     {
         public int ID { get; init; }
         public int GroupId { get; set; }
         public TransformData Transform { get; set; }
+
         /// <summary>
         /// Takes the largest dimension from Transform and divides it by two
         /// </summary>
+        [JsonIgnore] // We don't need to save calculated properties to JSON
         public float CollisionRadius
         {
             get
@@ -66,6 +71,7 @@ namespace DroneSwarmPathfinder.Core.Models
             }
         }
 
+        [JsonConstructor]
         public Drone(int id, TransformData transform, int groupId = 0)
         {
             ID = id;
@@ -78,7 +84,7 @@ namespace DroneSwarmPathfinder.Core.Models
             float currentRadius = CollisionRadius;
             float radiusSquared = currentRadius * currentRadius;
 
-            return Vector3.DistanceSquared(Transform.Position, point) <= radiusSquared; // (squared math to prevent calculating a lot of square roots)
+            return Vector3.DistanceSquared(Transform.Position, point) <= radiusSquared;
         }
     }
 
@@ -91,6 +97,7 @@ namespace DroneSwarmPathfinder.Core.Models
         public Vector3 Position { get; }
         public Quaternion Rotation { get; }
 
+        [JsonConstructor]
         public Waypoint(int stepIndex, Vector3 position, Quaternion rotation)
         {
             StepIndex = stepIndex;
@@ -107,11 +114,8 @@ namespace DroneSwarmPathfinder.Core.Models
         public int DroneId { get; init; }
         public List<Waypoint> Waypoints { get; init; } = new();
     }
-
 }
 
-
-// This polyfill fixes the CS0518 error when using 'init' in Unity
 namespace System.Runtime.CompilerServices
 {
     internal static class IsExternalInit { }
