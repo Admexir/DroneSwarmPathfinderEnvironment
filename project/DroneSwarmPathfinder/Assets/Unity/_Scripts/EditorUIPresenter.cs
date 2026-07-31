@@ -1,10 +1,11 @@
+using DroneSwarmPathfinder.Core.Environment;
+using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Unity.EditorTools;
+using DroneSwarmPathfinder.Unity.Managers;
+using DroneSwarmPathfinder.Unity.Services;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using DroneSwarmPathfinder.Core.Models;
-using DroneSwarmPathfinder.Core.Environment;
-using DroneSwarmPathfinder.Unity.Managers;
-using DroneSwarmPathfinder.Unity.EditorTools;
 
 namespace DroneSwarmPathfinder.Unity.UI
 {
@@ -20,11 +21,13 @@ namespace DroneSwarmPathfinder.Unity.UI
         private UIController _view;
         private Drone _currentlySelectedDrone;
         private BoxObstacle _currentlySelectedObstacle;
+        private IFileBrowserService _fileBrowser;
 
         private void Awake()
         {
             instance = this;
             _view = GetComponent<UIController>();
+            _fileBrowser = new DesktopFileBrowserService();
             SubscribeToViewEvents();
         }
 
@@ -141,14 +144,6 @@ namespace DroneSwarmPathfinder.Unity.UI
             SimulationPlaybackManager.instance.Restart();
         }
 
-        private void OnLoadConfigClicked()
-        {
-            Debug.Log("Loading Configuration...");
-            // ConfigSerializer.LoadFromFile("config.json");
-            // RefreshDroneList();
-            // RefreshObstacleList();
-        }
-
         private void OnPlaySimulationClicked()
         {
             Debug.Log("Starting Simulation Algorithm...");
@@ -160,11 +155,64 @@ namespace DroneSwarmPathfinder.Unity.UI
             // SimulationPlaybackManager.instance.Play(); 
         }
 
+        private string GetConfigFilePath()
+        {
+            // Saves exactly into your Unity project's root Assets folder for easy access
+            return System.IO.Path.Combine(Application.dataPath, "latest_config.json");
+        }
+
+        private void OnLoadConfigClicked()
+        {
+            // Pause simulation if running
+            if (SimulationPlaybackManager.instance != null && SimulationPlaybackManager.instance.isPlaying)
+                SimulationPlaybackManager.instance.Pause();
+
+            string path = _fileBrowser.RequestLoadPath("Load Simulation Configuration", "json");
+
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.Log("Configuration loading canceled by user");
+                return;
+            }
+
+            Debug.Log($"Loading configuration from \"{path}\"...");
+            string json = System.IO.File.ReadAllText(path);
+
+            var config = Core.Serialization.ConfigSerializer.Deserialize(json);
+            if (config != null)
+            {
+                DroneManager.instance.SpawnDrones(config.Drones);
+                ObstacleManager.instance.SpawnObstacles(config.Obstacles);
+
+                ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
+                ConfigEditorManager.instance.SetObstacleSelectionFromUI(new List<int>());
+
+                Debug.Log("Configuration loaded successfully");
+            }
+        }
+
         private void OnExportConfigClicked()
         {
-            Debug.Log("Exporting Configuration...");
-            // var config = DroneManager.instance.AllDroneModels.ToList();
-            // ConfigSerializer.SaveToFile(config, "latest_config.json");
+            string path = _fileBrowser.RequestSavePath("Export simulation configuration", "swarm_config", "json");
+
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.Log("Configuration exporting canceled by user");
+                return;
+            }
+
+            Debug.Log($"Exporting Configuration to \"{path}\"...");
+
+            var config = new Core.Serialization.SimulationConfig
+            {
+                Drones = DroneManager.instance.AllDroneModels.ToList(),
+                Obstacles = ObstacleManager.instance.AllObstacleModels.ToList()
+            };
+
+            string json = Core.Serialization.ConfigSerializer.Serialize(config);
+            System.IO.File.WriteAllText(path, json);
+
+            Debug.Log("Configuration exported successfully");
         }
 
         private void OnRemoveSelectedClicked()
