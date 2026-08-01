@@ -3,3 +3,41 @@
 
 .button {
 }
+
+.PlaybackControlButton {
+}
+
+.EditorToolsButton {
+}
+
+.ConfigToolsButton {
+}
+
+.InspectorLabel {
+    color: rgb(0, 0, 0);
+}
+
+.InspectorH1 {
+    color: rgb(0, 0, 0);
+    -unity-font-style: bold;
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/Unity/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=7d3fd71324fee9f48a7370f43b013325&type=3#NotInter-Regular");
+}
+
+.InspectorH2 {
+    color: rgb(0, 0, 0);
+}
+
+.InspectorListElement {
+    color: rgb(0, 0, 0);
+}
+
+.InspectorBackground {
+    background-color: rgba(255, 255, 255, 0.49);
+}
+
+.PlaybackToolsBackground {
+}
+
+.ConfigToolsBackground {
+}
