@@ -18,8 +18,10 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         private DiscreteGrid _grid;
 
         // Gizmos variables
-        private GameObject _gizmoRoot;
-        private Transform _gizmoX, _gizmoY, _gizmoZ;
+        [SerializeField] private GameObject _transformGizmoRoot;
+        [SerializeField] private float _gizmoSize;
+        private Transform _movementGizmoX, _movementGizmoY, _movementGizmoZ;
+        private Transform _sizeGizmoX, _sizeGizmoY, _sizeGizmoZ;
 
         public bool IsDraggingGizmo { get; private set; }
         private Vector3 _dragAxis;
@@ -36,11 +38,13 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
         private void Start()
         {
-            CreateRuntimeGizmo();
+            //CreateRuntimeGizmo();
 
             // Listen to selection changes for (currently...) both arrays
             _selectionManager.OnDroneSelectionChanged += (_) => UpdateGizmoState();
             _selectionManager.OnObstacleSelectionChanged += (_) => UpdateGizmoState();
+
+            InitializeGizmo();
         }
 
         public void InitializeGrid(float gridSize)
@@ -48,34 +52,17 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             _grid = new DiscreteGrid(gridSize);
         }
 
-        private void CreateRuntimeGizmo()
+        private void InitializeGizmo()
         {
-            _gizmoRoot = new GameObject("RuntimeGizmo");
+            var mArrowsRoot = GameObject.Find("Movement Arrows").transform;
+            _movementGizmoX = mArrowsRoot.GetChild(0);
+            _movementGizmoY = mArrowsRoot.GetChild(1);
+            _movementGizmoZ = mArrowsRoot.GetChild(2);
 
-            _gizmoX = GameObject.CreatePrimitive(PrimitiveType.Cylinder).transform;
-            SetupGizmoArrow(_gizmoX, Color.red, new Vector3(1, 0, 0));
-
-            _gizmoY = GameObject.CreatePrimitive(PrimitiveType.Cylinder).transform;
-            SetupGizmoArrow(_gizmoY, Color.green, new Vector3(0, 1, 0));
-
-            _gizmoZ = GameObject.CreatePrimitive(PrimitiveType.Cylinder).transform;
-            SetupGizmoArrow(_gizmoZ, Color.blue, new Vector3(0, 0, 1));
-
-            _gizmoRoot.SetActive(false);
-        }
-
-        private void SetupGizmoArrow(Transform arrow, Color color, Vector3 direction)
-        {
-            arrow.SetParent(_gizmoRoot.transform);
-            arrow.localScale = new Vector3(0.2f, 1f, 0.2f);
-            arrow.up = direction;
-            arrow.localPosition = direction * 1f;
-
-            var col = arrow.GetComponent<Collider>();
-            col.isTrigger = true;
-
-            var mat = new Material(Shader.Find("Standard")) { color = color };
-            arrow.GetComponent<Renderer>().material = mat;
+            var sArrowsRoot = GameObject.Find("Size Arrows").transform;
+            _sizeGizmoX = mArrowsRoot.GetChild(0);
+            _sizeGizmoY = mArrowsRoot.GetChild(1);
+            _sizeGizmoZ = mArrowsRoot.GetChild(2);
         }
 
         public void UpdateGizmoState()
@@ -84,11 +71,11 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
             if (totalSelectedCount == 0)
             {
-                _gizmoRoot.SetActive(false);
+                _transformGizmoRoot.SetActive(false);
                 return;
             }
 
-            _gizmoRoot.SetActive(true);
+            _transformGizmoRoot.SetActive(true);
 
             Vector3 center = Vector3.zero;
 
@@ -98,7 +85,12 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
             center /= totalSelectedCount;
 
-            _gizmoRoot.transform.position = center;
+            _transformGizmoRoot.transform.position = center;
+
+            // Update scale based on distance from the camera
+            float distance = Vector3.Distance(_cam.transform.position, _transformGizmoRoot.transform.position);
+            float scaleFactor = distance * Mathf.Tan(_cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            _transformGizmoRoot.transform.localScale = Vector3.one * (_gizmoSize * scaleFactor);
         }
 
         public bool RaycastGizmo(out Vector3 axis)
@@ -106,14 +98,14 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             axis = Vector3.zero;
 
             int totalSelectedCount = _selectionManager.SelectedDrones.Count + _selectionManager.SelectedObstacles.Count;
-            if (totalSelectedCount == 0 || !_gizmoRoot.activeSelf) return false;
+            if (totalSelectedCount == 0 || !_transformGizmoRoot.activeSelf) return false;
 
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                if (hit.collider.gameObject == _gizmoX.gameObject) { axis = Vector3.right; return true; }
-                if (hit.collider.gameObject == _gizmoY.gameObject) { axis = Vector3.up; return true; }
-                if (hit.collider.gameObject == _gizmoZ.gameObject) { axis = Vector3.forward; return true; }
+                if (hit.collider.gameObject == _movementGizmoX.gameObject) { axis = Vector3.right; return true; }
+                if (hit.collider.gameObject == _movementGizmoY.gameObject) { axis = Vector3.up; return true; }
+                if (hit.collider.gameObject == _movementGizmoZ.gameObject) { axis = Vector3.forward; return true; }
             }
             return false;
         }
@@ -126,7 +118,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             Vector3 planeNormal = _cam.transform.forward * -1;
             if (axis == Vector3.up) planeNormal = Vector3.Cross(_cam.transform.right, Vector3.up);
 
-            _dragPlane = new Plane(planeNormal, _gizmoRoot.transform.position);
+            _dragPlane = new Plane(planeNormal, _transformGizmoRoot.transform.position);
 
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
             if (_dragPlane.Raycast(ray, out float enter))
@@ -167,10 +159,10 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                     newCenter += view.transform.position;
                 }
 
-                _gizmoRoot.transform.position = newCenter / _dragStartPositions.Count;
+                _transformGizmoRoot.transform.position = newCenter / _dragStartPositions.Count;
 
                 // Fire event so UI or other systems can react
-                OnGizmoDragged?.Invoke(_gizmoRoot.transform.position);
+                OnGizmoDragged?.Invoke(_transformGizmoRoot.transform.position);
             }
         }
 
