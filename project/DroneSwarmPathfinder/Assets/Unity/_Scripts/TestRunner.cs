@@ -1,7 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using DroneSwarmPathfinder.Core.Models;
 using DroneSwarmPathfinder.Core.Simulation;
+using DroneSwarmPathfinder.Core.Environment;
+using DroneSwarmPathfinder.Algorithms;
 
 // (to prevent Unity.Vector3 collisions)
 using NumVector3 = System.Numerics.Vector3;
@@ -11,80 +14,77 @@ using DroneSwarmPathfinder.Unity.UI;
 namespace DroneSwarmPathfinder.Unity.Testing
 {
     /// <summary>
-    /// Creates mock drone pathing data for tests before implementing actual pathfinding algorithms and JSON serialization
+    /// Temporary script for testing the pathfinding API and simulation playback
     /// </summary>
     public class SimulationTester : MonoBehaviour
     {
         private void Start()
         {
-            Debug.LogWarning("USING MOCK TEST DATA!!! ----------------");
-            // Spawn drones
+            Debug.LogWarning("USING TRIVIAL TEST ALGORITHM, Press 'T' to run the pathfinder");
+
+            // Spawn initial test drones
             var drones = new List<Drone>
             {
                 new Drone(id: 0, new TransformData(new NumVector3(0, 0, 0)), groupId: 0),
                 new Drone(id: 1, new TransformData(new NumVector3(10, 0, 10)), groupId: 1)
             };
             Managers.DroneManager.instance.SpawnDrones(drones);
-
-            // Create mock paths
-            var paths = new Dictionary<int, DronePath>
-            {
-                {
-                    0, new DronePath
-                    {
-                        DroneId = 0,
-                        Waypoints = new List<Waypoint>
-                        {
-                            new Waypoint(0, new NumVector3(0, 0, 0), NumQuaternion.Identity),
-                            new Waypoint(2, new NumVector3(0, 5, 0), NumQuaternion.Identity),   // go up
-                            new Waypoint(5, new NumVector3(10, 5, 10), NumQuaternion.Identity)  // switch places with drone 1
-                        }
-                    }
-                },
-                {
-                    1, new DronePath
-                    {
-                        DroneId = 1,
-                        Waypoints = new List<Waypoint>
-                        {
-                            new Waypoint(0, new NumVector3(10, 0, 10), NumQuaternion.Identity),
-                            new Waypoint(3, new NumVector3(10, 5, 10), NumQuaternion.Identity), // go up (slower)
-                            new Waypoint(5, new NumVector3(0, 5, 0), NumQuaternion.Identity)    // switch places with drone 0
-                        }
-                    }
-                }
-            };
-
-            // Generate mock results
-            var dummyResult = new SimulationResult
-            {
-                IsSuccessful = true,
-                Paths = paths
-            };
-
-            // Load the simulation
-            Managers.SimulationPlaybackManager.instance.LoadSimulationResult(dummyResult);
-            //UIController.instance.RefreshDroneList();
-
-            Debug.Log("Mock test data loaded, use UI to control the simulation or use space to play and side arrow keys to step");
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            // Quick keyboard shortcut to trigger the algorithm
+            if (Input.GetKeyDown(KeyCode.T))
             {
-                if (Managers.SimulationPlaybackManager.instance.isPlaying) Managers.SimulationPlaybackManager.instance.Pause();
-                else Managers.SimulationPlaybackManager.instance.Play();
+                RunTestAlgorithm();
+            }
+        }
+
+        public async void RunTestAlgorithm()
+        {
+            Debug.Log("Starting Trivial Pathfinder...");
+
+            // Get initial State from the drone manager TODO: make this into a separate function outside of this temp test script
+            var initialDrones = Managers.DroneManager.instance.AllDroneModels.ToDictionary(d => d.ID, d => d);
+
+            // Define targets (swap positions)
+            var targetDrones = new Dictionary<int, Drone>();
+            if (initialDrones.ContainsKey(0) && initialDrones.ContainsKey(1))
+            {
+                targetDrones[0] = new Drone(0, new TransformData(new NumVector3(10, 0, 10)), 0);
+                targetDrones[1] = new Drone(1, new TransformData(new NumVector3(0, 0, 0)), 1);
             }
 
-            if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                Managers.SimulationPlaybackManager.instance.StepForward();
-            }
+            // Build the environment
+            var grid = new DiscreteGrid(1f);
+            var obstacles = Managers.ObstacleManager.instance != null
+                ? Managers.ObstacleManager.instance.AllObstacleModels
+                : new List<BoxObstacle>();
 
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            var worldEnv = new WorldEnvironment(grid, obstacles);
+
+            // Build the simulation context
+            var context = new SimulationContext
             {
-                Managers.SimulationPlaybackManager.instance.StepBackward();
+                InitialState = initialDrones,
+                TargetState = targetDrones,
+                Environment = worldEnv
+            };
+
+            // Run the algo async
+            IPathfindingAlgorithm pathfinder = new TrivialPathfinder();
+            SimulationResult result = await pathfinder.CalculatePathsAsync(context);
+
+            // Load results to playback
+            if (result.IsSuccessful)
+            {
+                Debug.Log($"Pathfinding Successful, computed in {result.ComputationTime.TotalMilliseconds} ms");
+                Managers.SimulationPlaybackManager.instance.LoadSimulationResult(result);
+                Managers.SimulationPlaybackManager.instance.Play();
+            }
+            else
+            {
+                Debug.LogError($"Pathfinding Failed: {result.Message}");
             }
         }
     }

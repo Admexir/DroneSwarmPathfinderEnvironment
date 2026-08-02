@@ -5,8 +5,9 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Simulation;
 
-namespace DroneSwarmPathfinder.Core.Simulation.Algorithms
+namespace DroneSwarmPathfinder.Algorithms
 {
     /// <summary>
     /// A simple demo algorithm that draws a straight line to the target
