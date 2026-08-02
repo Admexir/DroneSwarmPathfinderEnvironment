@@ -57,7 +57,7 @@
                 <ui:VisualElement style="width: 4px; height: 4px; background-color: rgb(150, 150, 150); border-radius: 2px; margin-bottom: 2px;"/>
                 <ui:VisualElement style="width: 4px; height: 4px; background-color: rgb(150, 150, 150); border-radius: 2px;"/>
             </ui:VisualElement>
-            <ui:Button name="tool-btn-select" text="Sel" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; background-color: rgb(70, 70, 70); border-radius: 4px;"/>
+            <ui:Button name="tool-btn-select" text="X" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; background-color: rgb(70, 70, 70); border-radius: 4px;"/>
             <ui:Button name="tool-btn-move" text="Mov" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; border-radius: 4px;"/>
             <ui:Button name="tool-btn-scale" text="Sca" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; border-radius: 4px;"/>
         </ui:VisualElement>
