@@ -1,7 +1,7 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System;
-using System.Numerics;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DroneSwarmPathfinder.Core.Simulation
 {
@@ -16,9 +16,9 @@ namespace DroneSwarmPathfinder.Core.Simulation
         public bool IsSuccessful { get; init; }
         public string Message { get; init; }
         public TimeSpan ComputationTime { get; init; }
-
         public IReadOnlyDictionary<int, DronePath> Paths { get; init; }
     }
+
     /// <summary>
     /// Record class holding information about the environment and drones for a simulation
     /// </summary>
@@ -26,16 +26,26 @@ namespace DroneSwarmPathfinder.Core.Simulation
     {
         public IReadOnlyDictionary<int, Drone> InitialState { get; init; }
         public IReadOnlyDictionary<int, Drone> TargetState { get; init; }
-        public DiscreteGrid EnvironmentGrid { get; init; }
+        public ISpatialEnvironment Environment { get; init; }
     }
 
     /// <summary>
-    /// Interface with methods for external pathfinding scripts to call - API for actions of a drone
+    /// API for any external pathfinding script to implement
     /// </summary>
     public interface IPathfindingAlgorithm
     {
         string AlgorithmName { get; }
-        Task<SimulationResult> CalculatePathsAsync(SimulationContext context);
-    }
+        string Description { get; }
 
+        /// <summary>
+        /// Calculates the paths for the swarm. Designed to run on a background thread.
+        /// </summary>
+        /// <param name="context">The simulation layout</param>
+        /// <param name="progress">Delegate wrapper for reporting percentual progress</param>
+        /// <param name="cancellationToken">Token to abort the calculation if the user stops it</param>
+        Task<SimulationResult> CalculatePathsAsync(
+            SimulationContext context,
+            IProgress<float> progress = null,
+            CancellationToken cancellationToken = default);
+    }
 }
