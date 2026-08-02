@@ -1,18 +1,30 @@
 using DroneSwarmPathfinder.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 
 namespace DroneSwarmPathfinder.Core.Environment
 {
+    /// <summary>
+    /// Class representing the entire physical environment, including spatial rules (grid/continuous) and obstacles
+    /// </summary>
     public class WorldEnvironment
     {
-        public List<ISpatialVolume> Obstacles { get; } = new();
-        // Later can use something like List<IForceVolume> ForceFields { get; } = new();
+        public ISpatialEnvironment SpatialRules { get; }
+
+        // Readonly collection to prevent algorithms from modifying the world state
+        public IReadOnlyList<IObstacleVolume> Obstacles { get; }
+
+        public WorldEnvironment(ISpatialEnvironment spatialRules, IEnumerable<IObstacleVolume> obstacles)
+        {
+            SpatialRules = spatialRules;
+            Obstacles = obstacles.ToList().AsReadOnly();
+        }
 
         /// <summary>
-        /// Gets if the point in space is empty
+        /// Gets if the point in space is empty (not inside any static obstacle)
         /// </summary>
         public bool IsWalkable(Vector3 position)
         {

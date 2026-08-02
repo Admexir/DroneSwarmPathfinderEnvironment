@@ -26,7 +26,7 @@ namespace DroneSwarmPathfinder.Core.Simulation
     {
         public IReadOnlyDictionary<int, Drone> InitialState { get; init; }
         public IReadOnlyDictionary<int, Drone> TargetState { get; init; }
-        public ISpatialEnvironment Environment { get; init; }
+        public WorldEnvironment Environment { get; init; }
     }
 
     /// <summary>
