@@ -51,5 +51,15 @@
                 </ui:Foldout>
             </ui:ScrollView>
         </ui:VisualElement>
+        <ui:VisualElement name="floating-toolbar" style="position: absolute; left: 300px; top: 50px; flex-direction: row; background-color: rgba(35, 35, 35, 0.9); border-radius: 6px; border-width: 1px; border-color: rgb(20, 20, 20); padding: 4px;">
+            <ui:VisualElement name="drag-handle" style="width: 15px; height: 100%; cursor: move-arrow; background-color: rgba(80, 80, 80, 0.5); border-radius: 3px; margin-right: 5px; align-items: center; justify-content: center;">
+                <ui:VisualElement style="width: 4px; height: 4px; background-color: rgb(150, 150, 150); border-radius: 2px; margin-bottom: 2px;"/>
+                <ui:VisualElement style="width: 4px; height: 4px; background-color: rgb(150, 150, 150); border-radius: 2px; margin-bottom: 2px;"/>
+                <ui:VisualElement style="width: 4px; height: 4px; background-color: rgb(150, 150, 150); border-radius: 2px;"/>
+            </ui:VisualElement>
+            <ui:Button name="tool-btn-select" text="Sel" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; background-color: rgb(70, 70, 70); border-radius: 4px;"/>
+            <ui:Button name="tool-btn-move" text="Mov" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; border-radius: 4px;"/>
+            <ui:Button name="tool-btn-scale" text="Sca" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; border-radius: 4px;"/>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

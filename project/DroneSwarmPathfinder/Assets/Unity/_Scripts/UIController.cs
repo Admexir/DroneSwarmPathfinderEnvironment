@@ -15,6 +15,16 @@ namespace DroneSwarmPathfinder.Unity.UI
         bool IsPointerOverUI();
     }
 
+    /// <summary>
+    /// Defines the active transform tool in the 3D scene editor
+    /// </summary>
+    public enum EditorToolMode
+    {
+        Select,
+        Move,
+        Scale
+    }
+
     [RequireComponent(typeof(UIDocument))]
     public class UIController : MonoBehaviour, IPointerStateProvider
     {
@@ -42,6 +52,21 @@ namespace DroneSwarmPathfinder.Unity.UI
         private TextField _obstacleIdInput;
         private Vector3Field _obstaclePositionInput;
         private Vector3Field _obstacleSizeInput;
+
+        // Toolbar UI
+        private VisualElement _floatingToolbar;
+        private VisualElement _dragHandle;
+        private Button _btnSelect;
+        private Button _btnMove;
+        private Button _btnScale;
+
+        // Toolbar dragging state
+        private bool _isDraggingToolbar = false;
+        private Vector2 _toolbarDragStartMousePos;
+        private Vector2 _toolbarDragStartPos;
+
+        // Toolbar events for other scripts to subscribe to
+        public event Action<EditorToolMode> OnToolClickedEvent;
 
         // Simulation events for other scripts to subscribe to 
         public event Action<int> OnTimeScaleChangedEvent;
@@ -94,6 +119,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             BindDroneUI(root);
             BindObstacleUI(root);
             BindActionButtons(root);
+            BindToolbarUI(root);
 
             SetPlaybackUIVisibility(false);
         }
@@ -207,7 +233,79 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
         }
 
-        #region Public View API (For Presenter)
+        private void BindToolbarUI(VisualElement root)
+        {
+            _floatingToolbar = root.Q<VisualElement>("floating-toolbar");
+            _dragHandle = root.Q<VisualElement>("drag-handle");
+            _btnSelect = root.Q<Button>("tool-btn-select");
+            _btnMove = root.Q<Button>("tool-btn-move");
+            _btnScale = root.Q<Button>("tool-btn-scale");
+
+            // 1. Bind Toolbar Dragging Logic (Purely visual, stays entirely in the View)
+            if (_dragHandle != null && _floatingToolbar != null)
+            {
+                _dragHandle.RegisterCallback<PointerDownEvent>(OnToolbarPointerDown);
+                _dragHandle.RegisterCallback<PointerMoveEvent>(OnToolbarPointerMove);
+                _dragHandle.RegisterCallback<PointerUpEvent>(OnToolbarPointerUp);
+                _dragHandle.RegisterCallback<PointerCaptureOutEvent>(OnToolbarPointerUp);
+            }
+
+            // 2. Bind Tool Buttons
+            if (_btnSelect != null) _btnSelect.clicked += () => OnToolClickedEvent?.Invoke(EditorToolMode.Select);
+            if (_btnMove != null) _btnMove.clicked += () => OnToolClickedEvent?.Invoke(EditorToolMode.Move);
+            if (_btnScale != null) _btnScale.clicked += () => OnToolClickedEvent?.Invoke(EditorToolMode.Scale);
+        }
+
+        #region Toolbar Dragging Logic (UI Toolkit)
+
+        private void OnToolbarPointerDown(PointerDownEvent evt)
+        {
+            _isDraggingToolbar = true;
+            _dragHandle.CapturePointer(evt.pointerId);
+            _toolbarDragStartMousePos = evt.position;
+            // resolvedStyle gets the current position 
+            _toolbarDragStartPos = new Vector2(_floatingToolbar.resolvedStyle.left, _floatingToolbar.resolvedStyle.top);
+            evt.StopPropagation();
+        }
+
+        private void OnToolbarPointerMove(PointerMoveEvent evt)
+        {
+            if (!_isDraggingToolbar || !_dragHandle.HasPointerCapture(evt.pointerId)) return;
+
+            Vector2 delta = (Vector2)evt.position - _toolbarDragStartMousePos;
+            _floatingToolbar.style.left = _toolbarDragStartPos.x + delta.x;
+            _floatingToolbar.style.top = _toolbarDragStartPos.y + delta.y;
+
+            evt.StopPropagation();
+        }
+
+        private void OnToolbarPointerUp(EventBase evt)
+        {
+            if (evt is IPointerEvent pointerEvent && _isDraggingToolbar && _dragHandle.HasPointerCapture(pointerEvent.pointerId))
+            {
+                _isDraggingToolbar = false;
+                _dragHandle.ReleasePointer(pointerEvent.pointerId);
+                evt.StopPropagation();
+            }
+        }
+
+        #endregion
+
+        #region Public view API (for presenter)
+        /// <summary>
+        /// Updates the highlighted button of the active tool button
+        /// </summary>
+        public void SetActiveToolVisual(EditorToolMode mode)
+        {
+            // Reset all to default color
+            // TODO: unhardcode color
+            var defaultColor = new StyleColor(new Color(0.2f, 0.2f, 0.2f, 0f));
+            var activeColor = new StyleColor(new Color(0.27f, 0.27f, 0.27f, 1f));
+
+            if (_btnSelect != null) _btnSelect.style.backgroundColor = (mode == EditorToolMode.Select) ? activeColor : defaultColor;
+            if (_btnMove != null) _btnMove.style.backgroundColor = (mode == EditorToolMode.Move) ? activeColor : defaultColor;
+            if (_btnScale != null) _btnScale.style.backgroundColor = (mode == EditorToolMode.Scale) ? activeColor : defaultColor;
+        }
 
         public void PopulateDroneList(List<Drone> drones)
         {

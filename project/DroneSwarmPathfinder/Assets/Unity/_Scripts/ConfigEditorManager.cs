@@ -1,4 +1,5 @@
 using DroneSwarmPathfinder.Unity.Environment;
+using DroneSwarmPathfinder.Unity.UI;
 using DroneSwarmPathfinder.Unity.Visuals;
 using System;
 using System.Collections.Generic;
@@ -54,6 +55,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
         public void SetDroneSelectionFromUI(IEnumerable<int> ids) => _selectionManager.SetDroneSelectionFromUI(ids);
         public void SetObstacleSelectionFromUI(IEnumerable<int> ids) => _selectionManager.SetObstacleSelectionFromUI(ids);
+        public void SetEditorToolMode(EditorToolMode mode) => _gizmoController.SetToolMode(mode);
 
         //private void HandleGizmoDragged(Vector3 newCenterPosition)
         //{

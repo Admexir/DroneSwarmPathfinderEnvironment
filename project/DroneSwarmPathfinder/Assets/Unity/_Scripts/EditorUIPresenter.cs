@@ -51,6 +51,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (ObstacleManager.instance != null)
                 ObstacleManager.instance.OnObstacleRosterChanged += RefreshObstacleList;
 
+            _view.SetActiveToolVisual(EditorToolMode.Move); // set the default TODO: unhardcode
+
             RefreshDroneList();
             RefreshObstacleList();
         }
@@ -83,6 +85,9 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnObstaclePositionChangedEvent += OnObstaclePositionChanged;
             _view.OnObstacleSizeChangedEvent += OnObstacleSizeChanged;
             _view.OnObstacleListSelectionChangedEvent += OnObstacleListSelectionChanged;
+
+            // Transform tools panel selection
+            _view.OnToolClickedEvent += OnToolClicked;
         }
 
         /// <summary>
@@ -325,6 +330,22 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             var selectedIds = selectedItems.Cast<BoxObstacle>().Select(o => o.ID).ToList();
             ConfigEditorManager.instance.SetObstacleSelectionFromUI(selectedIds);
+        }
+
+        #endregion
+
+        #region View event callbacks (toolbar)
+
+        private void OnToolClicked(EditorToolMode mode)
+        {
+            if (ConfigEditorManager.instance != null)
+            {
+                ConfigEditorManager.instance.SetEditorToolMode(mode); // Internal logic
+            }
+
+            _view.SetActiveToolVisual(mode); // Change highlight
+
+            Debug.Log($"Switched active editor tool to: {mode}");
         }
 
         #endregion

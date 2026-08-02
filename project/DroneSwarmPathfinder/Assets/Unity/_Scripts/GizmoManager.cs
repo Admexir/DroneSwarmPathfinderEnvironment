@@ -1,7 +1,8 @@
 using DroneSwarmPathfinder.Core.Environment;
-using DroneSwarmPathfinder.Unity.Managers;
-using DroneSwarmPathfinder.Unity.Visuals;
 using DroneSwarmPathfinder.Unity.Environment;
+using DroneSwarmPathfinder.Unity.Managers;
+using DroneSwarmPathfinder.Unity.UI;
+using DroneSwarmPathfinder.Unity.Visuals;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,6 +28,8 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         private Vector3 _dragAxis;
         private Plane _dragPlane;
         private Vector3 _dragStartIntersection;
+
+        public EditorToolMode CurrentToolMode { get; private set; } = EditorToolMode.Move;
 
         private Dictionary<ISelectableView, Vector3> _dragStartPositions = new();
 
@@ -65,11 +68,21 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             _sizeGizmoZ = mArrowsRoot.GetChild(2);
         }
 
+        /// <summary>
+        /// Sets the currently selected tool
+        /// </summary>
+        /// <param name="mode"></param>
+        public void SetToolMode(EditorToolMode mode)
+        {
+            CurrentToolMode = mode;
+            UpdateGizmoState(); // Force a visual update
+        }
+
         public void UpdateGizmoState()
         {
             int totalSelectedCount = _selectionManager.SelectedDrones.Count + _selectionManager.SelectedObstacles.Count;
 
-            if (totalSelectedCount == 0)
+            if (totalSelectedCount == 0 || CurrentToolMode == EditorToolMode.Select)
             {
                 _transformGizmoRoot.SetActive(false);
                 return;

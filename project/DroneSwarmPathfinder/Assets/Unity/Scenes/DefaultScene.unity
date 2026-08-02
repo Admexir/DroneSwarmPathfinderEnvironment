@@ -307,7 +307,7 @@ GameObject:
   - component: {fileID: 119414530}
   - component: {fileID: 119414529}
   - component: {fileID: 119414532}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: X
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -323,7 +323,7 @@ Transform:
   m_GameObject: {fileID: 119414527}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 1.0000001, y: 0, z: 0}
+  m_LocalPosition: {x: 1, y: 0, z: 0}
   m_LocalScale: {x: 0.1, y: 1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -484,7 +484,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 208059710}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Size Arrows
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -504,8 +504,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 556295707}
   - {fileID: 1684859850}
+  - {fileID: 556295707}
   - {fileID: 2034953900}
   m_Father: {fileID: 521450600}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -520,7 +520,7 @@ GameObject:
   - component: {fileID: 255454945}
   - component: {fileID: 255454947}
   - component: {fileID: 255454946}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -610,6 +610,10 @@ PrefabInstance:
     - target: {fileID: 2223487693596617006, guid: a052a98f61cff9b4d8b109842f5bce0d, type: 3}
       propertyPath: m_Name
       value: Cone
+      objectReference: {fileID: 0}
+    - target: {fileID: 2223487693596617006, guid: a052a98f61cff9b4d8b109842f5bce0d, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 8456200275277037637, guid: a052a98f61cff9b4d8b109842f5bce0d, type: 3}
       propertyPath: m_LocalScale.x
@@ -852,6 +856,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 387097d87f8a45941ab87254355a02c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  _transformGizmoRoot: {fileID: 843790512}
+  _gizmoSize: 0.1
 --- !u!114 &339913126
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -876,7 +882,7 @@ GameObject:
   - component: {fileID: 417851781}
   - component: {fileID: 417851780}
   - component: {fileID: 417851779}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: XZ
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -986,7 +992,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 448538019}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Movement Gizmos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1021,7 +1027,7 @@ GameObject:
   - component: {fileID: 520506559}
   - component: {fileID: 520506561}
   - component: {fileID: 520506560}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1109,13 +1115,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 521450600}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Size Gizmos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &521450600
 Transform:
   m_ObjectHideFlags: 0
@@ -1143,6 +1149,10 @@ PrefabInstance:
     - target: {fileID: 2223487693596617006, guid: a052a98f61cff9b4d8b109842f5bce0d, type: 3}
       propertyPath: m_Name
       value: Cone
+      objectReference: {fileID: 0}
+    - target: {fileID: 2223487693596617006, guid: a052a98f61cff9b4d8b109842f5bce0d, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 8456200275277037637, guid: a052a98f61cff9b4d8b109842f5bce0d, type: 3}
       propertyPath: m_LocalScale.x
@@ -1223,7 +1233,7 @@ GameObject:
   - component: {fileID: 556295710}
   - component: {fileID: 556295709}
   - component: {fileID: 556295708}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Y
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1356,7 +1366,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 843790513}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Transform Gizmos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1516,7 +1526,7 @@ GameObject:
   - component: {fileID: 990884947}
   - component: {fileID: 990884946}
   - component: {fileID: 990884945}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: YZ
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1727,7 +1737,7 @@ GameObject:
   - component: {fileID: 1172276466}
   - component: {fileID: 1172276465}
   - component: {fileID: 1172276468}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Y
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2086,7 +2096,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1557618620}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Movement Squares
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2122,7 +2132,7 @@ GameObject:
   - component: {fileID: 1581694724}
   - component: {fileID: 1581694726}
   - component: {fileID: 1581694725}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2327,7 +2337,7 @@ GameObject:
   - component: {fileID: 1684859853}
   - component: {fileID: 1684859852}
   - component: {fileID: 1684859851}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: X
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2343,7 +2353,7 @@ Transform:
   m_GameObject: {fileID: 1684859849}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 1.0000001, y: 0, z: 0}
+  m_LocalPosition: {x: 1, y: 0, z: 0}
   m_LocalScale: {x: 0.1, y: 1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2544,7 +2554,7 @@ GameObject:
   - component: {fileID: 1698967381}
   - component: {fileID: 1698967380}
   - component: {fileID: 1698967379}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: XY
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2884,7 +2894,7 @@ GameObject:
   - component: {fileID: 1820009851}
   - component: {fileID: 1820009850}
   - component: {fileID: 1820009853}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Z
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3021,7 +3031,7 @@ GameObject:
   - component: {fileID: 2034953903}
   - component: {fileID: 2034953902}
   - component: {fileID: 2034953901}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Z
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3154,7 +3164,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2136127424}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Movement Arrows
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3174,8 +3184,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1172276464}
   - {fileID: 119414528}
+  - {fileID: 1172276464}
   - {fileID: 1820009849}
   m_Father: {fileID: 448538019}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3195,6 +3205,10 @@ PrefabInstance:
     - target: {fileID: 2223487693596617006, guid: a052a98f61cff9b4d8b109842f5bce0d, type: 3}
       propertyPath: m_Name
       value: Cone
+      objectReference: {fileID: 0}
+    - target: {fileID: 2223487693596617006, guid: a052a98f61cff9b4d8b109842f5bce0d, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 8456200275277037637, guid: a052a98f61cff9b4d8b109842f5bce0d, type: 3}
       propertyPath: m_LocalScale.x
