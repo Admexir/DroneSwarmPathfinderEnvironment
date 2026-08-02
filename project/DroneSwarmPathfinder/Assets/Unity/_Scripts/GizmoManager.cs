@@ -36,8 +36,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
         public EditorToolMode CurrentToolMode { get; private set; } = EditorToolMode.Move;
 
-        private Dictionary<ISelectableView, Vector3> _dragStartPositions = new();
-        private Dictionary<ISelectableView, Vector3> _dragStartScales = new();
+        private Dictionary<ISelectableView, (Vector3 Position, Vector3 Scale)> _dragStartStates = new();
 
         private void Awake()
         {
@@ -74,6 +73,9 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             _sizeGizmoX = sArrowsRoot.GetChild(0);
             _sizeGizmoY = sArrowsRoot.GetChild(1);
             _sizeGizmoZ = sArrowsRoot.GetChild(2);
+
+            _movementGizmosRoot.SetActive(false);
+            _sizeGizmosRoot.SetActive(false);
         }
 
         /// <summary>
@@ -160,19 +162,16 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                 _dragStartIntersection = ray.GetPoint(enter);
             }
 
-            _dragStartPositions.Clear();
-            _dragStartScales.Clear();
+            _dragStartStates.Clear();
 
             // Store start positions and scales
             foreach (var d in _selectionManager.SelectedDrones)
             {
-                _dragStartPositions[d] = d.transform.position;
-                _dragStartScales[d] = d.transform.localScale;
+                _dragStartStates[d] = (d.transform.position, d.transform.localScale);
             }
             foreach (var o in _selectionManager.SelectedObstacles)
             {
-                _dragStartPositions[o] = o.transform.position;
-                _dragStartScales[o] = o.transform.localScale;
+                _dragStartStates[o] = (o.transform.position, o.transform.localScale);
             }
         }
 
@@ -187,13 +186,14 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                 float moveAmount = Vector3.Dot(moveDelta, _dragAxis);
                 Vector3 newCenter = Vector3.zero;
 
-                foreach (var kvp in _dragStartPositions)
+                foreach (var kvp in _dragStartStates)
                 {
                     ISelectableView view = kvp.Key;
 
                     if (CurrentToolMode == EditorToolMode.Move)
                     {
-                        Vector3 startPos = kvp.Value;
+                        Vector3 startPos = kvp.Value.Position;
+
                         Vector3 constrainedMove = _dragAxis * moveAmount;
                         Vector3 targetPos = startPos + constrainedMove;
 
@@ -206,8 +206,10 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                         // Only obstacles (and not drones) can be scaled
                         if (view is ObstacleView)
                         {
-                            Vector3 startScale = _dragStartScales[view];
-                            Vector3 constrainedScale = _dragAxis * (moveAmount * 2f); // *2 to scale it in "both directions"
+                            // Directly access the tuple value without a dictionary lookup
+                            Vector3 startScale = kvp.Value.Scale;
+
+                            Vector3 constrainedScale = _dragAxis * (moveAmount * 2f);
                             Vector3 targetScale = startScale + constrainedScale;
 
                             // Prevent edge case scales
@@ -222,7 +224,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                     newCenter += view.transform.position;
                 }
 
-                _transformGizmoRoot.transform.position = newCenter / _dragStartPositions.Count;
+                _transformGizmoRoot.transform.position = newCenter / _dragStartStates.Count;
 
                 // Fire event so UI or other systems can react (passing center pos)
                 OnGizmoDragged?.Invoke(_transformGizmoRoot.transform.position);
@@ -234,7 +236,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             IsDraggingGizmo = false;
 
             // Update core data by pattern matching types of views
-            foreach (var view in _dragStartPositions.Keys)
+            foreach (var view in _dragStartStates.Keys)
             {
                 if (CurrentToolMode == EditorToolMode.Move)
                 {
