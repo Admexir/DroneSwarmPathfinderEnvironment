@@ -21,6 +21,11 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         // Gizmos variables
         [SerializeField] private GameObject _transformGizmoRoot;
         [SerializeField] private float _gizmoSize;
+
+        // Roots for toggling visibility
+        private GameObject _movementGizmosRoot;
+        private GameObject _sizeGizmosRoot;
+
         private Transform _movementGizmoX, _movementGizmoY, _movementGizmoZ;
         private Transform _sizeGizmoX, _sizeGizmoY, _sizeGizmoZ;
 
@@ -32,6 +37,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         public EditorToolMode CurrentToolMode { get; private set; } = EditorToolMode.Move;
 
         private Dictionary<ISelectableView, Vector3> _dragStartPositions = new();
+        private Dictionary<ISelectableView, Vector3> _dragStartScales = new();
 
         private void Awake()
         {
@@ -41,8 +47,6 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
         private void Start()
         {
-            //CreateRuntimeGizmo();
-
             // Listen to selection changes for (currently...) both arrays
             _selectionManager.OnDroneSelectionChanged += (_) => UpdateGizmoState();
             _selectionManager.OnObstacleSelectionChanged += (_) => UpdateGizmoState();
@@ -57,21 +61,24 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
         private void InitializeGizmo()
         {
-            var mArrowsRoot = GameObject.Find("Movement Arrows").transform;
+            // Not sure if it has any impact on performance, but search only the children (TODO: maybe revert to GameObject.Find to prevent it from breaking when changing the scene hierarchy?)
+            _movementGizmosRoot = _transformGizmoRoot.transform.Find("Movement Gizmos").gameObject; 
+            _sizeGizmosRoot = _transformGizmoRoot.transform.Find("Size Gizmos").gameObject;
+
+            var mArrowsRoot = _movementGizmosRoot.transform.Find("Movement Arrows");
             _movementGizmoX = mArrowsRoot.GetChild(0);
             _movementGizmoY = mArrowsRoot.GetChild(1);
             _movementGizmoZ = mArrowsRoot.GetChild(2);
 
-            var sArrowsRoot = GameObject.Find("Size Arrows").transform;
-            _sizeGizmoX = mArrowsRoot.GetChild(0);
-            _sizeGizmoY = mArrowsRoot.GetChild(1);
-            _sizeGizmoZ = mArrowsRoot.GetChild(2);
+            var sArrowsRoot = _sizeGizmosRoot.transform.Find("Size Arrows");
+            _sizeGizmoX = sArrowsRoot.GetChild(0);
+            _sizeGizmoY = sArrowsRoot.GetChild(1);
+            _sizeGizmoZ = sArrowsRoot.GetChild(2);
         }
 
         /// <summary>
         /// Sets the currently selected tool
         /// </summary>
-        /// <param name="mode"></param>
         public void SetToolMode(EditorToolMode mode)
         {
             CurrentToolMode = mode;
@@ -89,6 +96,10 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             }
 
             _transformGizmoRoot.SetActive(true);
+
+            // Toggle tool gizmo roots based on current mode
+            _movementGizmosRoot.SetActive(CurrentToolMode == EditorToolMode.Move);
+            _sizeGizmosRoot.SetActive(CurrentToolMode == EditorToolMode.Scale);
 
             Vector3 center = Vector3.zero;
 
@@ -114,11 +125,21 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             if (totalSelectedCount == 0 || !_transformGizmoRoot.activeSelf) return false;
 
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            if (Physics.Raycast(ray, out RaycastHit hit)) // TODO: better way than this 3way pattern matching?
             {
-                if (hit.collider.gameObject == _movementGizmoX.gameObject) { axis = Vector3.right; return true; }
-                if (hit.collider.gameObject == _movementGizmoY.gameObject) { axis = Vector3.up; return true; }
-                if (hit.collider.gameObject == _movementGizmoZ.gameObject) { axis = Vector3.forward; return true; }
+                // Route raycast logic based on the active tool
+                if (CurrentToolMode == EditorToolMode.Move)
+                {
+                    if (hit.collider.gameObject == _movementGizmoX.gameObject) { axis = Vector3.right; return true; }
+                    if (hit.collider.gameObject == _movementGizmoY.gameObject) { axis = Vector3.up; return true; }
+                    if (hit.collider.gameObject == _movementGizmoZ.gameObject) { axis = Vector3.forward; return true; }
+                }
+                else if (CurrentToolMode == EditorToolMode.Scale)
+                {
+                    if (hit.collider.gameObject == _sizeGizmoX.gameObject) { axis = Vector3.right; return true; }
+                    if (hit.collider.gameObject == _sizeGizmoY.gameObject) { axis = Vector3.up; return true; }
+                    if (hit.collider.gameObject == _sizeGizmoZ.gameObject) { axis = Vector3.forward; return true; }
+                }
             }
             return false;
         }
@@ -140,10 +161,19 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             }
 
             _dragStartPositions.Clear();
+            _dragStartScales.Clear();
 
-            // Store start positions
-            foreach (var d in _selectionManager.SelectedDrones) _dragStartPositions[d] = d.transform.position;
-            foreach (var o in _selectionManager.SelectedObstacles) _dragStartPositions[o] = o.transform.position;
+            // Store start positions and scales
+            foreach (var d in _selectionManager.SelectedDrones)
+            {
+                _dragStartPositions[d] = d.transform.position;
+                _dragStartScales[d] = d.transform.localScale;
+            }
+            foreach (var o in _selectionManager.SelectedObstacles)
+            {
+                _dragStartPositions[o] = o.transform.position;
+                _dragStartScales[o] = o.transform.localScale;
+            }
         }
 
         public void UpdateGizmoDrag()
@@ -155,26 +185,46 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                 Vector3 moveDelta = currentIntersection - _dragStartIntersection;
 
                 float moveAmount = Vector3.Dot(moveDelta, _dragAxis);
-                Vector3 constrainedMove = _dragAxis * moveAmount;
-
                 Vector3 newCenter = Vector3.zero;
 
                 foreach (var kvp in _dragStartPositions)
                 {
                     ISelectableView view = kvp.Key;
-                    Vector3 startPos = kvp.Value;
 
-                    Vector3 targetPos = startPos + constrainedMove;
+                    if (CurrentToolMode == EditorToolMode.Move)
+                    {
+                        Vector3 startPos = kvp.Value;
+                        Vector3 constrainedMove = _dragAxis * moveAmount;
+                        Vector3 targetPos = startPos + constrainedMove;
 
-                    if (_grid != null) targetPos = _grid.ConstrainPosition(targetPos.ToNumerics()).ToUnity();
+                        if (_grid != null) targetPos = _grid.ConstrainPosition(targetPos.ToNumerics()).ToUnity();
 
-                    view.transform.position = targetPos;
+                        view.transform.position = targetPos;
+                    }
+                    else if (CurrentToolMode == EditorToolMode.Scale)
+                    {
+                        // Only obstacles (and not drones) can be scaled
+                        if (view is ObstacleView)
+                        {
+                            Vector3 startScale = _dragStartScales[view];
+                            Vector3 constrainedScale = _dragAxis * (moveAmount * 2f); // *2 to scale it in "both directions"
+                            Vector3 targetScale = startScale + constrainedScale;
+
+                            // Prevent edge case scales
+                            targetScale.x = Mathf.Max(0.1f, targetScale.x);
+                            targetScale.y = Mathf.Max(0.1f, targetScale.y);
+                            targetScale.z = Mathf.Max(0.1f, targetScale.z);
+
+                            view.transform.localScale = targetScale;
+                        }
+                    }
+
                     newCenter += view.transform.position;
                 }
 
                 _transformGizmoRoot.transform.position = newCenter / _dragStartPositions.Count;
 
-                // Fire event so UI or other systems can react
+                // Fire event so UI or other systems can react (passing center pos)
                 OnGizmoDragged?.Invoke(_transformGizmoRoot.transform.position);
             }
         }
@@ -186,13 +236,18 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             // Update core data by pattern matching types of views
             foreach (var view in _dragStartPositions.Keys)
             {
-                if (view is DroneView drone)
+                if (CurrentToolMode == EditorToolMode.Move)
                 {
-                    DroneManager.instance.UpdateDronePosition(drone.ID, drone.transform.position);
+                    if (view is DroneView drone)
+                        DroneManager.instance.UpdateDronePosition(drone.ID, drone.transform.position);
+                    else if (view is ObstacleView obstacle)
+                        ObstacleManager.instance.UpdateObstaclePosition(obstacle.ID, obstacle.transform.position);
                 }
-                else if (view is ObstacleView obstacle)
+                else if (CurrentToolMode == EditorToolMode.Scale)
                 {
-                    ObstacleManager.instance.UpdateObstaclePosition(obstacle.ID, obstacle.transform.position);
+                    // (No scaling for drones)
+                    if (view is ObstacleView obstacle)
+                        ObstacleManager.instance.UpdateObstacleSize(obstacle.ID, obstacle.transform.localScale);
                 }
             }
         }
