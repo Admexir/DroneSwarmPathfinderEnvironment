@@ -11,6 +11,26 @@ namespace DroneSwarmPathfinder.Core.Simulation
     public static class AlgorithmRegistry
     {
         /// <summary>
+        /// Loads an external DLL from the hard drive into the applications memory
+        /// </summary>
+        /// <param name="absoluteFilePath">The absolute path to the .dll file</param>
+        /// <returns>True if loaded successfully</returns>
+        public static bool LoadExternalAlgorithmDll(string absoluteFilePath)
+        {
+            try
+            {
+                Assembly.LoadFrom(absoluteFilePath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // TODO: show this in UI/some other way
+                Console.WriteLine($"Failed to load external algorithm: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Finds and instantiates all classes implementing IPathfindingAlgorithm
         /// </summary>
         public static IEnumerable<IPathfindingAlgorithm> DiscoverAlgorithms()
