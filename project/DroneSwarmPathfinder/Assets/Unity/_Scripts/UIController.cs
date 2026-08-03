@@ -40,6 +40,18 @@ namespace DroneSwarmPathfinder.Unity.UI
     {
         private UIDocument _uiDocument;
 
+        // Config selection UI
+        private Button _btnStartConfig;
+        private Button _btnTargetConfig;
+        private Toggle _toggleCurrentScene;
+        private VisualElement _iconStartConfig;
+        private VisualElement _iconTargetConfig;
+        [SerializeField] private Texture2D _fileIcon;
+
+        public event Action OnSelectStartConfigClickedEvent;
+        public event Action OnSelectTargetConfigClickedEvent;
+        public event Action<bool> OnUseCurrentSceneToggledEvent;
+
         // File and algorithm UI
         private DropdownField _algorithmDropdown;
         private Button _btnLoadAlgorithm;
@@ -145,10 +157,45 @@ namespace DroneSwarmPathfinder.Unity.UI
             BindSimulationUI(root);
             BindDroneUI(root);
             BindObstacleUI(root);
-            BindActionButtons(root);
+            BindConfigEditorUI(root);
             BindToolbarUI(root);
+            BindFileUI(root);
 
             SetActiveTab(UITabMode.Editor); // Default view
+        }
+
+        private void BindFileUI(VisualElement root)
+        {
+            // Bind config to scene loading
+            var loadConfigButton = root.Q<Button>("btn-load-config");
+            var exportConfigButton = root.Q<Button>("btn-export-config");
+
+            // Bind algorithm loading
+            _btnLoadAlgorithm = root.Q<Button>("btn-load-algorithm");
+            _algorithmDropdown = root.Q<DropdownField>("dropdown-algorithms");
+            _playSimulationButton = root.Q<Button>("btn-play-sim");
+
+            // Bind config for simulation loading
+            _btnStartConfig = root.Q<Button>("btn-start-config");
+            _btnTargetConfig = root.Q<Button>("btn-target-config");
+            _toggleCurrentScene = root.Q<Toggle>("toggle-current-scene");
+            _iconStartConfig = root.Q<VisualElement>("icon-start-config");
+            _iconTargetConfig = root.Q<VisualElement>("icon-target-config");
+
+            if (loadConfigButton != null) loadConfigButton.clicked += () => OnLoadConfigClickedEvent?.Invoke();
+            if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
+
+            if (_btnStartConfig != null) _btnStartConfig.clicked += () => OnSelectStartConfigClickedEvent?.Invoke();
+            if (_btnTargetConfig != null) _btnTargetConfig.clicked += () => OnSelectTargetConfigClickedEvent?.Invoke();
+            if (_toggleCurrentScene != null) _toggleCurrentScene.RegisterValueChangedCallback(evt => OnUseCurrentSceneToggledEvent?.Invoke(evt.newValue));
+
+            if (_btnLoadAlgorithm != null) _btnLoadAlgorithm.clicked += () => OnLoadAlgorithmClickedEvent?.Invoke();
+            if (_playSimulationButton != null) _playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
+
+            if (_algorithmDropdown != null)
+            {
+                _algorithmDropdown.RegisterValueChangedCallback(evt => OnAlgorithmSelectedEvent?.Invoke(evt.newValue));
+            }
         }
 
         private void BindTabsUI(VisualElement root)
@@ -258,31 +305,15 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_obstacleDetailsPanel != null) _obstacleDetailsPanel.style.display = DisplayStyle.None;
         }
 
-        private void BindActionButtons(VisualElement root)
+        private void BindConfigEditorUI(VisualElement root)
         {
             var addDroneButton = root.Q<Button>("btn-add-drone");
             var addObstacleButton = root.Q<Button>("btn-add-obstacle");
             var removeSelectedButton = root.Q<Button>("btn-remove-selected");
-            var loadConfigButton = root.Q<Button>("btn-load-config");
-            var exportConfigButton = root.Q<Button>("btn-export-config");
-
-            _btnLoadAlgorithm = root.Q<Button>("btn-load-algorithm");
-            _algorithmDropdown = root.Q<DropdownField>("dropdown-algorithms");
-            _playSimulationButton = root.Q<Button>("btn-play-sim");
 
             if (addDroneButton != null) addDroneButton.clicked += () => OnAddDroneClickedEvent?.Invoke();
             if (addObstacleButton != null) addObstacleButton.clicked += () => OnAddObstacleClickedEvent?.Invoke();
             if (removeSelectedButton != null) removeSelectedButton.clicked += () => OnRemoveSelectedClickedEvent?.Invoke();
-            if (loadConfigButton != null) loadConfigButton.clicked += () => OnLoadConfigClickedEvent?.Invoke();
-            if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
-
-            if (_btnLoadAlgorithm != null) _btnLoadAlgorithm.clicked += () => OnLoadAlgorithmClickedEvent?.Invoke();
-            if (_playSimulationButton != null) _playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
-
-            if (_algorithmDropdown != null)
-            {
-                _algorithmDropdown.RegisterValueChangedCallback(evt => OnAlgorithmSelectedEvent?.Invoke(evt.newValue));
-            }
         }
 
         private void BindToolbarUI(VisualElement root)
@@ -344,6 +375,46 @@ namespace DroneSwarmPathfinder.Unity.UI
         #endregion
 
         #region Public view API (for presenter)
+
+        public void UpdateStartConfigVisuals(bool useCurrentScene, bool hasFile, string fileName = null)
+        {
+            if (_btnStartConfig != null) _btnStartConfig.SetEnabled(!useCurrentScene);
+
+            if (useCurrentScene)
+                UpdateIconVisuals(_iconStartConfig, true, "Using current scene");
+            else
+                UpdateIconVisuals(_iconStartConfig, hasFile, hasFile ? fileName : "No file selected");
+        }
+
+        public void UpdateTargetConfigVisuals(bool hasFile, string fileName = null)
+        {
+            UpdateIconVisuals(_iconTargetConfig, hasFile, hasFile ? fileName : "No file selected");
+        }
+
+        private void UpdateIconVisuals(VisualElement containerElement, bool isSuccess, string tooltipText)
+        {
+            if (containerElement == null) return;
+
+            var label = containerElement.Q<Label>();
+            var iconElement = containerElement.Q<VisualElement>(className: "scenario-icon-img");
+
+            containerElement.tooltip = tooltipText;
+            iconElement.tooltip = tooltipText;
+
+            if (isSuccess)
+            {
+                iconElement.style.backgroundImage = new StyleBackground(_fileIcon);
+                containerElement.style.backgroundColor = new StyleColor(new Color(0.2f, 0.6f, 0.2f)); // turn to a green file icon
+                label.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                iconElement.style.backgroundImage = default(StyleBackground);
+                containerElement.style.backgroundColor = new StyleColor(new Color(0.6f, 0.3f, 0.3f)); // turn to a red X
+                label.style.display = DisplayStyle.Flex;
+                label.text = "X";
+            }
+        }
 
         public void PopulateAlgorithmDropdown(List<string> algorithmNames, string defaultSelection = null)
         {

@@ -55,10 +55,17 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (ObstacleManager.instance != null)
                 ObstacleManager.instance.OnObstacleRosterChanged += RefreshObstacleList;
 
+            // Subscribe to the algorithm managers' roster list changes
             if (AlgorithmManager.instance != null)
             {
                 AlgorithmManager.instance.OnAlgorithmsRefreshed += HandleAlgorithmsRefreshed;
                 AlgorithmManager.instance.OnSelectionValidityChanged += HandleAlgorithmSelectionValidity;
+            }
+
+            if (SimulationScenarioManager.instance != null)
+            {
+                SimulationScenarioManager.instance.OnScenarioStateChanged += HandleScenarioStateChanged;
+                HandleScenarioStateChanged(); // Initialize UI state on startup
             }
 
             _view.SetActiveToolVisual(EditorToolMode.Move); // set the default TODO: unhardcode
@@ -98,32 +105,13 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnObstacleSizeChangedEvent += OnObstacleSizeChanged;
             _view.OnObstacleListSelectionChangedEvent += OnObstacleListSelectionChanged;
 
+            // Scenario Selection
+            _view.OnSelectStartConfigClickedEvent += OnSelectStartConfigClicked;
+            _view.OnSelectTargetConfigClickedEvent += OnSelectTargetConfigClicked;
+            _view.OnUseCurrentSceneToggledEvent += OnUseCurrentSceneToggled;
+
             // Transform tools panel selection
             _view.OnToolClickedEvent += OnToolClicked;
-        }
-
-        /// <summary>
-        /// Helper method to refresh the algorithm list 
-        /// </summary>
-        private void RefreshAlgorithmList()
-        {
-            // Core logic retrieves all loaded instances
-            _availableAlgorithms = Core.Simulation.AlgorithmRegistry.DiscoverAlgorithms().ToList();
-
-            var names = _availableAlgorithms.Select(a => a.AlgorithmName).ToList();
-
-            if (_availableAlgorithms.Count > 0)
-            {
-                _selectedAlgorithm = _availableAlgorithms[0];
-                _view.PopulateAlgorithmDropdown(names, _selectedAlgorithm.AlgorithmName);
-                _view.SetPlaySimulationEnabled(true);
-            }
-            else
-            {
-                _selectedAlgorithm = null;
-                _view.PopulateAlgorithmDropdown(new List<string>());
-                _view.SetPlaySimulationEnabled(false);
-            }
         }
 
         /// <summary>
@@ -415,6 +403,44 @@ namespace DroneSwarmPathfinder.Unity.UI
         private void OnAlgorithmSelected(string algorithmName)
         {
             AlgorithmManager.instance.SelectAlgorithmByName(algorithmName);
+        }
+        #endregion
+
+        #region View event callbacks (config selection)
+        private void OnSelectStartConfigClicked()
+        {
+            string path = _fileBrowser.RequestLoadPath("Select Starting Configuration", "json");
+            if (!string.IsNullOrEmpty(path))
+            {
+                SimulationScenarioManager.instance.SetStartConfigPath(path);
+            }
+        }
+
+        private void OnSelectTargetConfigClicked()
+        {
+            string path = _fileBrowser.RequestLoadPath("Select Target Configuration", "json");
+            if (!string.IsNullOrEmpty(path))
+            {
+                SimulationScenarioManager.instance.SetTargetConfigPath(path);
+            }
+        }
+
+        private void OnUseCurrentSceneToggled(bool useCurrent)
+        {
+            SimulationScenarioManager.instance.SetUseCurrentScene(useCurrent);
+        }
+
+        private void HandleScenarioStateChanged()
+        {
+            var scenario = SimulationScenarioManager.instance;
+
+            bool hasStartFile = !string.IsNullOrEmpty(scenario.StartConfigPath);
+            string startFileName = hasStartFile ? System.IO.Path.GetFileName(scenario.StartConfigPath) : null;
+            _view.UpdateStartConfigVisuals(scenario.UseCurrentSceneForStart, hasStartFile, startFileName);
+
+            bool hasTargetFile = !string.IsNullOrEmpty(scenario.TargetConfigPath);
+            string targetFileName = hasTargetFile ? System.IO.Path.GetFileName(scenario.TargetConfigPath) : null;
+            _view.UpdateTargetConfigVisuals(hasTargetFile, targetFileName);
         }
         #endregion
 

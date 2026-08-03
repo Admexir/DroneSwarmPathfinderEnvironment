@@ -31,6 +31,24 @@
                     <ui:DropdownField name="dropdown-algorithms" label="Select:" style="margin-bottom: 5px; color: rgb(200, 200, 200);"/>
                     <ui:Button text="Import External DLL..." name="btn-load-algorithm" class="ConfigToolsButton" style="height: 30px; margin-bottom: 10px;"/>
                     <ui:Button text="Play Simulation" name="btn-play-sim" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold; margin-bottom: 5px; background-color: rgba(50, 120, 50, 0.8);"/>
+                    <ui:Label text="SCENARIO SETTINGS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px; margin-top: 5px;"/>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 2px;">
+                        <ui:Button text="Select Starting Config" name="btn-start-config" class="ConfigToolsButton" style="flex-grow: 1; height: 30px; margin-right: 5px;"/>
+                        <ui:VisualElement name="icon-start-config" tooltip="No file selected" style="width: 30px; height: 30px; background-color: rgb(150, 50, 50); border-radius: 4px; padding: 4px; align-items: center; justify-content: center;">
+                            <ui:VisualElement class="scenario-icon-img" style="flex-grow: 1; width: 100%; height: 100%; align-items: center; justify-content: center; -unity-background-scale-mode: scale-to-fit;">
+                                <ui:Label text="X" style="color: white; -unity-font-style: bold; margin: 0; padding: 0;"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Toggle label="Use Current Scene" name="toggle-current-scene" value="true" style="margin-bottom: 10px; color: rgb(200, 200, 200);"/>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                        <ui:Button text="Select Target Config" name="btn-target-config" class="ConfigToolsButton" style="flex-grow: 1; height: 30px; margin-right: 5px;"/>
+                        <ui:VisualElement name="icon-target-config" tooltip="No file selected" style="width: 30px; height: 30px; background-color: rgb(150, 50, 50); border-radius: 4px; padding: 4px; align-items: center; justify-content: center;">
+                            <ui:VisualElement class="scenario-icon-img" style="flex-grow: 1; width: 100%; height: 100%; align-items: center; justify-content: center; -unity-background-scale-mode: scale-to-fit;">
+                                <ui:Label text="X" style="color: white; -unity-font-style: bold; margin: 0; padding: 0;"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
@@ -73,6 +91,6 @@
             <ui:Button name="tool-btn-select" text="X" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; background-color: rgb(70, 70, 70); border-radius: 4px;"/>
             <ui:Button name="tool-btn-move" text="Mov" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; border-radius: 4px;"/>
             <ui:Button name="tool-btn-scale" text="Sca" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; border-radius: 4px;"/>
-        </ui:VisualElement>        
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
