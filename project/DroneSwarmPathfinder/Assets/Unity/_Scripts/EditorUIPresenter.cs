@@ -1,5 +1,6 @@
 using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Simulation;
 using DroneSwarmPathfinder.Unity.EditorTools;
 using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.Services;
@@ -22,6 +23,9 @@ namespace DroneSwarmPathfinder.Unity.UI
         private Drone _currentlySelectedDrone;
         private BoxObstacle _currentlySelectedObstacle;
         private IFileBrowserService _fileBrowser;
+
+        private List<IPathfindingAlgorithm> _availableAlgorithms = new();
+        private IPathfindingAlgorithm _selectedAlgorithm;
 
         private void Awake()
         {
@@ -51,6 +55,12 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (ObstacleManager.instance != null)
                 ObstacleManager.instance.OnObstacleRosterChanged += RefreshObstacleList;
 
+            if (AlgorithmManager.instance != null)
+            {
+                AlgorithmManager.instance.OnAlgorithmsRefreshed += HandleAlgorithmsRefreshed;
+                AlgorithmManager.instance.OnSelectionValidityChanged += HandleAlgorithmSelectionValidity;
+            }
+
             _view.SetActiveToolVisual(EditorToolMode.Move); // set the default TODO: unhardcode
 
             RefreshDroneList();
@@ -75,6 +85,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnLoadConfigClickedEvent += OnLoadConfigClicked;
             _view.OnPlaySimulationClickedEvent += OnPlaySimulationClicked;
             _view.OnExportConfigClickedEvent += OnExportConfigClicked;
+            _view.OnLoadAlgorithmClickedEvent += OnLoadAlgorithmClicked;
+            _view.OnAlgorithmSelectedEvent += OnAlgorithmSelected;
 
             // Details panel editing (Drones)
             _view.OnDroneGroupChangedEvent += OnDroneGroupChanged;
@@ -88,6 +100,30 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             // Transform tools panel selection
             _view.OnToolClickedEvent += OnToolClicked;
+        }
+
+        /// <summary>
+        /// Helper method to refresh the algorithm list 
+        /// </summary>
+        private void RefreshAlgorithmList()
+        {
+            // Core logic retrieves all loaded instances
+            _availableAlgorithms = Core.Simulation.AlgorithmRegistry.DiscoverAlgorithms().ToList();
+
+            var names = _availableAlgorithms.Select(a => a.AlgorithmName).ToList();
+
+            if (_availableAlgorithms.Count > 0)
+            {
+                _selectedAlgorithm = _availableAlgorithms[0];
+                _view.PopulateAlgorithmDropdown(names, _selectedAlgorithm.AlgorithmName);
+                _view.SetPlaySimulationEnabled(true);
+            }
+            else
+            {
+                _selectedAlgorithm = null;
+                _view.PopulateAlgorithmDropdown(new List<string>());
+                _view.SetPlaySimulationEnabled(false);
+            }
         }
 
         /// <summary>
@@ -108,7 +144,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.PopulateObstacleList(obstacles);
         }
 
-        #region View event callbacks (Simulation & Global)
+        #region View event callbacks (Simulation and Global)
 
         private void OnTimeScaleChanged(int newValue)
         {
@@ -151,18 +187,21 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         private void OnPlaySimulationClicked()
         {
-            Debug.Log("Starting Simulation Algorithm...");
-            _view.SetPlaybackUIVisibility(true);
+            var algorithm = AlgorithmManager.instance.SelectedAlgorithm;
+            if (algorithm == null) return;
 
-            // var config = DroneManager.instance.AllDroneModels.ToList();
-            // var result = PathfindingEngine.Solve(config); 
-            // SimulationPlaybackManager.instance.LoadSimulationResult(result); 
-            // SimulationPlaybackManager.instance.Play(); 
+            Debug.Log($"Preparing to run: {algorithm.AlgorithmName}...");
+            _view.SetActiveTab(UITabMode.Playback);
+
+            if (Simulation.PathfindingRunner.instance != null)
+            {
+                _ = Simulation.PathfindingRunner.instance.RunAlgorithmAsync(algorithm);
+            }
+            else { Debug.LogError("PathfindingRunner instance is missing from the scene :)"); }
         }
 
         private string GetConfigFilePath()
         {
-            // Saves exactly into your Unity project's root Assets folder for easy access
             return System.IO.Path.Combine(Application.dataPath, "latest_config.json");
         }
 
@@ -350,6 +389,35 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         #endregion
 
+        #region View event callbacks (algorithms)
+        private void OnLoadAlgorithmClicked()
+        {
+            string path = _fileBrowser.RequestLoadPath("Load External Pathfinding Algorithm", "dll");
+
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.Log("Algorithm loading canceled by user");
+                return;
+            }
+
+            Debug.Log($"Loading external algorithm from \"{path}\"...");
+
+            if (AlgorithmManager.instance.LoadExternalAlgorithm(path))
+            {
+                Debug.Log($"Successfully loaded DLL from \"{path}\"");
+            }
+            else
+            {
+                Debug.LogError($"Failed to load the selected DLL from \"{path}\"");
+            }
+        }
+
+        private void OnAlgorithmSelected(string algorithmName)
+        {
+            AlgorithmManager.instance.SelectAlgorithmByName(algorithmName);
+        }
+        #endregion
+
         #region External state callbacks
 
         /// <summary>
@@ -412,11 +480,18 @@ namespace DroneSwarmPathfinder.Unity.UI
             }
         }
 
+        /// <summary>
+        /// Called when the the simulation playback starts or stops
+        /// </summary>
+        /// <param name="isNowPlaying"></param>
         private void HandlePlaybackStateChanged(bool isNowPlaying)
         {
             _view.RefreshPlayButtonState(isNowPlaying);
         }
 
+        /// <summary>
+        /// Called when the user drags a gizmo
+        /// </summary>
         private void HandleGizmoDragged(Vector3 newPos)
         {
             // Update inspector UI values while dragging gizmos
@@ -430,6 +505,26 @@ namespace DroneSwarmPathfinder.Unity.UI
             {
                 _view.UpdateObstaclePositionField(newPos);
             }
+        }
+
+        /// <summary>
+        /// Called when the collection of loaded algorithms is changed
+        /// </summary>
+        private void HandleAlgorithmsRefreshed()
+        {
+            var algorithms = AlgorithmManager.instance.AvailableAlgorithms;
+            var names = algorithms.Select(a => a.AlgorithmName).ToList();
+
+            string defaultSelection = AlgorithmManager.instance.SelectedAlgorithm?.AlgorithmName;
+            _view.PopulateAlgorithmDropdown(names, defaultSelection);
+        }
+
+        /// <summary>
+        /// Called when a new pathfinding algorithm is selected
+        /// </summary>
+        private void HandleAlgorithmSelectionValidity(bool isValid)
+        {
+            _view.SetPlaySimulationEnabled(isValid);
         }
 
         #endregion

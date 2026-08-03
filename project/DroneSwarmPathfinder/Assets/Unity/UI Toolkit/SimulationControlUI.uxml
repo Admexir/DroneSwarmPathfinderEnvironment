@@ -1,24 +1,37 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/UI%20Toolkit/SimulationUIStyleSheet.uss?fileID=7433441132597879392&amp;guid=5e66364d4afe8fd4c97d3fd72c2048d8&amp;type=3#SimulationUIStyleSheet"/>
     <ui:VisualElement picking-mode="Ignore" style="flex-direction: row; justify-content: space-between; width: 100%; height: 100%;">
-        <ui:VisualElement name="left-container" style="width: 250px; height: 100%; justify-content: space-between;">
-            <ui:VisualElement name="tool-panel" class="ToolsBackground PlaybackToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px;">
-                <ui:Label text="PLAYBACK" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
-                <ui:Label text="Time Scale: 100%" name="time-scale-label" style="margin-bottom: 2px; -unity-font-style: bold; color: rgb(220, 220, 220);"/>
-                <ui:SliderInt value="100" high-value="100" name="time-scale-slider" style="margin-bottom: 15px;"/>
-                <ui:Button text="Play" name="btn-play" class="PlaybackControlButton"/>
-                <ui:Button text="Step &gt;" name="btn-step-forward" class="PlaybackControlButton"/>
-                <ui:Button text="Step &lt;" name="btn-step-back" class="PlaybackControlButton"/>
-                <ui:Button text="Restart" name="btn-restart" class="PlaybackControlButton" style="margin-bottom: 15px;"/>
-                <ui:Label text="EDITOR TOOLS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
-                <ui:Button text="Add Drone" name="btn-add-drone" class="EditorToolsButton"/>
-                <ui:Button text="Add Obstacle" name="btn-add-obstacle" class="EditorToolsButton"/>
-                <ui:Button text="Remove Selected" name="btn-remove-selected" class="EditorToolsButton"/>
+        <ui:VisualElement name="left-container" style="width: 250px; height: 100%;">
+            <ui:VisualElement name="tab-header" style="flex-direction: row; height: 35px; margin-bottom: 5px;">
+                <ui:Button name="tab-btn-editor" text="Editor" style="flex-grow: 1; margin: 0; border-radius: 4px 0 0 4px; -unity-font-style: bold;"/>
+                <ui:Button name="tab-btn-playback" text="Playback" style="flex-grow: 1; margin: 0; border-radius: 0; -unity-font-style: bold;"/>
+                <ui:Button name="tab-btn-file" text="File" style="flex-grow: 1; margin: 0; border-radius: 0 4px 4px 0; -unity-font-style: bold;"/>
             </ui:VisualElement>
-            <ui:VisualElement name="main-actions-panel" class="ConfigToolsPanel ConfigToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px;">
-                <ui:Button text="Load Configuration" name="btn-load-config" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold; margin-bottom: 5px;"/>
-                <ui:Button text="Play Simulation" name="btn-play-sim" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold; margin-bottom: 5px; background-color: rgba(50, 120, 50, 0.8);"/>
-                <ui:Button text="Export Configuration" name="btn-export-config" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold;"/>
+            <ui:VisualElement name="tab-content" style="flex-grow: 1;">
+                <ui:VisualElement name="panel-editor" class="ToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px; display: flex;">
+                    <ui:Label text="EDITOR TOOLS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
+                    <ui:Button text="Add Drone" name="btn-add-drone" class="EditorToolsButton"/>
+                    <ui:Button text="Add Obstacle" name="btn-add-obstacle" class="EditorToolsButton"/>
+                    <ui:Button text="Remove Selected" name="btn-remove-selected" class="EditorToolsButton"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="panel-playback" class="ToolsBackground PlaybackToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px; display: none;">
+                    <ui:Label text="PLAYBACK" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
+                    <ui:Label text="Time Scale: 100%" name="time-scale-label" style="margin-bottom: 2px; -unity-font-style: bold; color: rgb(220, 220, 220);"/>
+                    <ui:SliderInt value="100" high-value="100" name="time-scale-slider" style="margin-bottom: 15px;"/>
+                    <ui:Button text="Play" name="btn-play" class="PlaybackControlButton"/>
+                    <ui:Button text="Step &gt;" name="btn-step-forward" class="PlaybackControlButton"/>
+                    <ui:Button text="Step &lt;" name="btn-step-back" class="PlaybackControlButton"/>
+                    <ui:Button text="Restart" name="btn-restart" class="PlaybackControlButton" style="margin-bottom: 15px;"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="panel-file" class="ConfigToolsPanel ConfigToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px; display: none;">
+                    <ui:Label text="FILE &amp; SIMULATION" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
+                    <ui:Button text="Load Configuration" name="btn-load-config" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold; margin-bottom: 5px;"/>
+                    <ui:Button text="Export Configuration" name="btn-export-config" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold; margin-bottom: 15px;"/>
+                    <ui:Label text="ALGORITHM SELECTION" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
+                    <ui:DropdownField name="dropdown-algorithms" label="Select:" style="margin-bottom: 5px; color: rgb(200, 200, 200);"/>
+                    <ui:Button text="Import External DLL..." name="btn-load-algorithm" class="ConfigToolsButton" style="height: 30px; margin-bottom: 10px;"/>
+                    <ui:Button text="Play Simulation" name="btn-play-sim" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold; margin-bottom: 5px; background-color: rgba(50, 120, 50, 0.8);"/>
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="right-container" class="InspectorBackground" style="width: 300px; height: 100%; padding: 10px;">
@@ -60,6 +73,6 @@
             <ui:Button name="tool-btn-select" text="X" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; background-color: rgb(70, 70, 70); border-radius: 4px;"/>
             <ui:Button name="tool-btn-move" text="Mov" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; border-radius: 4px;"/>
             <ui:Button name="tool-btn-scale" text="Sca" class="floating-tool-btn ToolsBarButton" style="width: 40px; height: 40px; margin: 2px; padding: 0; border-radius: 4px;"/>
-        </ui:VisualElement>
+        </ui:VisualElement>        
     </ui:VisualElement>
 </ui:UXML>

@@ -25,10 +25,36 @@ namespace DroneSwarmPathfinder.Unity.UI
         Scale
     }
 
+    /// <summary>
+    /// Defines the active tab in the left UI panel
+    /// </summary>
+    public enum UITabMode
+    {
+        Editor,
+        Playback,
+        File
+    }
+
     [RequireComponent(typeof(UIDocument))]
     public class UIController : MonoBehaviour, IPointerStateProvider
     {
         private UIDocument _uiDocument;
+
+        // File and algorithm UI
+        private DropdownField _algorithmDropdown;
+        private Button _btnLoadAlgorithm;
+        private Button _playSimulationButton;
+
+        public event Action OnLoadAlgorithmClickedEvent;
+        public event Action<string> OnAlgorithmSelectedEvent;
+
+        // Tab UI
+        private Button _tabBtnEditor;
+        private Button _tabBtnPlayback;
+        private Button _tabBtnFile;
+        private VisualElement _panelEditor;
+        private VisualElement _panelPlayback;
+        private VisualElement _panelFile;
 
         // Simulation controls
         private Button _playButton;
@@ -115,13 +141,29 @@ namespace DroneSwarmPathfinder.Unity.UI
             var root = _uiDocument.rootVisualElement;
             root.RegisterCallback<NavigationMoveEvent>(evt => evt.PreventDefault()); // Should make all UI ignore arrow key-navigation
 
+            BindTabsUI(root);
             BindSimulationUI(root);
             BindDroneUI(root);
             BindObstacleUI(root);
             BindActionButtons(root);
             BindToolbarUI(root);
 
-            SetPlaybackUIVisibility(false);
+            SetActiveTab(UITabMode.Editor); // Default view
+        }
+
+        private void BindTabsUI(VisualElement root)
+        {
+            _tabBtnEditor = root.Q<Button>("tab-btn-editor");
+            _tabBtnPlayback = root.Q<Button>("tab-btn-playback");
+            _tabBtnFile = root.Q<Button>("tab-btn-file");
+
+            _panelEditor = root.Q<VisualElement>("panel-editor");
+            _panelPlayback = root.Q<VisualElement>("panel-playback");
+            _panelFile = root.Q<VisualElement>("panel-file");
+
+            if (_tabBtnEditor != null) _tabBtnEditor.clicked += () => SetActiveTab(UITabMode.Editor);
+            if (_tabBtnPlayback != null) _tabBtnPlayback.clicked += () => SetActiveTab(UITabMode.Playback);
+            if (_tabBtnFile != null) _tabBtnFile.clicked += () => SetActiveTab(UITabMode.File);
         }
 
         private void BindSimulationUI(VisualElement root)
@@ -222,15 +264,25 @@ namespace DroneSwarmPathfinder.Unity.UI
             var addObstacleButton = root.Q<Button>("btn-add-obstacle");
             var removeSelectedButton = root.Q<Button>("btn-remove-selected");
             var loadConfigButton = root.Q<Button>("btn-load-config");
-            var playSimulationButton = root.Q<Button>("btn-play-sim");
             var exportConfigButton = root.Q<Button>("btn-export-config");
+
+            _btnLoadAlgorithm = root.Q<Button>("btn-load-algorithm");
+            _algorithmDropdown = root.Q<DropdownField>("dropdown-algorithms");
+            _playSimulationButton = root.Q<Button>("btn-play-sim");
 
             if (addDroneButton != null) addDroneButton.clicked += () => OnAddDroneClickedEvent?.Invoke();
             if (addObstacleButton != null) addObstacleButton.clicked += () => OnAddObstacleClickedEvent?.Invoke();
             if (removeSelectedButton != null) removeSelectedButton.clicked += () => OnRemoveSelectedClickedEvent?.Invoke();
             if (loadConfigButton != null) loadConfigButton.clicked += () => OnLoadConfigClickedEvent?.Invoke();
-            if (playSimulationButton != null) playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
             if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
+
+            if (_btnLoadAlgorithm != null) _btnLoadAlgorithm.clicked += () => OnLoadAlgorithmClickedEvent?.Invoke();
+            if (_playSimulationButton != null) _playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
+
+            if (_algorithmDropdown != null)
+            {
+                _algorithmDropdown.RegisterValueChangedCallback(evt => OnAlgorithmSelectedEvent?.Invoke(evt.newValue));
+            }
         }
 
         private void BindToolbarUI(VisualElement root)
@@ -241,7 +293,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _btnMove = root.Q<Button>("tool-btn-move");
             _btnScale = root.Q<Button>("tool-btn-scale");
 
-            // 1. Bind Toolbar Dragging Logic (Purely visual, stays entirely in the View)
+            // Bind toolbar dragging logic
             if (_dragHandle != null && _floatingToolbar != null)
             {
                 _dragHandle.RegisterCallback<PointerDownEvent>(OnToolbarPointerDown);
@@ -250,7 +302,7 @@ namespace DroneSwarmPathfinder.Unity.UI
                 _dragHandle.RegisterCallback<PointerCaptureOutEvent>(OnToolbarPointerUp);
             }
 
-            // 2. Bind Tool Buttons
+            // Bind tool buttons
             if (_btnSelect != null) _btnSelect.clicked += () => OnToolClickedEvent?.Invoke(EditorToolMode.Select);
             if (_btnMove != null) _btnMove.clicked += () => OnToolClickedEvent?.Invoke(EditorToolMode.Move);
             if (_btnScale != null) _btnScale.clicked += () => OnToolClickedEvent?.Invoke(EditorToolMode.Scale);
@@ -292,6 +344,53 @@ namespace DroneSwarmPathfinder.Unity.UI
         #endregion
 
         #region Public view API (for presenter)
+
+        public void PopulateAlgorithmDropdown(List<string> algorithmNames, string defaultSelection = null)
+        {
+            if (_algorithmDropdown == null) return;
+
+            _algorithmDropdown.choices = algorithmNames;
+
+            if (!string.IsNullOrEmpty(defaultSelection) && algorithmNames.Contains(defaultSelection))
+                _algorithmDropdown.SetValueWithoutNotify(defaultSelection);
+            else if (algorithmNames.Count > 0)
+                _algorithmDropdown.SetValueWithoutNotify(algorithmNames[0]);
+            else
+                _algorithmDropdown.SetValueWithoutNotify("No algorithms found...");
+        }
+
+        public void SetPlaySimulationEnabled(bool isEnabled)
+        {
+            if (_playSimulationButton != null)
+            {
+                // UI Toolkit natively handles graying out/disabling clicks using SetEnabled
+                _playSimulationButton.SetEnabled(isEnabled);
+            }
+        }
+
+        public void SetActiveTab(UITabMode tab)
+        {
+            // Toggle panel visibility
+            if (_panelEditor != null) _panelEditor.style.display = (tab == UITabMode.Editor) ? DisplayStyle.Flex : DisplayStyle.None;
+            if (_panelPlayback != null) _panelPlayback.style.display = (tab == UITabMode.Playback) ? DisplayStyle.Flex : DisplayStyle.None;
+            if (_panelFile != null) _panelFile.style.display = (tab == UITabMode.File) ? DisplayStyle.Flex : DisplayStyle.None;
+
+            // Highlighting
+            var activeColor = new StyleColor(new Color(0.27f, 0.27f, 0.27f, 1f));
+            var defaultColor = new StyleColor(new Color(0.2f, 0.2f, 0.2f, 0f));
+
+            if (_tabBtnEditor != null) _tabBtnEditor.style.backgroundColor = (tab == UITabMode.Editor) ? activeColor : defaultColor;
+            if (_tabBtnPlayback != null) _tabBtnPlayback.style.backgroundColor = (tab == UITabMode.Playback) ? activeColor : defaultColor;
+            if (_tabBtnFile != null) _tabBtnFile.style.backgroundColor = (tab == UITabMode.File) ? activeColor : defaultColor;
+
+            // Edge case for when switching panels when editing an input field
+            if (tab != UITabMode.Playback && _timeScaleInput != null)
+            {
+                _timeScaleInput.style.display = DisplayStyle.None;
+                if (_timeScaleLabel != null) _timeScaleLabel.style.display = DisplayStyle.Flex;
+            }
+        }
+
         /// <summary>
         /// Updates the highlighted button of the active tool button
         /// </summary>
@@ -391,21 +490,6 @@ namespace DroneSwarmPathfinder.Unity.UI
         public void RefreshPlayButtonState(bool isPlaying)
         {
             if (_playButton != null) _playButton.text = isPlaying ? "Pause" : "Play";
-        }
-
-        public void SetPlaybackUIVisibility(bool isVisible)
-        {
-            var displayState = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
-
-            if (_playButton != null) _playButton.style.display = displayState;
-            if (_timeScaleLabel != null) _timeScaleLabel.style.display = displayState;
-            if (_timeScaleSlider != null) _timeScaleSlider.style.display = displayState;
-            if (_stepForwardButton != null) _stepForwardButton.style.display = displayState;
-            if (_stepBackButton != null) _stepBackButton.style.display = displayState;
-            if (_restartButton != null) _restartButton.style.display = displayState;
-
-            // If we are hiding UI while currently editing the time scale, hide the input field too
-            if (!isVisible && _timeScaleInput != null) _timeScaleInput.style.display = DisplayStyle.None;
         }
 
         #endregion
