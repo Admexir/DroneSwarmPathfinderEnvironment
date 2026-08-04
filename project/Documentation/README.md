@@ -131,7 +131,7 @@ namespace DroneSwarmPathfinder.Algorithms
             return new SimulationResult
             {
                 IsSuccessful = true,
-                Message = "Trivial path calculated successfully",
+                Message = "Path calculated successfully",
                 // ComputationTime = stopwatch.Elapsed, // You can track the time taken to compute the paths
                 Paths = paths
             };
