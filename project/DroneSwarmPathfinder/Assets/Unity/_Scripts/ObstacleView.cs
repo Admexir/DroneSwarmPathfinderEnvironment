@@ -1,4 +1,3 @@
-using DroneSwarmPathfinder.Unity.Visuals;
 using UnityEngine;
 
 namespace DroneSwarmPathfinder.Unity.Environment

@@ -23,6 +23,12 @@ The user interface is built using Unity's UI Toolkit (UXML) and is governed by a
 ### Abstraction of User Editor Tools
 User editor interactions (selection, gizmo dragging) use the `ISelectableView` interface. This allows other scripts (`EditorInputManager.cs`, `GizmoManager.cs`) to manipulate Drones, Obstacles, or any future entities without requiring code modifications in their respective classes.
 
+### Namespace Layout
+The project's architecture is divided into three primary namespace domains to separate the three parts of the project - Core, Algorithms and Unity.
+* **`DroneSwarmPathfinder.Core`** namespaces (which include `.Models`, `.Environment`, `.Simulation`, and `.Serialization`) contain pure C# logic. They define the fundamental data structures (like `Drone` and `TransformData`), spatial grid rules, JSON serialization protocols, and the `IPathfindingAlgorithm` API.
+* **`DroneSwarmPathfinder.Algorithms`** namespace is dedicated to the concrete implementations of these custom pathfinding plugins, such as the `TrivialPathfinder`, allowing them to execute entirely independently of the visual engine.
+* **`DroneSwarmPathfinder.Unity`** namespaces act as the integration layer with the Unity Engine. This domain is further subdivided into `.Managers` (for managing application state, rosters, and simulation playback), `.UI` (housing the Model-View-Presenter logic described above for the UI), `.EditorTools` (handling mouse input, raycasting, and gizmo manipulation), and `.Visuals` / `.Environment` (managing the physical 3D GameObjects and rendering of the drones, grids, and obstacles).
+
 ---
 
 ## The Pathfinding API
@@ -44,7 +50,13 @@ public interface IPathfindingAlgorithm
         CancellationToken cancellationToken = default);
 }
 ```  
+Parameters:
+* SimulationContext: An immutable record containing the InitialState (Drones), TargetState (target positions for Drones), and the WorldEnvironment (Grid rules and readonly Obstacles).
+* IProgress<float>: Used to send information about calculation progress back to the Unity UI thread.
+* CancellationToken: Monitored via cancellationToken.ThrowIfCancellationRequested() to allow the user to abort heavy calculations mid-flight.
   
+---
+
 Or an example implementation of a trivial pathfinding script:  
 ```C#
 using System;

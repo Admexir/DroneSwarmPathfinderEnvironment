@@ -70,8 +70,9 @@ Example structure:
 ```
 
 ## Creating Custom Scripts
-This is the most important piece of this project. To create a new pathfinding algorithm, follow these steps:
+The application uses **Reflection** to load external DLLs at runtime. This allows you to write pathfinding algorithms in standard IDEs without interacting with the Unity project.
 * **Create a New Visual Studio Project:** Create a new **Class Library** template project for C# and choose the .NET Standard 2.1. framework.
+    * *Note: Set the Language Version to C# 9.0 (or later) in your .csproj file to support init-only setters and records used by the Core API.*
 * **Add Reference To The Dll:** In the solution explorer, right click **Dependencies** and select **Add Project Reference**. Select browse and navigate to the "Algorithms API" folder in the DroneSwarmPathfinder repository. Select the **Core.dll** file.
 * **Write the Script:** Now create the pathfinding script by filling out the template at the bottom of this file. Then build it (ctrl + shift + b) and take the produced .dll to the next step.
 * **Import the Script:** Launch the Drone Swarm Pathfinder application, navigate to the **File** tab, click **Import External DLL...** and find the .dll from the previous step. After selecting it, it should appear in the dropdown above.

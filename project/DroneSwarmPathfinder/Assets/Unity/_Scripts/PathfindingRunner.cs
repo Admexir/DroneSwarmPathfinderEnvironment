@@ -8,9 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using NumVector3 = System.Numerics.Vector3;
 using DroneSwarmPathfinder.Core.Serialization;
-using NUnit.Framework;
 
 namespace DroneSwarmPathfinder.Unity.Simulation
 {
