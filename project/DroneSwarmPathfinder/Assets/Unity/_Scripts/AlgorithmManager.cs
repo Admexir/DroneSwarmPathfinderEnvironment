@@ -40,7 +40,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
                 SelectedAlgorithm = null;
                 OnSelectionValidityChanged?.Invoke(false);
             }
-
+            Debug.Log($"refresh, {AvailableAlgorithms.Count}, {string.Join(", ", AvailableAlgorithms.Select(a => a.AlgorithmName))}");
             OnAlgorithmsRefreshed?.Invoke();
         }
 

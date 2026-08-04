@@ -60,11 +60,12 @@ namespace DroneSwarmPathfinder.Unity.UI
             {
                 AlgorithmManager.instance.OnAlgorithmsRefreshed += HandleAlgorithmsRefreshed;
                 AlgorithmManager.instance.OnSelectionValidityChanged += HandleAlgorithmSelectionValidity;
+                HandleAlgorithmsRefreshed();
             }
 
-            if (SimulationScenarioManager.instance != null)
+            if (ConfigSelectionManager.instance != null)
             {
-                SimulationScenarioManager.instance.OnScenarioStateChanged += HandleScenarioStateChanged;
+                ConfigSelectionManager.instance.OnScenarioStateChanged += HandleScenarioStateChanged;
                 HandleScenarioStateChanged(); // Initialize UI state on startup
             }
 
@@ -412,7 +413,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             string path = _fileBrowser.RequestLoadPath("Select Starting Configuration", "json");
             if (!string.IsNullOrEmpty(path))
             {
-                SimulationScenarioManager.instance.SetStartConfigPath(path);
+                ConfigSelectionManager.instance.SetStartConfigPath(path);
             }
         }
 
@@ -421,18 +422,18 @@ namespace DroneSwarmPathfinder.Unity.UI
             string path = _fileBrowser.RequestLoadPath("Select Target Configuration", "json");
             if (!string.IsNullOrEmpty(path))
             {
-                SimulationScenarioManager.instance.SetTargetConfigPath(path);
+                ConfigSelectionManager.instance.SetTargetConfigPath(path);
             }
         }
 
         private void OnUseCurrentSceneToggled(bool useCurrent)
         {
-            SimulationScenarioManager.instance.SetUseCurrentScene(useCurrent);
+            ConfigSelectionManager.instance.SetUseCurrentScene(useCurrent);
         }
 
         private void HandleScenarioStateChanged()
         {
-            var scenario = SimulationScenarioManager.instance;
+            var scenario = ConfigSelectionManager.instance;
 
             bool hasStartFile = !string.IsNullOrEmpty(scenario.StartConfigPath);
             string startFileName = hasStartFile ? System.IO.Path.GetFileName(scenario.StartConfigPath) : null;

@@ -6,9 +6,9 @@ namespace DroneSwarmPathfinder.Unity.Managers
     /// <summary>
     /// Class used as a holder for the simulation configuration parameters
     /// </summary>
-    public class SimulationScenarioManager : MonoBehaviour
+    public class ConfigSelectionManager : MonoBehaviour
     {
-        public static SimulationScenarioManager instance;
+        public static ConfigSelectionManager instance;
         private void Awake() => instance = this;
 
         public bool UseCurrentSceneForStart { get; private set; } = true;

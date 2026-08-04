@@ -1,7 +1,9 @@
 {
-    "name": "Core",
+    "name": "Algorithms",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:8b1fe1e0ef697d44588c33e53d05f420"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

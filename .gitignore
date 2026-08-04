@@ -104,3 +104,4 @@ project/DroneSwarmPathfinder/[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
 # Auto-generated cache in Assets folder
 project/DroneSwarmPathfinder/[Aa]ssets/[Ss]ceneDependencyCache*
+/project/DroneSwarmPathfinder/ExternalPathfindingScriptTest/ExternalPathfindingScriptTest/obj

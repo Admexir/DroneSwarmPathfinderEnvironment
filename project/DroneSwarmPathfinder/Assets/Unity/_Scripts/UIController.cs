@@ -434,7 +434,6 @@ namespace DroneSwarmPathfinder.Unity.UI
         {
             if (_playSimulationButton != null)
             {
-                // UI Toolkit natively handles graying out/disabling clicks using SetEnabled
                 _playSimulationButton.SetEnabled(isEnabled);
             }
         }

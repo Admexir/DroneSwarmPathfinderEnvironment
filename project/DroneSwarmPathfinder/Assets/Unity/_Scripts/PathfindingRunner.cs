@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using NumVector3 = System.Numerics.Vector3;
+using DroneSwarmPathfinder.Core.Serialization;
+using NUnit.Framework;
 
 namespace DroneSwarmPathfinder.Unity.Simulation
 {
@@ -28,32 +30,38 @@ namespace DroneSwarmPathfinder.Unity.Simulation
 
             Debug.Log($"Starting {algorithm.AlgorithmName}...");
 
-            // Get initial state
-            var initialDrones = DroneManager.instance.AllDroneModels.ToDictionary(d => d.ID, d => d);
-
-            // TODO: Let user define target config (currently still hardcoded)
-            var targetDrones = new Dictionary<int, Drone>();
-            if (initialDrones.ContainsKey(0) && initialDrones.ContainsKey(1))
+            // Load the config files, deserialize and convert to used format (dicts)
+            string startConfigPath = ConfigSelectionManager.instance.StartConfigPath;
+            string targetConfigPath = ConfigSelectionManager.instance.TargetConfigPath;
+            if ((string.IsNullOrEmpty(startConfigPath) && !ConfigSelectionManager.instance.UseCurrentSceneForStart) || string.IsNullOrEmpty(targetConfigPath))
             {
-                targetDrones[0] = new Drone(0, new TransformData(new NumVector3(10, 0, 10)), 0);
-                targetDrones[1] = new Drone(1, new TransformData(new NumVector3(0, 0, 0)), 1);
+                Debug.LogError("Can't run pathfinding: start or target configuration path is empty");
+                return;
+            }
+
+            // Need to differentiate between "use current scene as initial config" and using file initial config
+            Dictionary<int, Drone> initialDrones;
+            IEnumerable<IObstacleVolume> obstacles;
+            if (!ConfigSelectionManager.instance.UseCurrentSceneForStart)
+            {
+                string startJson = System.IO.File.ReadAllText(startConfigPath);
+                var startConfig = ConfigSerializer.Deserialize(startJson);
+                initialDrones = startConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
+                obstacles = startConfig.Obstacles; //TODO: obstacles are saved in both start and end config... Maybe verify the configs are compatible?
             }
             else
             {
-                foreach (var kvp in initialDrones)
-                {
-                    targetDrones[kvp.Key] = kvp.Value;
-                }
+                initialDrones = DroneManager.instance.AllDroneModels.ToDictionary(d => d.ID, d => d);
+                obstacles = ObstacleManager.instance.AllObstacleModels ?? new List<BoxObstacle>(); //TODO: obstacles are saved in both start and end config... Maybe verify the configs are compatible?
             }
+            string targetJson = System.IO.File.ReadAllText(targetConfigPath);
+            var targetConfig = ConfigSerializer.Deserialize(targetJson);
+            var targetDrones = targetConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
+
 
             // Get environment
             float gridSize = ConfigEditorManager.instance != null ? ConfigEditorManager.instance.gridSize : 1f;
             var grid = new DiscreteGrid(gridSize);
-
-            var obstacles = ObstacleManager.instance != null
-                ? ObstacleManager.instance.AllObstacleModels
-                : new List<BoxObstacle>();
-
             var worldEnv = new WorldEnvironment(grid, obstacles);
 
             var context = new SimulationContext
