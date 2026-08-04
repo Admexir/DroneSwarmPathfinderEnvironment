@@ -6,7 +6,6 @@ using UnityEditor;
 
 namespace DroneSwarmPathfinder.Unity.Services
 {
-    //TODO: is the interface even needed? (dependency inversion for solid...)
     /// <summary>
     /// Interface used for abstracting file browser dialogs
     /// </summary>
