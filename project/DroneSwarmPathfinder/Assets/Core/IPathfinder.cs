@@ -38,7 +38,7 @@ namespace DroneSwarmPathfinder.Core.Simulation
         string Description { get; }
 
         /// <summary>
-        /// Calculates the paths for the swarm. Designed to run on a background thread.
+        /// Calculates the paths for the swarm. Designed to run on a background thread
         /// </summary>
         /// <param name="context">The simulation layout</param>
         /// <param name="progress">Delegate wrapper for reporting percentual progress</param>

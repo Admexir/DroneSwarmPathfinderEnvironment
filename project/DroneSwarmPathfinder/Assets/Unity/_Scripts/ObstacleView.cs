@@ -3,7 +3,7 @@ using UnityEngine;
 namespace DroneSwarmPathfinder.Unity.Environment
 {
     /// <summary>
-    /// Visual representation of an obstacle in the unity scene.
+    /// Visual representation of an obstacle in the unity scene
     /// </summary>
     public class ObstacleView : MonoBehaviour, ISelectableView
     {
