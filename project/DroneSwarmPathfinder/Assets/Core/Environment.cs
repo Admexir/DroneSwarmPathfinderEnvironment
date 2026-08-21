@@ -71,6 +71,7 @@ namespace DroneSwarmPathfinder.Core.Environment
     {
         public float CellSize { get; init; }
 
+        [Newtonsoft.Json.JsonConstructor]
         public DiscreteGrid(float cellSize = 1f)
         {
             CellSize = cellSize;

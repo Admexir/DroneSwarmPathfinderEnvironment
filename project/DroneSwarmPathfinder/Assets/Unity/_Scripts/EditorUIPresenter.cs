@@ -200,52 +200,45 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (SimulationPlaybackManager.instance != null && SimulationPlaybackManager.instance.isPlaying)
                 SimulationPlaybackManager.instance.Pause();
 
-            string path = _fileBrowser.RequestLoadPath("Load Simulation Configuration", "json");
-
+            string path = _fileBrowser.RequestLoadPath("Load Swarm Configuration", "json");
             if (string.IsNullOrEmpty(path))
             {
-                Debug.Log("Configuration loading canceled by user");
+                Debug.Log("Swarm configuration loading canceled by user");
                 return;
             }
 
-            Debug.Log($"Loading configuration from \"{path}\"...");
+            Debug.Log($"Loading swarm configuration from \"{path}\"...");
             string json = System.IO.File.ReadAllText(path);
 
-            var config = Core.Serialization.ConfigSerializer.Deserialize(json);
+            var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.DroneConfig>(json);
             if (config != null)
             {
                 DroneManager.instance.SpawnDrones(config.Drones);
-                ObstacleManager.instance.SpawnObstacles(config.Obstacles);
-
                 ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
-                ConfigEditorManager.instance.SetObstacleSelectionFromUI(new List<int>());
-
-                Debug.Log("Configuration loaded successfully");
+                Debug.Log("Swarm configuration loaded successfully");
             }
         }
 
         private void OnExportConfigClicked()
         {
-            string path = _fileBrowser.RequestSavePath("Export simulation configuration", "swarm_config", "json");
-
+            string path = _fileBrowser.RequestSavePath("Export Swarm Configuration", "swarm_config", "json");
             if (string.IsNullOrEmpty(path))
             {
-                Debug.Log("Configuration exporting canceled by user");
+                Debug.Log("Swarm configuration exporting canceled by user");
                 return;
             }
 
-            Debug.Log($"Exporting Configuration to \"{path}\"...");
+            Debug.Log($"Exporting Swarm Configuration to \"{path}\"...");
 
-            var config = new Core.Serialization.SimulationConfig
+            var config = new Core.Serialization.DroneConfig
             {
-                Drones = DroneManager.instance.AllDroneModels.ToList(),
-                Obstacles = ObstacleManager.instance.AllObstacleModels.ToList()
+                Drones = DroneManager.instance.AllDroneModels.ToList()
             };
 
-            string json = Core.Serialization.ConfigSerializer.Serialize(config);
+            // Use the new generic serializer
+            string json = Core.Serialization.JSONSerializer.Serialize(config);
             System.IO.File.WriteAllText(path, json);
-
-            Debug.Log("Configuration exported successfully");
+            Debug.Log("Swarm configuration exported successfully");
         }
 
         private void OnRemoveSelectedClicked()

@@ -43,7 +43,7 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             if (!ConfigSelectionManager.instance.UseCurrentSceneForStart)
             {
                 string startJson = System.IO.File.ReadAllText(startConfigPath);
-                var startConfig = ConfigSerializer.Deserialize(startJson);
+                var startConfig = JSONSerializer.Deserialize(startJson);
                 initialDrones = startConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
                 obstacles = startConfig.Obstacles; //TODO: obstacles are saved in both start and end config... Maybe verify the configs are compatible?
             }
@@ -53,7 +53,7 @@ namespace DroneSwarmPathfinder.Unity.Simulation
                 obstacles = ObstacleManager.instance.AllObstacleModels ?? new List<BoxObstacle>(); //TODO: obstacles are saved in both start and end config... Maybe verify the configs are compatible?
             }
             string targetJson = System.IO.File.ReadAllText(targetConfigPath);
-            var targetConfig = ConfigSerializer.Deserialize(targetJson);
+            var targetConfig = JSONSerializer.Deserialize(targetJson);
             var targetDrones = targetConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
 
 
