@@ -1,6 +1,6 @@
 Separate environment setup (obstacles etc.) and config setup
-	- remove obstacle/environment serialization from configs
-	- serialize obstacles
+	- remove obstacle/environment serialization from configs DONE
+	- serialize obstacles DONE
 	- serialize spatial rules (grid size)
 		- add UI for changing spatial rules (just grid size for now) in the editor
 	- add environment rules for physics simulation

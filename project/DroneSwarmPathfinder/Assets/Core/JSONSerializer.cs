@@ -30,6 +30,8 @@ namespace DroneSwarmPathfinder.Core.Serialization
             Obstacles = env.Obstacles.ToList();
             SpatialRules = env.SpatialRules;
         }
+
+        [JsonConstructor] private EnvironmentJSONConfig() { }
         // TODO: physics toggle and other environment specific variables go here
     }
 
