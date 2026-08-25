@@ -96,7 +96,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             {
                 foreach (int id in ids)
                 {
-                    var view = ObstacleManager.instance.GetObstacleView(id);
+                    var view = EnvironmentManager.instance.GetObstacleView(id);
                     if (view != null) SelectedObstacles.Add(view);
                 }
             }

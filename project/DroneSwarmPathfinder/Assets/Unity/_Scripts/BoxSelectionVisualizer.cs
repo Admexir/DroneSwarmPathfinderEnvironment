@@ -85,10 +85,10 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             }
 
             // Box select obstacles
-            var obsArr = ObstacleManager.instance.AllObstacleModels.ToArray();
+            var obsArr = EnvironmentManager.instance.AllObstacleModels.ToArray();
             foreach (var coreObs in obsArr)
             {
-                var obsView = ObstacleManager.instance.GetObstacleView(coreObs.ID);
+                var obsView = EnvironmentManager.instance.GetObstacleView(coreObs.ID);
                 if (obsView == null) continue;
 
                 Vector3 screenPos = _cam.WorldToScreenPoint(obsView.transform.position);

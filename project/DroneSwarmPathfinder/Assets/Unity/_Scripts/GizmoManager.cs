@@ -15,8 +15,8 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         public event Action<Vector3> OnGizmoDragged;
 
         private SelectionManager _selectionManager;
+        private EnvironmentManager _environmentManager;
         private Camera _cam;
-        private DiscreteGrid _grid;
 
         // Gizmos variables
         [SerializeField] private GameObject _transformGizmoRoot;
@@ -41,6 +41,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         private void Awake()
         {
             _selectionManager = GetComponent<SelectionManager>();
+            _environmentManager = GetComponent<EnvironmentManager>();
             _cam = Camera.main;
         }
 
@@ -51,11 +52,6 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             _selectionManager.OnObstacleSelectionChanged += (_) => UpdateGizmoState();
 
             InitializeGizmo();
-        }
-
-        public void InitializeGrid(float gridSize)
-        {
-            _grid = new DiscreteGrid(gridSize);
         }
 
         private void InitializeGizmo()
@@ -197,7 +193,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                         Vector3 constrainedMove = _dragAxis * moveAmount;
                         Vector3 targetPos = startPos + constrainedMove;
 
-                        if (_grid != null) targetPos = _grid.ConstrainPosition(targetPos.ToNumerics()).ToUnity();
+                        if (_environmentManager.Grid != null) targetPos = _environmentManager.Grid.ConstrainPosition(targetPos.ToNumerics()).ToUnity();
 
                         view.transform.position = targetPos;
                     }
@@ -243,13 +239,13 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                     if (view is DroneView drone)
                         DroneManager.instance.UpdateDronePosition(drone.ID, drone.transform.position);
                     else if (view is ObstacleView obstacle)
-                        ObstacleManager.instance.UpdateObstaclePosition(obstacle.ID, obstacle.transform.position);
+                        EnvironmentManager.instance.UpdateObstaclePosition(obstacle.ID, obstacle.transform.position);
                 }
                 else if (CurrentToolMode == EditorToolMode.Scale)
                 {
                     // (No scaling for drones)
                     if (view is ObstacleView obstacle)
-                        ObstacleManager.instance.UpdateObstacleSize(obstacle.ID, obstacle.transform.localScale);
+                        EnvironmentManager.instance.UpdateObstacleSize(obstacle.ID, obstacle.transform.localScale);
                 }
             }
         }

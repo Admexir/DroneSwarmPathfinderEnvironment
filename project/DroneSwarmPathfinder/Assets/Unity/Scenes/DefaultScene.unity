@@ -803,7 +803,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdc069604be4b14489f71bd3720a9e10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  gridSize: 3
 --- !u!114 &339913122
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -813,11 +812,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 339913117}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f581d64edf19fa14ebed3f2eef151681, type: 3}
+  m_Script: {fileID: 11500000, guid: 2656988bec54b29488bf7ce7ee297355, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObstacleManager
-  obstaclePrefab: {fileID: 6619716331931940229, guid: 697ecc75bd003674690b2bc07e4f63db, type: 3}
-  obstaclesHolder: {fileID: 76646624}
+  _obstaclePrefab: {fileID: 6619716331931940229, guid: 697ecc75bd003674690b2bc07e4f63db, type: 3}
+  _obstaclesHolder: {fileID: 76646624}
+  _baseGridSize: 1
 --- !u!114 &339913123
 MonoBehaviour:
   m_ObjectHideFlags: 0

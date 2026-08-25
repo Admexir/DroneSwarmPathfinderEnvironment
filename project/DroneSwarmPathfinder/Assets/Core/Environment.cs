@@ -42,6 +42,8 @@ namespace DroneSwarmPathfinder.Core.Environment
     /// </summary>
     public interface ISpatialVolume
     {
+        public int ID { get; }
+        public TransformData Transform { get; set; }
         /// <summary>
         /// Determines whether the given point is inside this volume
         /// </summary>

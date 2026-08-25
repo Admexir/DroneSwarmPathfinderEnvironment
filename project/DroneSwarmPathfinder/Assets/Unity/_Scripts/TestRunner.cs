@@ -57,8 +57,8 @@ namespace DroneSwarmPathfinder.Unity.Testing
 
             // Build the environment
             var grid = new DiscreteGrid(1f);
-            var obstacles = Managers.ObstacleManager.instance != null
-                ? Managers.ObstacleManager.instance.AllObstacleModels
+            var obstacles = Managers.EnvironmentManager.instance != null
+                ? Managers.EnvironmentManager.instance.AllObstacleModels
                 : new List<BoxObstacle>();
 
             var worldEnv = new WorldEnvironment(grid, obstacles);

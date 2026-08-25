@@ -1,4 +1,5 @@
 using DroneSwarmPathfinder.Unity.Environment;
+using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.UI;
 using DroneSwarmPathfinder.Unity.Visuals;
 using System;
@@ -14,7 +15,6 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         public static ConfigEditorManager instance;
 
         [Header("Editor Config")]
-        public float gridSize = 1f;
 
         private SelectionManager _selectionManager;
         private GizmoManager _gizmoController;
@@ -45,12 +45,6 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             instance = this;
             _selectionManager = GetComponent<SelectionManager>();
             _gizmoController = GetComponent<GizmoManager>();
-        }
-
-        private void Start()
-        {
-            _gizmoController.InitializeGrid(gridSize);
-            //_gizmoController.OnGizmoDragged += HandleGizmoDragged;
         }
 
         public void SetDroneSelectionFromUI(IEnumerable<int> ids) => _selectionManager.SetDroneSelectionFromUI(ids);

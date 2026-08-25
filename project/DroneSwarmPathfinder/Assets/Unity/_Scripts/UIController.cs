@@ -51,6 +51,8 @@ namespace DroneSwarmPathfinder.Unity.UI
         public event Action OnSelectStartConfigClickedEvent;
         public event Action OnSelectTargetConfigClickedEvent;
         public event Action<bool> OnUseCurrentSceneToggledEvent;
+        public event Action OnLoadEnvironmentClickedEvent;
+        public event Action OnExportEnvironmentClickedEvent;
 
         // File and algorithm UI
         private DropdownField _algorithmDropdown;
@@ -169,11 +171,25 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Bind config to scene loading
             var loadConfigButton = root.Q<Button>("btn-load-config");
             var exportConfigButton = root.Q<Button>("btn-export-config");
+            
+            if (loadConfigButton != null) loadConfigButton.clicked += () => OnLoadConfigClickedEvent?.Invoke();
+            if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
+
+            // Bind environment loading
+            var loadEnvButton = root.Q<Button>("btn-load-env");
+            var exportEnvButton = root.Q<Button>("btn-export-env");
+            
+            if (loadEnvButton != null) loadEnvButton.clicked += () => OnLoadEnvironmentClickedEvent?.Invoke();
+            if (exportEnvButton != null) exportEnvButton.clicked += () => OnExportEnvironmentClickedEvent?.Invoke();
 
             // Bind algorithm loading
             _btnLoadAlgorithm = root.Q<Button>("btn-load-algorithm");
             _algorithmDropdown = root.Q<DropdownField>("dropdown-algorithms");
             _playSimulationButton = root.Q<Button>("btn-play-sim");
+            
+            if (_algorithmDropdown != null) _algorithmDropdown.RegisterValueChangedCallback(evt => OnAlgorithmSelectedEvent?.Invoke(evt.newValue));
+            if (_btnLoadAlgorithm != null) _btnLoadAlgorithm.clicked += () => OnLoadAlgorithmClickedEvent?.Invoke();
+            if (_playSimulationButton != null) _playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
 
             // Bind config for simulation loading
             _btnStartConfig = root.Q<Button>("btn-start-config");
@@ -182,20 +198,9 @@ namespace DroneSwarmPathfinder.Unity.UI
             _iconStartConfig = root.Q<VisualElement>("icon-start-config");
             _iconTargetConfig = root.Q<VisualElement>("icon-target-config");
 
-            if (loadConfigButton != null) loadConfigButton.clicked += () => OnLoadConfigClickedEvent?.Invoke();
-            if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
-
             if (_btnStartConfig != null) _btnStartConfig.clicked += () => OnSelectStartConfigClickedEvent?.Invoke();
             if (_btnTargetConfig != null) _btnTargetConfig.clicked += () => OnSelectTargetConfigClickedEvent?.Invoke();
             if (_toggleCurrentScene != null) _toggleCurrentScene.RegisterValueChangedCallback(evt => OnUseCurrentSceneToggledEvent?.Invoke(evt.newValue));
-
-            if (_btnLoadAlgorithm != null) _btnLoadAlgorithm.clicked += () => OnLoadAlgorithmClickedEvent?.Invoke();
-            if (_playSimulationButton != null) _playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
-
-            if (_algorithmDropdown != null)
-            {
-                _algorithmDropdown.RegisterValueChangedCallback(evt => OnAlgorithmSelectedEvent?.Invoke(evt.newValue));
-            }
         }
 
         private void BindTabsUI(VisualElement root)
@@ -292,7 +297,7 @@ namespace DroneSwarmPathfinder.Unity.UI
                 _obstacleListView.bindItem = (element, index) =>
                 {
                     var label = element as Label;
-                    var obs = (BoxObstacle)_obstacleListView.itemsSource[index];
+                    var obs = (IObstacleVolume)_obstacleListView.itemsSource[index]; //ASDFGH
                     label.text = $"Obstacle {obs.ID}";
                 };
 
@@ -514,7 +519,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _dronePositionInput?.SetValueWithoutNotify(newPos);
         }
 
-        public void PopulateObstacleList(List<BoxObstacle> obstacles)
+        public void PopulateObstacleList(List<IObstacleVolume> obstacles)
         {
             if (_obstacleListView == null) return;
             _obstacleListView.itemsSource = obstacles;
@@ -531,7 +536,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _obstacleListView?.ClearSelection();
         }
 
-        public void ShowObstacleDetails(BoxObstacle obstacle, Vector3 unityPosition, Vector3 unitySize)
+        public void ShowObstacleDetails(IObstacleVolume obstacle, Vector3 unityPosition, Vector3 unitySize)
         {
             if (_obstacleIdInput != null) _obstacleIdInput.value = obstacle.ID.ToString();
             _obstaclePositionInput?.SetValueWithoutNotify(unityPosition);

@@ -9,7 +9,7 @@ namespace DroneSwarmPathfinder.Core.Serialization
     /// <summary>
     /// Class representing the saveable state of the drones
     /// </summary>
-    public class DroneConfig
+    public class DroneJSONConfig
     {
         public List<Drone> Drones { get; set; } = new();
 
@@ -20,11 +20,16 @@ namespace DroneSwarmPathfinder.Core.Serialization
     /// <summary>
     /// Class representing the saveable state of the environment
     /// </summary>
-    public class EnvironmentConfig
+    public class EnvironmentJSONConfig
     {
-        public List<BoxObstacle> Obstacles { get; set; } = new();
+        public List<IObstacleVolume> Obstacles { get; set; } = new();
         public ISpatialEnvironment SpatialRules { get; set; }
 
+        public EnvironmentJSONConfig(WorldEnvironment env)
+        {
+            Obstacles = env.Obstacles.ToList();
+            SpatialRules = env.SpatialRules;
+        }
         // TODO: physics toggle and other environment specific variables go here
     }
 
@@ -53,6 +58,15 @@ namespace DroneSwarmPathfinder.Core.Serialization
         /// </summary>
         public static T Deserialize<T>(string json)
         {
+            return JsonConvert.DeserializeObject<T>(json, _settings);
+        }
+
+        /// <summary>
+        /// Deserializes any JSON file at the given path into a C# object using Newtonsoft.Json
+        /// </summary>
+        public static T DeserializeFile<T>(string path)
+        {
+            var json = System.IO.File.ReadAllText(path);
             return JsonConvert.DeserializeObject<T>(json, _settings);
         }
     }

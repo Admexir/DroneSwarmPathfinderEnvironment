@@ -1,3 +1,4 @@
+using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Unity.EditorTools;
 using DroneSwarmPathfinder.Unity.Managers;
 using System.Collections.Generic;
@@ -65,7 +66,7 @@ namespace DroneSwarmPathfinder.Unity.Visuals
             // (draw only when there's a drone or multiple drones selected)
             if (ConfigEditorManager.instance == null || ConfigEditorManager.instance.SelectedDrones.Count == 0) return;
 
-            float gridSize = ConfigEditorManager.instance.gridSize;
+            float gridSize = EnvironmentManager.instance.Grid.CellSize;
             if (gridSize <= 0.01f) return;
 
             // Recalculate node alphas (position->alpha dictionary) only when something changed

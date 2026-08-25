@@ -14,6 +14,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
         public bool UseCurrentSceneForStart { get; private set; } = true;
         public string StartConfigPath { get; private set; }
         public string TargetConfigPath { get; private set; }
+        public string EnvironmentConfigPath { get; private set; }
 
         public event Action OnScenarioStateChanged; // For UI changes
 
@@ -26,6 +27,12 @@ namespace DroneSwarmPathfinder.Unity.Managers
         public void SetStartConfigPath(string path)
         {
             StartConfigPath = path;
+            OnScenarioStateChanged?.Invoke();
+        }
+
+        public void SetEnvironmentConfigPath(string path)
+        {
+            EnvironmentConfigPath = path;
             OnScenarioStateChanged?.Invoke();
         }
 

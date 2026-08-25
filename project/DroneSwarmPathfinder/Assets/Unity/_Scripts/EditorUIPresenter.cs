@@ -21,7 +21,7 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         private UIController _view;
         private Drone _currentlySelectedDrone;
-        private BoxObstacle _currentlySelectedObstacle;
+        private IObstacleVolume _currentlySelectedObstacle; //ASDFGH
         private IFileBrowserService _fileBrowser;
 
         private List<IPathfindingAlgorithm> _availableAlgorithms = new();
@@ -52,8 +52,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Subscribe to the managers' roster list changes
             if (DroneManager.instance != null)
                 DroneManager.instance.OnDroneRosterChanged += RefreshDroneList;
-            if (ObstacleManager.instance != null)
-                ObstacleManager.instance.OnObstacleRosterChanged += RefreshObstacleList;
+            if (EnvironmentManager.instance != null)
+                EnvironmentManager.instance.OnObstacleRosterChanged += RefreshObstacleList;
 
             // Subscribe to the algorithm managers' roster list changes
             if (AlgorithmManager.instance != null)
@@ -95,6 +95,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnExportConfigClickedEvent += OnExportConfigClicked;
             _view.OnLoadAlgorithmClickedEvent += OnLoadAlgorithmClicked;
             _view.OnAlgorithmSelectedEvent += OnAlgorithmSelected;
+            _view.OnLoadEnvironmentClickedEvent += OnLoadEnvironmentClicked;
+            _view.OnExportEnvironmentClickedEvent += OnExportEnvironmentClicked;
 
             // Details panel editing (Drones)
             _view.OnDroneGroupChangedEvent += OnDroneGroupChanged;
@@ -113,6 +115,8 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             // Transform tools panel selection
             _view.OnToolClickedEvent += OnToolClicked;
+
+
         }
 
         /// <summary>
@@ -129,11 +133,32 @@ namespace DroneSwarmPathfinder.Unity.UI
         /// </summary>
         public void RefreshObstacleList()
         {
-            var obstacles = ObstacleManager.instance.AllObstacleModels.ToList();
+            var obstacles = EnvironmentManager.instance.AllObstacleModels.ToList();
             _view.PopulateObstacleList(obstacles);
         }
+        
+        /// <summary>
+        /// Method to remove the currently selected drone (singular)
+        /// </summary>
+        private void OnRemoveSelectedClicked()
+        {
+            if (_currentlySelectedDrone != null)
+            {
+                Debug.Log($"Removing drone {_currentlySelectedDrone.ID}");
+                DroneManager.instance.RemoveDrone(_currentlySelectedDrone.ID);
+                _view.ClearDroneListSelection();
+            }
 
-        #region View event callbacks (Simulation and Global)
+            if (_currentlySelectedObstacle != null)
+            {
+                Debug.Log($"Removing obstacle {_currentlySelectedObstacle.ID}");
+                EnvironmentManager.instance.RemoveObstacle(_currentlySelectedObstacle.ID);
+                _view.ClearObstacleListSelection();
+            }
+        }
+
+
+        #region View event callbacks (Simulation)
 
         private void OnTimeScaleChanged(int newValue)
         {
@@ -188,6 +213,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             }
             else { Debug.LogError("PathfindingRunner instance is missing from the scene :)"); }
         }
+        #endregion
+        #region View event callbacks (file managment)
 
         private string GetConfigFilePath()
         {
@@ -210,7 +237,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             Debug.Log($"Loading swarm configuration from \"{path}\"...");
             string json = System.IO.File.ReadAllText(path);
 
-            var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.DroneConfig>(json);
+            var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.DroneJSONConfig>(json);
             if (config != null)
             {
                 DroneManager.instance.SpawnDrones(config.Drones);
@@ -230,34 +257,72 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             Debug.Log($"Exporting Swarm Configuration to \"{path}\"...");
 
-            var config = new Core.Serialization.DroneConfig
+            var config = new Core.Serialization.DroneJSONConfig
             {
                 Drones = DroneManager.instance.AllDroneModels.ToList()
             };
 
-            // Use the new generic serializer
+            // Use the generic serializer
             string json = Core.Serialization.JSONSerializer.Serialize(config);
             System.IO.File.WriteAllText(path, json);
             Debug.Log("Swarm configuration exported successfully");
         }
 
-        private void OnRemoveSelectedClicked()
+        private void OnLoadEnvironmentClicked()
         {
-            if (_currentlySelectedDrone != null)
+            // Pause simulation if running
+            if (SimulationPlaybackManager.instance != null && SimulationPlaybackManager.instance.isPlaying)
+                SimulationPlaybackManager.instance.Pause();
+
+            string path = _fileBrowser.RequestLoadPath("Load Environment Configuration", "json");
+            if (string.IsNullOrEmpty(path))
             {
-                Debug.Log($"Removing drone {_currentlySelectedDrone.ID}");
-                DroneManager.instance.RemoveDrone(_currentlySelectedDrone.ID);
-                _view.ClearDroneListSelection();
+                Debug.Log("Environment loading canceled by user");
+                return;
             }
 
-            if (_currentlySelectedObstacle != null)
+            Debug.Log($"Loading environment from \"{path}\"...");
+            string json = System.IO.File.ReadAllText(path);
+
+            var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.EnvironmentJSONConfig>(json);
+            if (config != null)
             {
-                Debug.Log($"Removing obstacle {_currentlySelectedObstacle.ID}");
-                ObstacleManager.instance.RemoveObstacle(_currentlySelectedObstacle.ID);
-                _view.ClearObstacleListSelection();
+                // Spawn the obstacles
+                EnvironmentManager.instance.SpawnObstacles(config.Obstacles);
+
+                // Load the spatial rules (Grid)
+                if (config.SpatialRules is DiscreteGrid grid)
+                {
+                    EnvironmentManager.instance.ChangeGridSize(grid.CellSize);
+                }
+
+                // Clear UI selection state
+                ConfigEditorManager.instance.SetObstacleSelectionFromUI(new List<int>());
+                Debug.Log("Environment loaded successfully");
             }
         }
 
+        private void OnExportEnvironmentClicked()
+        {
+            string path = _fileBrowser.RequestSavePath("Export Environment Configuration", "environment_config", "json");
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.Log("Environment exporting canceled by user");
+                return;
+            }
+
+            Debug.Log($"Exporting Environment to \"{path}\"...");
+
+            // Construct the environment from the current scene state
+            var config = new Core.Serialization.EnvironmentJSONConfig
+            (
+                EnvironmentManager.instance.GetCurrentEnvironment()
+            );
+
+            string json = Core.Serialization.JSONSerializer.Serialize(config);
+            System.IO.File.WriteAllText(path, json);
+            Debug.Log("Environment exported successfully");
+        }
         #endregion
 
         #region View event callbacks (drones)
@@ -312,7 +377,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         private void OnAddObstacleClicked()
         {
             Debug.Log("Adding new obstacle...");
-            var newObs = ObstacleManager.instance.CreateNewObstacle(Vector3.zero);
+            var newObs = EnvironmentManager.instance.CreateNewObstacle(Vector3.zero);
 
             // auto-select the newly created obstacle
             var selectedIds = new List<int> { newObs.ID };
@@ -323,13 +388,13 @@ namespace DroneSwarmPathfinder.Unity.UI
         private void OnObstaclePositionChanged(Vector3 newPosition)
         {
             if (_currentlySelectedObstacle == null) return;
-            ObstacleManager.instance.UpdateObstaclePosition(_currentlySelectedObstacle.ID, newPosition);
+            EnvironmentManager.instance.UpdateObstaclePosition(_currentlySelectedObstacle.ID, newPosition);
         }
 
         private void OnObstacleSizeChanged(Vector3 newSize)
         {
             if (_currentlySelectedObstacle == null) return;
-            ObstacleManager.instance.UpdateObstacleSize(_currentlySelectedObstacle.ID, newSize);
+            EnvironmentManager.instance.UpdateObstacleSize(_currentlySelectedObstacle.ID, newSize);
         }
 
         private void OnObstacleListSelectionChanged(IEnumerable<object> selectedItems)
@@ -342,7 +407,7 @@ namespace DroneSwarmPathfinder.Unity.UI
                 return;
             }
 
-            var selectedObstacle = (BoxObstacle)selectedItems.FirstOrDefault();
+            var selectedObstacle = (IObstacleVolume)selectedItems.FirstOrDefault(); //ASDFGH
             _currentlySelectedObstacle = selectedObstacle;
 
             Vector3 currentPos = selectedObstacle.Transform.Position.ToUnity();
@@ -483,7 +548,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             }
             else
             {
-                var obstacle = ObstacleManager.instance.GetObstacleDataFromID(selectedObstacleIds[0]);
+                var obstacle = EnvironmentManager.instance.GetObstacleDataFromID(selectedObstacleIds[0]);
                 if (obstacle == null)
                 {
                     Debug.LogError($"Tried selecting an obstacle with invalid ID {selectedObstacleIds[0]}!");
@@ -494,7 +559,7 @@ namespace DroneSwarmPathfinder.Unity.UI
                 _view.ShowObstacleDetails(obstacle, obstacle.Transform.Position.ToUnity(), obstacle.Transform.Size.ToUnity());
 
                 // Select all selected obstacles in the UI list
-                var models = ObstacleManager.instance.AllObstacleModels.ToList();
+                var models = EnvironmentManager.instance.AllObstacleModels.ToList();
                 var indices = selectedObstacleIds.Select(id => models.FindIndex(m => m.ID == id)).Where(index => index != -1).ToList();
                 _view.SetObstacleListSelectionWithoutNotify(indices);
             }

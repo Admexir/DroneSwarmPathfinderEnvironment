@@ -1,5 +1,6 @@
 using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Serialization;
 using DroneSwarmPathfinder.Unity.Environment;
 using System;
 using System.Collections.Generic;
@@ -9,30 +10,53 @@ using NumVector3 = System.Numerics.Vector3;
 namespace DroneSwarmPathfinder.Unity.Managers
 {
     /// <summary>
-    /// Script serving as a bridge between Unity/Core versions of obstacles, mostly mirrors DroneManager.cs
+    /// Script serving as a bridge between Unity/Core versions of the environment, similar to DroneManager.cs
     /// </summary>
-    public class ObstacleManager : MonoBehaviour
+    public class EnvironmentManager : MonoBehaviour
     {
-        public static ObstacleManager instance;
+        public static EnvironmentManager instance;
         private void Awake() => instance = this;
 
         [Header("Config")]
-        [SerializeField] private GameObject obstaclePrefab;
-        [SerializeField] private Transform obstaclesHolder;
+        [SerializeField] private GameObject _obstaclePrefab;
+        [SerializeField] private Transform _obstaclesHolder;
+        [SerializeField] private float _baseGridSize;
+
+        public DiscreteGrid Grid { get; private set; }
 
         // Event for the UI to listen to
         public event Action OnObstacleRosterChanged;
 
         private Dictionary<int, ObstacleView> _activeObstacles = new(); // Visualisation obstacle data
-        private Dictionary<int, BoxObstacle> _obstacleModels = new(); // Config obstacle data
+        private Dictionary<int, IObstacleVolume> _obstacleModels = new(); // Config obstacle data
 
         // Config obstacle data for config editor
-        public IEnumerable<BoxObstacle> AllObstacleModels => _obstacleModels.Values;
+        public IEnumerable<IObstacleVolume> AllObstacleModels => _obstacleModels.Values;
 
         // Unique ID counter
         private int _nextObstacleId = 0;
 
-        public void SpawnObstacles(IEnumerable<BoxObstacle> coreObstacles)
+        public WorldEnvironment GetCurrentEnvironment()
+        {
+            return new WorldEnvironment(Grid, AllObstacleModels);
+        }
+
+        private void Start()
+        {
+            ChangeGridSize(_baseGridSize);
+        }
+
+        #region grid managment
+        public void ChangeGridSize(float gridSize)
+        {
+            Grid = new DiscreteGrid(gridSize);
+        }
+
+        #endregion
+
+        #region obstacle managment
+
+        public void SpawnObstacles(IEnumerable<IObstacleVolume> coreObstacles)
         {
             ClearObstacles();
             foreach (var coreObstacle in coreObstacles)
@@ -92,7 +116,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// </summary>
         public void UpdateObstaclePosition(int id, Vector3 newPosition)
         {
-            if (_obstacleModels.TryGetValue(id, out BoxObstacle obstacle))
+            if (_obstacleModels.TryGetValue(id, out IObstacleVolume obstacle))
             {
                 obstacle.Transform = obstacle.Transform.WithPosition(newPosition.ToNumerics());
 
@@ -111,7 +135,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// </summary>
         public void UpdateObstacleSize(int id, Vector3 newSize)
         {
-            if (_obstacleModels.TryGetValue(id, out BoxObstacle obstacle))
+            if (_obstacleModels.TryGetValue(id, out IObstacleVolume obstacle))
             {
                 obstacle.Transform = obstacle.Transform.WithSize(newSize.ToNumerics());
                 _obstacleModels[id] = obstacle;
@@ -123,9 +147,9 @@ namespace DroneSwarmPathfinder.Unity.Managers
             }
         }
 
-        public BoxObstacle GetObstacleDataFromID(int id)
+        public IObstacleVolume GetObstacleDataFromID(int id)
         {
-            if (_obstacleModels.TryGetValue(id, out BoxObstacle val))
+            if (_obstacleModels.TryGetValue(id, out IObstacleVolume val))
             {
                 return val;
             }
@@ -140,9 +164,9 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// <summary>
         /// Adds an obstacle from config to the scene
         /// </summary>
-        private void AddExistingObstacle(BoxObstacle coreObstacle)
+        private void AddExistingObstacle(IObstacleVolume coreObstacle)
         {
-            GameObject obsObj = Instantiate(obstaclePrefab, obstaclesHolder);
+            GameObject obsObj = Instantiate(_obstaclePrefab, _obstaclesHolder);
 
             obsObj.transform.position = coreObstacle.Transform.Position.ToUnity();
             obsObj.transform.localScale = coreObstacle.Transform.Size.ToUnity();
@@ -157,4 +181,5 @@ namespace DroneSwarmPathfinder.Unity.Managers
             _obstacleModels.Add(coreObstacle.ID, coreObstacle);
         }
     }
+        #endregion
 }
