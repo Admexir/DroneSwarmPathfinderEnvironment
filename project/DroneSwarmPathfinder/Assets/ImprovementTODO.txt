@@ -1,24 +1,24 @@
 Separate environment setup (obstacles etc.) and config setup
-	- remove obstacle/environment serialization from configs DONE
-	- serialize obstacles DONE
-	- serialize spatial rules (grid size)
-		- add UI for changing spatial rules (just grid size for now) in the editor
-	- add environment rules for physics simulation
+	x- remove obstacle/environment serialization from configs DONE
+	x- serialize obstacles DONE
+	x- serialize spatial rules (grid size) DONE
+	x	- add UI for changing spatial rules (just grid size for now) in the editor
+	C- add environment rules for physics simulation CURRENT
 		- for now, only simple checkbox "use physics" (gravity, acceleration)
-	- deserialize ....
-	- add a compatibility check for selected configs (same number of drones, same IDs having same groups)
-	- warning for when drones are inside obstacles
-	- add UI for loading environments
+	x- deserialize .... DONE
+	C- add a compatibility check for selected configs (same number of drones, same IDs having same groups)
+	C- warning for when drones are inside obstacles 
+	x- add UI for loading environments DONE
 
 Allow to save simulation results to files and load them + result visualisation improvements
-	- show lines on calculated paths (+waypoints) with corresponding drone color (+ select drone on click)
-	- serialize results into JSON/other files (file has to contain configs, environment and the results...paths)
-	- deserialization of results
-	- add UI for loading/saving resutls
-		- add dropdown with recently used results for easy comparisons
-		- improvement idea: allow user to have 2 results loaded at the same time for comparison
-	- add a timeline for each drone showing its waypoints
-	- add logging feature to API - allow drones to save logs depending from their script for easier pathfinding script debugging
+	C1- show lines on calculated paths (+waypoints) with corresponding drone color (+ select drone on click)
+	C1- serialize results into JSON/other files (file has to contain configs, environment and the results...paths)
+	C1- deserialization of results
+	C1- add UI for loading/saving resutls
+		C1- add dropdown with recently used results for easy comparisons
+		C1- improvement idea: allow user to have 2 results loaded at the same time for comparison
+	C2- add a timeline for each drone showing its waypoints
+	C2- add logging feature to API - allow drones to save logs depending from their script for easier pathfinding script debugging
 
 Drone groups logic changes
 	- change drone groups to strings to allow naming them

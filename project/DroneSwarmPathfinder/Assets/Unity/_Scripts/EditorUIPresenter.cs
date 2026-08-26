@@ -88,6 +88,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnAddDroneClickedEvent += OnAddDroneClicked;
             _view.OnAddObstacleClickedEvent += OnAddObstacleClicked;
             _view.OnRemoveSelectedClickedEvent += OnRemoveSelectedClicked;
+            _view.OnGridSizeChangedEvent += OnGridSizeChanged;
 
             // Config and simulation
             _view.OnLoadConfigClickedEvent += OnLoadConfigClicked;
@@ -137,6 +138,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.PopulateObstacleList(obstacles);
         }
         
+
+        #region View event callbacks (global environment editing)
         /// <summary>
         /// Method to remove the currently selected drone (singular)
         /// </summary>
@@ -157,6 +160,14 @@ namespace DroneSwarmPathfinder.Unity.UI
             }
         }
 
+        /// <summary>
+        /// Changes the environment grid size to the given value
+        /// </summary>
+        private void OnGridSizeChanged(int newSize)
+        {
+            EnvironmentManager.instance.ChangeGridSize(newSize);
+        }
+        #endregion
 
         #region View event callbacks (Simulation)
 
@@ -214,6 +225,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             else { Debug.LogError("PathfindingRunner instance is missing from the scene :)"); }
         }
         #endregion
+
         #region View event callbacks (file managment)
 
         private string GetConfigFilePath()

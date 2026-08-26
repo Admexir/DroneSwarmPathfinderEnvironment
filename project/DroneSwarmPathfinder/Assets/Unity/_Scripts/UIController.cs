@@ -70,6 +70,9 @@ namespace DroneSwarmPathfinder.Unity.UI
         private VisualElement _panelPlayback;
         private VisualElement _panelFile;
 
+        // Editor UI
+        private IntegerField _gridSizeInput;
+
         // Simulation controls
         private Button _playButton;
         private Label _timeScaleLabel;
@@ -122,6 +125,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         public event Action OnLoadConfigClickedEvent;
         public event Action OnPlaySimulationClickedEvent;
         public event Action OnExportConfigClickedEvent;
+        public event Action<int> OnGridSizeChangedEvent;
 
         // Drones events for other scripts to subscribe to
         public event Action<IEnumerable<object>> OnDroneListSelectionChangedEvent;
@@ -315,10 +319,12 @@ namespace DroneSwarmPathfinder.Unity.UI
             var addDroneButton = root.Q<Button>("btn-add-drone");
             var addObstacleButton = root.Q<Button>("btn-add-obstacle");
             var removeSelectedButton = root.Q<Button>("btn-remove-selected");
+            _gridSizeInput = root.Q<IntegerField>("input-grid-size");
 
             if (addDroneButton != null) addDroneButton.clicked += () => OnAddDroneClickedEvent?.Invoke();
             if (addObstacleButton != null) addObstacleButton.clicked += () => OnAddObstacleClickedEvent?.Invoke();
             if (removeSelectedButton != null) removeSelectedButton.clicked += () => OnRemoveSelectedClickedEvent?.Invoke();
+            if (_gridSizeInput != null) _gridSizeInput.RegisterValueChangedCallback(evt => OnGridSizeChangedEvent?.Invoke(evt.newValue));
         }
 
         private void BindToolbarUI(VisualElement root)
@@ -441,6 +447,11 @@ namespace DroneSwarmPathfinder.Unity.UI
             {
                 _playSimulationButton.SetEnabled(isEnabled);
             }
+        }
+
+        public void SetGridSizeWithoutNotify(int size)
+        {
+            _gridSizeInput?.SetValueWithoutNotify(size);
         }
 
         public void SetActiveTab(UITabMode tab)

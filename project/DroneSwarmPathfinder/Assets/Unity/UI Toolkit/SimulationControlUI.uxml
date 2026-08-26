@@ -13,6 +13,8 @@
                     <ui:Button text="Add Drone" name="btn-add-drone" class="EditorToolsButton"/>
                     <ui:Button text="Add Obstacle" name="btn-add-obstacle" class="EditorToolsButton"/>
                     <ui:Button text="Remove Selected" name="btn-remove-selected" class="EditorToolsButton"/>
+                    <ui:Label text="ENVIRONMENT SETTINGS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px; margin-top: 10px;"/>
+                    <ui:IntegerField label="Grid Size" name="input-grid-size" value="1" style="color: rgb(200, 200, 200); margin-bottom: 5px;"/>
                 </ui:VisualElement>
                 <ui:VisualElement name="panel-playback" class="ToolsBackground PlaybackToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px; display: none;">
                     <ui:Label text="PLAYBACK" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
