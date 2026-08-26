@@ -28,6 +28,7 @@
                 <ui:VisualElement name="panel-file" class="ConfigToolsPanel ConfigToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px; display: none; flex-direction: column;">
                     <ui:ScrollView style="flex-grow: 1;">
                         <ui:Label text="SCENE CONFIGURATIONS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
+                        <ui:Toggle label="Use Physics" name="toggle-use-physics" value="false" style="margin-bottom: 10px; color: rgb(200, 200, 200);"/>
                         <ui:VisualElement style="flex-direction: row; margin-bottom: 4px;">
                             <ui:Button text="Load Swarm" name="btn-load-config" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 2px 0 0; padding: 0;"/>
                             <ui:Button text="Load Env" name="btn-load-env" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 0 0 2px; padding: 0;"/>

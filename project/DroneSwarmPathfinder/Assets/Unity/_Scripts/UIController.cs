@@ -40,27 +40,20 @@ namespace DroneSwarmPathfinder.Unity.UI
     {
         private UIDocument _uiDocument;
 
-        // Config selection UI
+        // File panel UI
         private Button _btnStartConfig;
         private Button _btnTargetConfig;
         private Toggle _toggleCurrentScene;
         private VisualElement _iconStartConfig;
         private VisualElement _iconTargetConfig;
+        private Toggle _usePhysicsToggle;
         [SerializeField] private Texture2D _fileIcon;
 
-        public event Action OnSelectStartConfigClickedEvent;
-        public event Action OnSelectTargetConfigClickedEvent;
-        public event Action<bool> OnUseCurrentSceneToggledEvent;
-        public event Action OnLoadEnvironmentClickedEvent;
-        public event Action OnExportEnvironmentClickedEvent;
-
-        // File and algorithm UI
+        // Algorithm UI
         private DropdownField _algorithmDropdown;
         private Button _btnLoadAlgorithm;
         private Button _playSimulationButton;
 
-        public event Action OnLoadAlgorithmClickedEvent;
-        public event Action<string> OnAlgorithmSelectedEvent;
 
         // Tab UI
         private Button _tabBtnEditor;
@@ -137,6 +130,17 @@ namespace DroneSwarmPathfinder.Unity.UI
         public event Action<Vector3> OnObstaclePositionChangedEvent;
         public event Action<Vector3> OnObstacleSizeChangedEvent;
 
+        // File panel events for other scripts to subscribe to
+        public event Action OnSelectStartConfigClickedEvent;
+        public event Action OnSelectTargetConfigClickedEvent;
+        public event Action<bool> OnUseCurrentSceneToggledEvent;
+        public event Action OnLoadEnvironmentClickedEvent;
+        public event Action OnExportEnvironmentClickedEvent;
+        public event Action<bool> OnUsePhysicsToggledEvent;
+        // (algorithm selection events)
+        public event Action OnLoadAlgorithmClickedEvent;
+        public event Action<string> OnAlgorithmSelectedEvent;
+
         /// <summary>
         /// Gets if mouse is currently over an interactible UI element (equivalent of EventSystem.Current.IsPointerOverGameObject())
         /// </summary>
@@ -205,6 +209,11 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_btnStartConfig != null) _btnStartConfig.clicked += () => OnSelectStartConfigClickedEvent?.Invoke();
             if (_btnTargetConfig != null) _btnTargetConfig.clicked += () => OnSelectTargetConfigClickedEvent?.Invoke();
             if (_toggleCurrentScene != null) _toggleCurrentScene.RegisterValueChangedCallback(evt => OnUseCurrentSceneToggledEvent?.Invoke(evt.newValue));
+
+            // Bind environment settings
+            _usePhysicsToggle = root.Q<Toggle>("toggle-use-physics");
+
+            if (_usePhysicsToggle != null) _usePhysicsToggle.RegisterValueChangedCallback(evt => OnUsePhysicsToggledEvent?.Invoke(evt.newValue));
         }
 
         private void BindTabsUI(VisualElement root)
@@ -449,6 +458,9 @@ namespace DroneSwarmPathfinder.Unity.UI
             }
         }
 
+        /// <summary>
+        /// Changes the grid size UI value without triggering the change event
+        /// </summary>
         public void SetGridSizeWithoutNotify(int size)
         {
             _gridSizeInput?.SetValueWithoutNotify(size);
@@ -499,6 +511,9 @@ namespace DroneSwarmPathfinder.Unity.UI
             _droneListView.Rebuild();
         }
 
+        /// <summary>
+        /// Selects the given indices in the drones list without triggering the selection event
+        /// </summary>
         public void SetDroneListSelectionWithoutNotify(List<int> indices)
         {
             _droneListView?.SetSelectionWithoutNotify(indices);
@@ -523,7 +538,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         }
 
         /// <summary>
-        /// Updates the inspector fields for drone position without triggering the change event
+        /// Updates the inspector fields UI for drone position without triggering the change event
         /// </summary>
         public void UpdateDronePositionField(Vector3 newPos)
         {
@@ -537,6 +552,9 @@ namespace DroneSwarmPathfinder.Unity.UI
             _obstacleListView.Rebuild();
         }
 
+        /// <summary>
+        /// Selects the given indices in the obstacle list without triggering the selection event
+        /// </summary>
         public void SetObstacleListSelectionWithoutNotify(List<int> indices)
         {
             _obstacleListView?.SetSelectionWithoutNotify(indices);
@@ -576,6 +594,14 @@ namespace DroneSwarmPathfinder.Unity.UI
         public void RefreshPlayButtonState(bool isPlaying)
         {
             if (_playButton != null) _playButton.text = isPlaying ? "Pause" : "Play";
+        }
+
+        /// <summary>
+        /// Updates the "use physics" checkbox UI without triggering the change event
+        /// </summary>
+        public void SetUsePhysicsWithoutNotify(bool usePhysics)
+        {
+            _usePhysicsToggle?.SetValueWithoutNotify(usePhysics);
         }
 
         #endregion

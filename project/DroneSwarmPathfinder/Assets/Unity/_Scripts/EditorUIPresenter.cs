@@ -117,6 +117,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Transform tools panel selection
             _view.OnToolClickedEvent += OnToolClicked;
 
+            // Environment settings
+            _view.OnUsePhysicsToggledEvent += OnUsePhysicsToggled;
 
         }
 
@@ -139,7 +141,6 @@ namespace DroneSwarmPathfinder.Unity.UI
         }
         
 
-        #region View event callbacks (global environment editing)
         /// <summary>
         /// Method to remove the currently selected drone (singular)
         /// </summary>
@@ -160,12 +161,17 @@ namespace DroneSwarmPathfinder.Unity.UI
             }
         }
 
+        #region View event callbacks (environment settings)
         /// <summary>
         /// Changes the environment grid size to the given value
         /// </summary>
         private void OnGridSizeChanged(int newSize)
         {
             EnvironmentManager.instance.ChangeGridSize(newSize);
+        }
+        private void OnUsePhysicsToggled(bool usePhysics)
+        {
+            Debug.Log($"Use physics toggle set to {usePhysics}. \nWarning: physics simulation is not yet implemented...");
         }
         #endregion
 
@@ -515,7 +521,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         }
         #endregion
 
-        #region External state callbacks
+        #region External state callbacks (events called without interacting with the UI)
 
         /// <summary>
         /// Called when selecting drones by clicking on them/box selection in the 3D scene
