@@ -3,10 +3,10 @@ Separate environment setup (obstacles etc.) and config setup
 	x- serialize obstacles DONE
 	x- serialize spatial rules (grid size) DONE
 	x	- add UI for changing spatial rules (just grid size for now) in the editor
-	C- add environment rules for physics simulation CURRENT
-		- for now, only simple checkbox "use physics" (gravity, acceleration)
+	x- add environment rules for physics simulation CURRENT
+	x	- for now, only simple checkbox "use physics" (gravity, acceleration)
 	x- deserialize .... DONE
-	C- add a compatibility check for selected configs (same number of drones, same IDs having same groups)
+	x- add a compatibility check for selected configs (same number of drones, same IDs having same groups)
 	C- warning for when drones are inside obstacles 
 	x- add UI for loading environments DONE
 

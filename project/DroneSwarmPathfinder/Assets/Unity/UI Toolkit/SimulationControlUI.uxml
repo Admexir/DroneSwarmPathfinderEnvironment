@@ -38,8 +38,8 @@
                             <ui:Button text="Export Env" name="btn-export-env" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 0 0 2px; padding: 0;"/>
                         </ui:VisualElement>
                         <ui:Label text="ALGORITHM SELECTION" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
-                        <ui:Label text="Select:" style="color: rgb(200, 200, 200); margin-bottom: 2px;" />
-                        <ui:DropdownField name="dropdown-algorithms" style="margin-left: 0; margin-right: 0; margin-bottom: 5px; color: black; flex-grow: 1; width: 100%;" />
+                        <ui:Label text="Select:" style="color: rgb(200, 200, 200); margin-bottom: 2px;"/>
+                        <ui:DropdownField name="dropdown-algorithms" style="margin-left: 0; margin-right: 0; margin-bottom: 5px; color: black; flex-grow: 1; width: 100%;"/>
                         <ui:Button text="Import External DLL..." name="btn-load-algorithm" class="ConfigToolsButton" style="height: 30px; margin-bottom: 10px;"/>
                         <ui:Button text="Run Algorithm" name="btn-play-sim" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold; margin-bottom: 5px; background-color: rgba(50, 120, 50, 0.8);"/>
                         <ui:Label text="SCENARIO SETTINGS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px; margin-top: 5px;"/>
@@ -52,6 +52,10 @@
                             </ui:VisualElement>
                         </ui:VisualElement>
                         <ui:Toggle label="Use Current Scene" name="toggle-current-scene" value="true" style="margin-bottom: 10px; color: rgb(200, 200, 200);"/>
+                        <ui:VisualElement name="config-warning-container" style="flex-direction: row; align-items: center; background-color: rgb(255, 255, 255); border-color: rgb(200, 150, 0); border-width: 1px; border-radius: 4px; padding: 5px; margin-bottom: 5px; display: none;">
+                            <ui:VisualElement name="icon-config-warning" style="width: 20px; height: 20px; margin-right: 5px; -unity-background-scale-mode: scale-to-fit; background-image: url(&quot;project://database/Assets/Unity/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=-6527069497977903076&amp;guid=7d3fd71324fee9f48a7370f43b013325&amp;type=3#console.warnicon@2x&quot;);"/>
+                            <ui:Label name="label-config-warning" text="Configurations are incompatible!" style="color: rgb(255, 200, 100); -unity-font-style: bold; white-space: normal; flex-shrink: 1;"/>
+                        </ui:VisualElement>
                         <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
                             <ui:Button text="Select Target Config" name="btn-target-config" class="ConfigToolsButton" style="flex-grow: 1; height: 30px; margin-right: 5px;"/>
                             <ui:VisualElement name="icon-target-config" tooltip="No file selected" style="width: 30px; height: 30px; background-color: rgb(150, 50, 50); border-radius: 4px; padding: 4px; align-items: center; justify-content: center;">

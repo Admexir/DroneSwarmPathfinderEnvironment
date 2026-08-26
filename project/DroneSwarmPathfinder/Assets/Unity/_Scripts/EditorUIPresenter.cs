@@ -122,6 +122,7 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         }
 
+        #region Helpers
         /// <summary>
         /// Helper method to refresh the drone list visually
         /// </summary>
@@ -139,7 +140,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             var obstacles = EnvironmentManager.instance.AllObstacleModels.ToList();
             _view.PopulateObstacleList(obstacles);
         }
-        
+        #endregion
 
         /// <summary>
         /// Method to remove the currently selected drone (singular)
@@ -518,6 +519,12 @@ namespace DroneSwarmPathfinder.Unity.UI
             bool hasTargetFile = !string.IsNullOrEmpty(scenario.TargetConfigPath);
             string targetFileName = hasTargetFile ? System.IO.Path.GetFileName(scenario.TargetConfigPath) : null;
             _view.UpdateTargetConfigVisuals(hasTargetFile, targetFileName);
+
+            string compatibilityError;
+            bool isCompatible = scenario.CheckConfigCompatibility(out compatibilityError);
+            if (isCompatible) _view.HideConfigWarning();
+            else _view.ShowConfigWarning(compatibilityError);
+
         }
         #endregion
 

@@ -48,6 +48,8 @@ namespace DroneSwarmPathfinder.Unity.UI
         private VisualElement _iconTargetConfig;
         private Toggle _usePhysicsToggle;
         [SerializeField] private Texture2D _fileIcon;
+        private VisualElement _configWarningContainer;
+        private Label _configWarningLabel;
 
         // Algorithm UI
         private DropdownField _algorithmDropdown;
@@ -179,9 +181,12 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Bind config to scene loading
             var loadConfigButton = root.Q<Button>("btn-load-config");
             var exportConfigButton = root.Q<Button>("btn-export-config");
+            _configWarningContainer = root.Q<VisualElement>("config-warning-container");
+            _configWarningLabel = root.Q<Label>("label-config-warning");
             
             if (loadConfigButton != null) loadConfigButton.clicked += () => OnLoadConfigClickedEvent?.Invoke();
             if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
+
 
             // Bind environment loading
             var loadEnvButton = root.Q<Button>("btn-load-env");
@@ -401,14 +406,21 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_btnStartConfig != null) _btnStartConfig.SetEnabled(!useCurrentScene);
 
             if (useCurrentScene)
+            {
                 UpdateIconVisuals(_iconStartConfig, true, "Using current scene");
+                _btnStartConfig.text = "S: Current Scene";
+            }
             else
-                UpdateIconVisuals(_iconStartConfig, hasFile, hasFile ? fileName : "No file selected");
+            {
+                UpdateIconVisuals(_iconStartConfig, hasFile, hasFile ? fileName : "No File Selected");
+                _btnStartConfig.text = hasFile ? "S: " + fileName : "Select Start Config";
+            }
         }
 
         public void UpdateTargetConfigVisuals(bool hasFile, string fileName = null)
         {
             UpdateIconVisuals(_iconTargetConfig, hasFile, hasFile ? fileName : "No file selected");
+            _btnTargetConfig.text = hasFile ? "T: " + fileName : "Select Target Config";
         }
 
         private void UpdateIconVisuals(VisualElement containerElement, bool isSuccess, string tooltipText)
@@ -418,8 +430,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             var label = containerElement.Q<Label>();
             var iconElement = containerElement.Q<VisualElement>(className: "scenario-icon-img");
 
-            containerElement.tooltip = tooltipText;
-            iconElement.tooltip = tooltipText;
+            //containerElement.tooltip = tooltipText;
+            //iconElement.tooltip = tooltipText;
 
             if (isSuccess)
             {
@@ -602,6 +614,17 @@ namespace DroneSwarmPathfinder.Unity.UI
         public void SetUsePhysicsWithoutNotify(bool usePhysics)
         {
             _usePhysicsToggle?.SetValueWithoutNotify(usePhysics);
+        }
+
+        public void ShowConfigWarning(string reason)
+        {
+            if (_configWarningLabel != null) _configWarningLabel.text = $"These configurations are incompatible: {reason}";
+            if (_configWarningContainer != null) _configWarningContainer.style.display = DisplayStyle.Flex;
+        }
+
+        public void HideConfigWarning()
+        {
+            if (_configWarningContainer != null) _configWarningContainer.style.display = DisplayStyle.None;
         }
 
         #endregion
