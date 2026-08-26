@@ -67,6 +67,8 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         // Editor UI
         private IntegerField _gridSizeInput;
+        private VisualElement _droneWarningContainer;
+        private Label _droneWarningLabel;
 
         // Simulation controls
         private Button _playButton;
@@ -334,6 +336,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             var addObstacleButton = root.Q<Button>("btn-add-obstacle");
             var removeSelectedButton = root.Q<Button>("btn-remove-selected");
             _gridSizeInput = root.Q<IntegerField>("input-grid-size");
+            _droneWarningContainer = root.Q<VisualElement>("drone-warning-container");
+            _droneWarningLabel = root.Q<Label>("label-drone-warning");
 
             if (addDroneButton != null) addDroneButton.clicked += () => OnAddDroneClickedEvent?.Invoke();
             if (addObstacleButton != null) addObstacleButton.clicked += () => OnAddObstacleClickedEvent?.Invoke();
@@ -625,6 +629,22 @@ namespace DroneSwarmPathfinder.Unity.UI
         public void HideConfigWarning()
         {
             if (_configWarningContainer != null) _configWarningContainer.style.display = DisplayStyle.None;
+        }
+
+        public void ShowDroneWarning(string message)
+        {
+            if (_droneWarningContainer != null)
+            {
+                _droneWarningContainer.style.display = DisplayStyle.Flex;
+                _droneWarningLabel.text = message;
+            }
+
+        }
+
+        public void HideDroneWarning()
+        {
+            if (_droneWarningContainer != null)
+                _droneWarningContainer.style.display = DisplayStyle.None;
         }
 
         #endregion

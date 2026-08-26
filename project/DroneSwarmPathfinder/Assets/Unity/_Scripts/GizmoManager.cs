@@ -248,6 +248,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                         EnvironmentManager.instance.UpdateObstacleSize(obstacle.ID, obstacle.transform.localScale);
                 }
             }
+            OnGizmoDragged?.Invoke(_transformGizmoRoot.transform.position); // Update the onGizmoDragged logic callback one last time
         }
     }
 }

@@ -26,7 +26,7 @@ namespace DroneSwarmPathfinder.Core.Environment
         /// <summary>
         /// Gets if the point in space is empty (not inside any static obstacle)
         /// </summary>
-        public bool IsWalkable(Vector3 position)
+        public bool IsEmpty(Vector3 position)
         {
             foreach (var obstacle in Obstacles)
             {

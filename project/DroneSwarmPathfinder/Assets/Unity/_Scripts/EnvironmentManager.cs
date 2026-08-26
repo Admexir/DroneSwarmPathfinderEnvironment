@@ -33,17 +33,26 @@ namespace DroneSwarmPathfinder.Unity.Managers
         // Config obstacle data for config editor
         public IEnumerable<IObstacleVolume> AllObstacleModels => _obstacleModels.Values;
 
+        // World environment
+        public WorldEnvironment CurrentWorldEnvironment { 
+            get 
+            { 
+                if (_currentWorldEnvironment == null)
+                {
+                    _currentWorldEnvironment = new WorldEnvironment(Grid, AllObstacleModels);
+                }
+                return _currentWorldEnvironment;
+            } 
+        }
+        private WorldEnvironment _currentWorldEnvironment;
+
         // Unique ID counter
         private int _nextObstacleId = 0;
-
-        public WorldEnvironment GetCurrentEnvironment()
-        {
-            return new WorldEnvironment(Grid, AllObstacleModels);
-        }
 
         private void Start()
         {
             ChangeGridSize(_baseGridSize);
+            OnObstacleRosterChanged += UpdateCurrentWorldEnvironment;
         }
 
         #region grid managment
@@ -51,6 +60,8 @@ namespace DroneSwarmPathfinder.Unity.Managers
         {
             Grid = new DiscreteGrid(gridSize);
         }
+
+        private void UpdateCurrentWorldEnvironment() { _currentWorldEnvironment = new WorldEnvironment(Grid, AllObstacleModels); }
 
         #endregion
 

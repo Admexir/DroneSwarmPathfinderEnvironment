@@ -43,6 +43,8 @@ namespace DroneSwarmPathfinder.Unity.UI
                 ConfigEditorManager.instance.OnDroneSelectionChanged += HandleDroneSceneSelectionChanged;
                 ConfigEditorManager.instance.OnObstacleSelectionChanged += HandleObstacleSceneSelectionChanged;
                 ConfigEditorManager.instance.OnGizmoDragged += HandleGizmoDragged;
+                ConfigEditorManager.instance.OnGizmoDragged += OnDroneObstaclePositionChange;
+
             }
 
             // Subscribe to the playback manager's playback state changes
@@ -86,27 +88,35 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             // Editor actions
             _view.OnAddDroneClickedEvent += OnAddDroneClicked;
+            _view.OnAddDroneClickedEvent += OnDroneObstaclePositionChange;
             _view.OnAddObstacleClickedEvent += OnAddObstacleClicked;
+            _view.OnAddObstacleClickedEvent += OnDroneObstaclePositionChange;
             _view.OnRemoveSelectedClickedEvent += OnRemoveSelectedClicked;
+            _view.OnRemoveSelectedClickedEvent += OnDroneObstaclePositionChange;
             _view.OnGridSizeChangedEvent += OnGridSizeChanged;
 
             // Config and simulation
             _view.OnLoadConfigClickedEvent += OnLoadConfigClicked;
+            _view.OnLoadConfigClickedEvent += OnDroneObstaclePositionChange;
             _view.OnPlaySimulationClickedEvent += OnPlaySimulationClicked;
             _view.OnExportConfigClickedEvent += OnExportConfigClicked;
             _view.OnLoadAlgorithmClickedEvent += OnLoadAlgorithmClicked;
             _view.OnAlgorithmSelectedEvent += OnAlgorithmSelected;
             _view.OnLoadEnvironmentClickedEvent += OnLoadEnvironmentClicked;
+            _view.OnLoadEnvironmentClickedEvent += OnDroneObstaclePositionChange;
             _view.OnExportEnvironmentClickedEvent += OnExportEnvironmentClicked;
 
             // Details panel editing (Drones)
             _view.OnDroneGroupChangedEvent += OnDroneGroupChanged;
             _view.OnDronePositionChangedEvent += OnDronePositionChanged;
+            _view.OnDronePositionChangedEvent += OnDroneObstaclePositionChange;
             _view.OnDroneListSelectionChangedEvent += OnDroneListSelectionChanged;
 
             // Details panel editing (Obstacles)
             _view.OnObstaclePositionChangedEvent += OnObstaclePositionChanged;
+            _view.OnObstaclePositionChangedEvent += OnDroneObstaclePositionChange;
             _view.OnObstacleSizeChangedEvent += OnObstacleSizeChanged;
+            _view.OnObstacleSizeChangedEvent += OnDroneObstaclePositionChange;
             _view.OnObstacleListSelectionChangedEvent += OnObstacleListSelectionChanged;
 
             // Scenario Selection
@@ -335,7 +345,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Construct the environment from the current scene state
             var config = new Core.Serialization.EnvironmentJSONConfig
             (
-                EnvironmentManager.instance.GetCurrentEnvironment()
+                EnvironmentManager.instance.CurrentWorldEnvironment
             );
 
             string json = Core.Serialization.JSONSerializer.Serialize(config);
@@ -388,6 +398,22 @@ namespace DroneSwarmPathfinder.Unity.UI
             var selectedIds = selectedItems.Cast<Drone>().Select(d => d.ID).ToList();
             ConfigEditorManager.instance.SetDroneSelectionFromUI(selectedIds);
         }
+
+        /// <summary>
+        /// Event called when a drone or obstacle moves used for detecting whether a drone overlaps with an obstacle to show a warning
+        /// </summary>
+        private void OnDroneObstaclePositionChange()
+        {
+            if(!DroneManager.instance.CheckDronePositionValidity(out var invalidPositionDrones))
+            {
+                _view.ShowDroneWarning($"These drones are in invalid positions: {string.Join(", ", invalidPositionDrones.Select(x => $"Drone {x.ID}"))}"); //TODO: pass names after names are implemented instead of hardcoded ID-based name
+            }
+            else
+            {
+                _view.HideDroneWarning();
+            }
+        }
+        private void OnDroneObstaclePositionChange(Vector3 _) => OnDroneObstaclePositionChange();
 
         #endregion
 

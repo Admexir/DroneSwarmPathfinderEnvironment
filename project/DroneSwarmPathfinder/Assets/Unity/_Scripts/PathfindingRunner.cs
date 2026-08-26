@@ -51,7 +51,7 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             else
             {
                 initialDrones = DroneManager.instance.AllDroneModels.ToDictionary(d => d.ID, d => d);
-                environment = new EnvironmentJSONConfig(EnvironmentManager.instance.GetCurrentEnvironment());
+                environment = new EnvironmentJSONConfig(EnvironmentManager.instance.CurrentWorldEnvironment);
             }
             string targetJson = System.IO.File.ReadAllText(targetConfigPath);
             var targetConfig = JSONSerializer.Deserialize<DroneJSONConfig>(targetJson);

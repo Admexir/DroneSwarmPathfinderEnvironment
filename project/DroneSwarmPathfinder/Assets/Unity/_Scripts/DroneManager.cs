@@ -164,5 +164,20 @@ namespace DroneSwarmPathfinder.Unity.Managers
         {
             return _activeDrones.TryGetValue(id, out var drone) ? drone : null;
         }
+
+        /// <summary>
+        /// Returns whether all drones are in a valid position of the world
+        /// </summary>
+        /// <param name="invalidDrones">List of drones in invalid places</param>
+        /// <returns>True if all drones are in valid places</returns>
+        public bool CheckDronePositionValidity(out List<Drone> invalidDrones)
+        {
+            invalidDrones = new List<Drone>();
+            foreach(var drone in AllDroneModels)
+            {
+                if (!EnvironmentManager.instance.CurrentWorldEnvironment.IsEmpty(drone.Transform.Position)) { invalidDrones.Add(drone); }
+            }
+            return invalidDrones.Count == 0;
+        }
     }
 }

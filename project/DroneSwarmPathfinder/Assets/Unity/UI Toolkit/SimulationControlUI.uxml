@@ -9,6 +9,10 @@
             </ui:VisualElement>
             <ui:VisualElement name="tab-content" style="flex-grow: 1;">
                 <ui:VisualElement name="panel-editor" class="ToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px; display: flex;">
+                    <ui:VisualElement name="drone-warning-container" style="flex-direction: row; align-items: center; background-color: rgb(255, 255, 255); border-color: rgb(200, 150, 0); border-width: 1px; border-radius: 4px; padding: 5px; margin-bottom: 5px; display: none;">
+                        <ui:VisualElement name="icon-drone-warning" style="width: 20px; height: 20px; margin-right: 5px; -unity-background-scale-mode: scale-to-fit; background-image: url(&quot;project://database/Assets/Unity/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=-6527069497977903076&amp;guid=7d3fd71324fee9f48a7370f43b013325&amp;type=3#console.warnicon@2x&quot;);"/>
+                        <ui:Label name="label-drone-warning" text="Drone/s are in invalid positions!" style="color: rgb(255, 200, 100); -unity-font-style: bold; white-space: normal; flex-shrink: 1;"/>
+                    </ui:VisualElement>
                     <ui:Label text="EDITOR TOOLS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
                     <ui:Button text="Add Drone" name="btn-add-drone" class="EditorToolsButton"/>
                     <ui:Button text="Add Obstacle" name="btn-add-obstacle" class="EditorToolsButton"/>
