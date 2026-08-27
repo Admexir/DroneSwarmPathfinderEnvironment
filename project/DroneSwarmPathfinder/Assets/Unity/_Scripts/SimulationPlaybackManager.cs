@@ -8,9 +8,17 @@ using UnityEngine;
 
 namespace DroneSwarmPathfinder.Unity.Managers
 {
+    [RequireComponent(typeof(PathVisualizer))]
     public class SimulationPlaybackManager : MonoBehaviour
     {
-        public static SimulationPlaybackManager instance; private void Awake() => instance = this;
+        public static SimulationPlaybackManager instance;
+        private PathVisualizer _pathVisualizer;
+
+        private void Awake()
+        {
+            instance = this;
+            _pathVisualizer = GetComponent<PathVisualizer>();
+        }
 
         [Header("Playback config")]
         [Tooltip("Playback FPS")]
@@ -43,7 +51,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
             if (isPlaying && _currentPaths != null)
             {
                 currentTime += Time.deltaTime * playbackSpeed;
-
+        
                 // End of simulation by reaching step count
                 if (currentTime >= maxSteps)
                 {
@@ -65,6 +73,9 @@ namespace DroneSwarmPathfinder.Unity.Managers
             currentTime = 0f;
             maxSteps = 0;
             isPlaying = false;
+
+            // Render the path lines
+            _pathVisualizer.DrawPaths(_currentPaths);
 
             // Find longest path to know step count
             foreach (var path in _currentPaths.Values)

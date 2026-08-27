@@ -11,6 +11,7 @@ namespace DroneSwarmPathfinder.Unity.Visuals
         //      this is for the active visualisation, while Models.Drone is for the persistent config storage
         public int ID { get; private set; }
         public int DroneGroup { get; private set; }
+        public Color CurrentColor { get; private set; }
         private MeshRenderer _renderer;
         private static MaterialPropertyBlock _propBlock;
 
@@ -39,6 +40,7 @@ namespace DroneSwarmPathfinder.Unity.Visuals
             // hardcoded colors by index :)
             Color[] colors = { Color.blue, Color.red, Color.green, Color.yellow, Color.cyan, Color.magenta, Color.white };
             Color assignedColor = colors[Mathf.Abs(groupId) % colors.Length];
+            CurrentColor = assignedColor;
 
             _renderer.GetPropertyBlock(_propBlock);
             _propBlock.SetColor("_Color", assignedColor);
