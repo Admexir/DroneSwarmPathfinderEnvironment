@@ -68,6 +68,13 @@
                                 </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
+                        <ui:Label text="SIMULATION RESULTS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px; margin-top: 10px;"/>
+                        <ui:VisualElement style="flex-direction: row; margin-bottom: 5px;">
+                            <ui:Button text="Load Result" name="btn-load-result" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 2px 0 0; padding: 0;"/>
+                            <ui:Button text="Export Result" name="btn-export-result" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 0 0 2px; padding: 0;"/>
+                        </ui:VisualElement>
+                        <ui:Label text="Recent Results:" style="color: rgb(200, 200, 200); margin-bottom: 2px;" />
+                        <ui:DropdownField name="dropdown-recent-results" style="margin-left: 0; margin-right: 0; margin-bottom: 15px; color: black; flex-grow: 1; width: 100%;" />
                     </ui:ScrollView>
                 </ui:VisualElement>
             </ui:VisualElement>

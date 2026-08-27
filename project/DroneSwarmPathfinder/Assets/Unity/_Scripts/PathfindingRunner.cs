@@ -22,9 +22,9 @@ namespace DroneSwarmPathfinder.Unity.Simulation
 
         private CancellationTokenSource _cancellationTokenSource;
 
-        public async Task RunAlgorithmAsync(IPathfindingAlgorithm algorithm)
+        public async Task<SimulationResult> RunAlgorithmAsync(IPathfindingAlgorithm algorithm)
         {
-            if (algorithm == null) return;
+            if (algorithm == null) return new SimulationResult { IsSuccessful = false, Message = "Missing algorithm" };
 
             Debug.Log($"Starting {algorithm.AlgorithmName}...");
 
@@ -35,26 +35,26 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             if ((string.IsNullOrEmpty(startConfigPath) && !ConfigSelectionManager.instance.UseCurrentSceneForStart) || string.IsNullOrEmpty(targetConfigPath))
             {
                 Debug.LogError("Can't run pathfinding: start or target configuration path is empty");
-                return;
+                return new SimulationResult { IsSuccessful = false, Message = "Missing configurations" };
             }
 
             // Need to differentiate between "use current scene as initial config" and using file initial config
             Dictionary<int, Drone> initialDrones;
-            EnvironmentJSONConfig environment;
+            EnvironmentConfigJson environment;
             if (!ConfigSelectionManager.instance.UseCurrentSceneForStart)
             {
-                var startConfig = JSONSerializer.DeserializeFile<DroneJSONConfig>(startConfigPath);
+                var startConfig = JSONSerializer.DeserializeFile<DroneConfigJson>(startConfigPath);
                 initialDrones = startConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
                 string startJson = System.IO.File.ReadAllText(startConfigPath);
-                environment = JSONSerializer.DeserializeFile<EnvironmentJSONConfig>(environmentConfigPath);
+                environment = JSONSerializer.DeserializeFile<EnvironmentConfigJson>(environmentConfigPath);
             }
             else
             {
                 initialDrones = DroneManager.instance.AllDroneModels.ToDictionary(d => d.ID, d => d);
-                environment = new EnvironmentJSONConfig(EnvironmentManager.instance.CurrentWorldEnvironment);
+                environment = new EnvironmentConfigJson(EnvironmentManager.instance.CurrentWorldEnvironment);
             }
             string targetJson = System.IO.File.ReadAllText(targetConfigPath);
-            var targetConfig = JSONSerializer.Deserialize<DroneJSONConfig>(targetJson);
+            var targetConfig = JSONSerializer.Deserialize<DroneConfigJson>(targetJson);
             var targetDrones = targetConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
 
 
@@ -81,12 +81,13 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             {
                 Debug.Log($"Pathfinding successful, computed in {result.ComputationTime.TotalMilliseconds} ms");
                 SimulationPlaybackManager.instance.LoadSimulationResult(result);
-                SimulationPlaybackManager.instance.Play();
             }
             else
             {
                 Debug.LogError($"Pathfinding failed, error: {result.Message}");
             }
+
+            return result;
         }
 
         public void CancelCalculation()

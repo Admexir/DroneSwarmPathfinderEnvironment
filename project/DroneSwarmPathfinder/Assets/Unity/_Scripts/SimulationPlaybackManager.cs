@@ -45,6 +45,8 @@ namespace DroneSwarmPathfinder.Unity.Managers
         public event Action<bool> OnPlaybackStateChanged; // used for updating play button state
 
         private IReadOnlyDictionary<int, DronePath> _currentPaths;
+        private SimulationResult _latestResult;
+        public SimulationResult LatersResult { get =>  _latestResult; }
 
         private void Update()
         {
@@ -69,6 +71,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// </summary>
         public void LoadSimulationResult(SimulationResult result)
         {
+            _latestResult = result;
             _currentPaths = result.Paths;
             currentTime = 0f;
             maxSteps = 0;

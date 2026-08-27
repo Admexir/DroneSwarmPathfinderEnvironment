@@ -5,6 +5,7 @@ using DroneSwarmPathfinder.Unity.EditorTools;
 using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.Services;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -37,7 +38,7 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         private void Start()
         {
-            // Subscribe to the config manager's selection state changes
+            // Subscribe to the result manager's selection state changes
             if (ConfigEditorManager.instance != null)
             {
                 ConfigEditorManager.instance.OnDroneSelectionChanged += HandleDroneSceneSelectionChanged;
@@ -124,6 +125,11 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnSelectTargetConfigClickedEvent += OnSelectTargetConfigClicked;
             _view.OnUseCurrentSceneToggledEvent += OnUseCurrentSceneToggled;
 
+            // Results loading
+            _view.OnLoadResultClickedEvent += OnLoadResultClicked;
+            _view.OnExportResultClickedEvent += OnExportResultClicked;
+            _view.OnResultSelectedEvent += OnResultSelected;
+
             // Transform tools panel selection
             _view.OnToolClickedEvent += OnToolClicked;
 
@@ -170,6 +176,27 @@ namespace DroneSwarmPathfinder.Unity.UI
                 EnvironmentManager.instance.RemoveObstacle(_currentlySelectedObstacle.ID);
                 _view.ClearObstacleListSelection();
             }
+        }
+
+        /// <summary>
+        /// Puts the given result to the simulation results cache so user can easily access it later without recalculating it
+        /// </summary>
+        private void CacheResultForDropdown(SimulationResult result, string originalFileName)
+        {
+            // Make a name for the dropdown based on the file name
+            string uniqueName = originalFileName;
+            int counter = 1;
+
+            // Prevent key collisions
+            while (_loadedResultsCache.ContainsKey(uniqueName)) uniqueName = $"{originalFileName} ({counter++})";
+
+            // cache it
+            _loadedResultsCache[uniqueName] = result;
+
+            // Repopulate the UI
+            _view.PopulateRecentResultsDropdown(_loadedResultsCache.Keys.ToList(), uniqueName);
+
+            //Debug.Log($"Result '{uniqueName}' added to the results cache");
         }
 
         #region View event callbacks (environment settings)
@@ -227,7 +254,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             SimulationPlaybackManager.instance.Restart();
         }
 
-        private void OnPlaySimulationClicked()
+        private async void OnPlaySimulationClicked()
         {
             var algorithm = AlgorithmManager.instance.SelectedAlgorithm;
             if (algorithm == null) return;
@@ -237,7 +264,8 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             if (Simulation.PathfindingRunner.instance != null)
             {
-                _ = Simulation.PathfindingRunner.instance.RunAlgorithmAsync(algorithm);
+                SimulationResult result = await Simulation.PathfindingRunner.instance.RunAlgorithmAsync(algorithm);
+                CacheResultForDropdown(result, "Calculated Result");
             }
             else { Debug.LogError("PathfindingRunner instance is missing from the scene :)"); }
         }
@@ -266,7 +294,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             Debug.Log($"Loading swarm configuration from \"{path}\"...");
             string json = System.IO.File.ReadAllText(path);
 
-            var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.DroneJSONConfig>(json);
+            var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.DroneConfigJson>(json);
             if (config != null)
             {
                 DroneManager.instance.SpawnDrones(config.Drones);
@@ -286,7 +314,7 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             Debug.Log($"Exporting Swarm Configuration to \"{path}\"...");
 
-            var config = new Core.Serialization.DroneJSONConfig
+            var config = new Core.Serialization.DroneConfigJson
             {
                 Drones = DroneManager.instance.AllDroneModels.ToList()
             };
@@ -313,7 +341,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             Debug.Log($"Loading environment from \"{path}\"...");
             string json = System.IO.File.ReadAllText(path);
 
-            var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.EnvironmentJSONConfig>(json);
+            var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.EnvironmentConfigJson>(json);
             if (config != null)
             {
                 // Spawn the obstacles
@@ -343,7 +371,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             Debug.Log($"Exporting Environment to \"{path}\"...");
 
             // Construct the environment from the current scene state
-            var config = new Core.Serialization.EnvironmentJSONConfig
+            var config = new Core.Serialization.EnvironmentConfigJson
             (
                 EnvironmentManager.instance.CurrentWorldEnvironment
             );
@@ -352,6 +380,83 @@ namespace DroneSwarmPathfinder.Unity.UI
             System.IO.File.WriteAllText(path, json);
             Debug.Log("Environment exported successfully");
         }
+
+        private void OnLoadResultClicked()
+        {
+            // Pause simulation if running
+            if (SimulationPlaybackManager.instance != null && SimulationPlaybackManager.instance.isPlaying)
+                SimulationPlaybackManager.instance.Pause();
+
+            string path = _fileBrowser.RequestLoadPath("Load Results Configuration", "json");
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.Log("Results loading canceled by user");
+                return;
+            }
+
+            Debug.Log($"Loading results from \"{path}\"...");
+            string json = System.IO.File.ReadAllText(path);
+
+            var result = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.ResultsJson>(json);
+            if (result != null && result.FullResultObject != null)
+            {
+                CacheResultForDropdown(result.FullResultObject, System.IO.Path.GetFileNameWithoutExtension(path));
+                SimulationPlaybackManager.instance.LoadSimulationResult(result.FullResultObject);
+                Debug.Log("Results loaded successfully");
+            }
+
+        }
+
+        private void OnExportResultClicked()
+        {
+            string path = _fileBrowser.RequestSavePath("Export Pathfinding Result Paths", "paths", "json");
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.Log("Results exporting canceled by user");
+                return;
+            }
+
+            Debug.Log($"Exporting results to \"{path}\"...");
+
+            // Construct the environment from the current scene state
+
+            var result = new Core.Serialization.ResultsJson
+            (
+                SimulationPlaybackManager.instance.LatersResult
+            );
+
+            string json = Core.Serialization.JSONSerializer.Serialize(result);
+            System.IO.File.WriteAllText(path, json);
+            Debug.Log("Results exported successfully");
+        }
+
+        private Dictionary<string, SimulationResult> _loadedResultsCache = new Dictionary<string, SimulationResult>();
+        /// <summary>
+        /// Called when the user selects a result from the recent results dropdown
+        /// </summary>
+        private void OnResultSelected(string resultName)
+        {
+            if (string.IsNullOrEmpty(resultName)) return;
+
+            if (_loadedResultsCache.TryGetValue(resultName, out SimulationResult selectedResult))
+            {
+                Debug.Log($"Swapping to simulation result: {resultName}");
+
+                // Pause simulation if running
+                if (SimulationPlaybackManager.instance != null && SimulationPlaybackManager.instance.isPlaying)
+                    SimulationPlaybackManager.instance.Pause();
+
+                // Load the new paths into the visualizer/playback manager
+                SimulationPlaybackManager.instance.LoadSimulationResult(selectedResult);
+
+                //_view.SetActiveTab(UITabMode.Playback); // (switch to the playback tab)
+            }
+            else
+            {
+                Debug.LogWarning($"Could not find result '{resultName}' in the loaded cache..."); // Shouldn't happen
+            }
+        }
+
         #endregion
 
         #region View event callbacks (drones)

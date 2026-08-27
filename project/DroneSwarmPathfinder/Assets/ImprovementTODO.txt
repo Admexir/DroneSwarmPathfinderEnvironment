@@ -7,16 +7,16 @@ Separate environment setup (obstacles etc.) and config setup
 	x	- for now, only simple checkbox "use physics" (gravity, acceleration)
 	x- deserialize .... DONE
 	x- add a compatibility check for selected configs (same number of drones, same IDs having same groups)
-	C- warning for when drones are inside obstacles 
+	x- warning for when drones are inside obstacles 
 	x- add UI for loading environments DONE
 
 Allow to save simulation results to files and load them + result visualisation improvements
-	C1- show lines on calculated paths (+waypoints) with corresponding drone color (+ select drone on click)
-	C1- serialize results into JSON/other files (file has to contain configs, environment and the results...paths)
-	C1- deserialization of results
-	C1- add UI for loading/saving resutls
-		C1- add dropdown with recently used results for easy comparisons
-		C1- improvement idea: allow user to have 2 results loaded at the same time for comparison
+	x- show lines on calculated paths (+waypoints) with corresponding drone color (+ select drone on click)
+	x- serialize results into JSON/other files (file has to contain configs, environment and the results...paths)
+	x- deserialization of results
+	x- add UI for loading/saving resutls
+		x- add dropdown with recently used results for easy comparisons
+		- improvement idea: allow user to have 2 results loaded at the same time for comparison
 	C2- add a timeline for each drone showing its waypoints
 	C2- add logging feature to API - allow drones to save logs depending from their script for easier pathfinding script debugging
 

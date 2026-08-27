@@ -53,20 +53,20 @@ namespace DroneSwarmPathfinder.Unity.Managers
             if ((StartConfigPath == null && !UseCurrentSceneForStart) || TargetConfigPath == null) return true; // exit if one of the configs is not yet selected
             try
             {
-                DroneJSONConfig startConfig;
+                DroneConfigJson startConfig;
                 if (UseCurrentSceneForStart)
                 {
-                    startConfig = new DroneJSONConfig() { Drones = DroneManager.instance.AllDroneModels.ToList() }; //TODO: make a helper function to centralize the "use current scene" serialization
+                    startConfig = new DroneConfigJson() { Drones = DroneManager.instance.AllDroneModels.ToList() }; //TODO: make a helper function to centralize the "use current scene" serialization
                     // also it'd be nice to despaghettify this :)
                 }
                 else
                 {
                     error = $"Invalid start config file: {StartConfigPath}";
-                    startConfig = JSONSerializer.DeserializeFile<DroneJSONConfig>(StartConfigPath);
+                    startConfig = JSONSerializer.DeserializeFile<DroneConfigJson>(StartConfigPath);
 
                 }
                 error = $"Invalid target config file: {StartConfigPath}";
-                var targetConfig = JSONSerializer.DeserializeFile<DroneJSONConfig>(TargetConfigPath);
+                var targetConfig = JSONSerializer.DeserializeFile<DroneConfigJson>(TargetConfigPath);
                 error = "";
 
                 var sItems = startConfig.AllConfigItems.OrderBy(x => x.ID).ToArray();

@@ -50,6 +50,9 @@ namespace DroneSwarmPathfinder.Unity.UI
         [SerializeField] private Texture2D _fileIcon;
         private VisualElement _configWarningContainer;
         private Label _configWarningLabel;
+        private Button _btnLoadResult;
+        private Button _btnExportResult;
+        private DropdownField _recentResultsDropdown;
 
         // Algorithm UI
         private DropdownField _algorithmDropdown;
@@ -144,6 +147,10 @@ namespace DroneSwarmPathfinder.Unity.UI
         // (algorithm selection events)
         public event Action OnLoadAlgorithmClickedEvent;
         public event Action<string> OnAlgorithmSelectedEvent;
+        // (results saving events)
+        public event Action OnLoadResultClickedEvent;
+        public event Action OnExportResultClickedEvent;
+        public event Action<string> OnResultSelectedEvent;
 
         /// <summary>
         /// Gets if mouse is currently over an interactible UI element (equivalent of EventSystem.Current.IsPointerOverGameObject())
@@ -180,22 +187,7 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         private void BindFileUI(VisualElement root)
         {
-            // Bind config to scene loading
-            var loadConfigButton = root.Q<Button>("btn-load-config");
-            var exportConfigButton = root.Q<Button>("btn-export-config");
-            _configWarningContainer = root.Q<VisualElement>("config-warning-container");
-            _configWarningLabel = root.Q<Label>("label-config-warning");
-            
-            if (loadConfigButton != null) loadConfigButton.clicked += () => OnLoadConfigClickedEvent?.Invoke();
-            if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
-
-
-            // Bind environment loading
-            var loadEnvButton = root.Q<Button>("btn-load-env");
-            var exportEnvButton = root.Q<Button>("btn-export-env");
-            
-            if (loadEnvButton != null) loadEnvButton.clicked += () => OnLoadEnvironmentClickedEvent?.Invoke();
-            if (exportEnvButton != null) exportEnvButton.clicked += () => OnExportEnvironmentClickedEvent?.Invoke();
+            BindFileSceneLoading(root);
 
             // Bind algorithm loading
             _btnLoadAlgorithm = root.Q<Button>("btn-load-algorithm");
@@ -205,6 +197,38 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_algorithmDropdown != null) _algorithmDropdown.RegisterValueChangedCallback(evt => OnAlgorithmSelectedEvent?.Invoke(evt.newValue));
             if (_btnLoadAlgorithm != null) _btnLoadAlgorithm.clicked += () => OnLoadAlgorithmClickedEvent?.Invoke();
             if (_playSimulationButton != null) _playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
+
+            // Bind environment settings
+            _usePhysicsToggle = root.Q<Toggle>("toggle-use-physics");
+
+            if (_usePhysicsToggle != null) _usePhysicsToggle.RegisterValueChangedCallback(evt => OnUsePhysicsToggledEvent?.Invoke(evt.newValue));
+
+            // Bind results loading
+            _btnLoadResult = root.Q<Button>("btn-load-result");
+            _btnExportResult = root.Q<Button>("btn-export-result");
+            _recentResultsDropdown = root.Q<DropdownField>("dropdown-recent-results");
+
+            if (_btnLoadResult != null) _btnLoadResult.clicked += () => OnLoadResultClickedEvent?.Invoke();
+            if (_btnExportResult != null) _btnExportResult.clicked += () => OnExportResultClickedEvent?.Invoke();
+            if (_recentResultsDropdown != null) _recentResultsDropdown.RegisterValueChangedCallback(evt => OnResultSelectedEvent?.Invoke(evt.newValue));
+        }
+        private void BindFileSceneLoading(VisualElement root)
+        {
+            // Bind config to scene loading
+            var loadConfigButton = root.Q<Button>("btn-load-config");
+            var exportConfigButton = root.Q<Button>("btn-export-config");
+            _configWarningContainer = root.Q<VisualElement>("config-warning-container");
+            _configWarningLabel = root.Q<Label>("label-config-warning");
+
+            if (loadConfigButton != null) loadConfigButton.clicked += () => OnLoadConfigClickedEvent?.Invoke();
+            if (exportConfigButton != null) exportConfigButton.clicked += () => OnExportConfigClickedEvent?.Invoke();
+
+            // Bind environment loading
+            var loadEnvButton = root.Q<Button>("btn-load-env");
+            var exportEnvButton = root.Q<Button>("btn-export-env");
+
+            if (loadEnvButton != null) loadEnvButton.clicked += () => OnLoadEnvironmentClickedEvent?.Invoke();
+            if (exportEnvButton != null) exportEnvButton.clicked += () => OnExportEnvironmentClickedEvent?.Invoke();
 
             // Bind config for simulation loading
             _btnStartConfig = root.Q<Button>("btn-start-config");
@@ -216,11 +240,6 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_btnStartConfig != null) _btnStartConfig.clicked += () => OnSelectStartConfigClickedEvent?.Invoke();
             if (_btnTargetConfig != null) _btnTargetConfig.clicked += () => OnSelectTargetConfigClickedEvent?.Invoke();
             if (_toggleCurrentScene != null) _toggleCurrentScene.RegisterValueChangedCallback(evt => OnUseCurrentSceneToggledEvent?.Invoke(evt.newValue));
-
-            // Bind environment settings
-            _usePhysicsToggle = root.Q<Toggle>("toggle-use-physics");
-
-            if (_usePhysicsToggle != null) _usePhysicsToggle.RegisterValueChangedCallback(evt => OnUsePhysicsToggledEvent?.Invoke(evt.newValue));
         }
 
         private void BindTabsUI(VisualElement root)
@@ -645,6 +664,20 @@ namespace DroneSwarmPathfinder.Unity.UI
         {
             if (_droneWarningContainer != null)
                 _droneWarningContainer.style.display = DisplayStyle.None;
+        }
+
+        public void PopulateRecentResultsDropdown(List<string> resultNames, string defaultSelection = null)
+        {
+            if (_recentResultsDropdown == null) return;
+
+            _recentResultsDropdown.choices = resultNames;
+
+            if (!string.IsNullOrEmpty(defaultSelection) && resultNames.Contains(defaultSelection))
+                _recentResultsDropdown.SetValueWithoutNotify(defaultSelection);
+            else if (resultNames.Count > 0)
+                _recentResultsDropdown.SetValueWithoutNotify(resultNames[0]);
+            else
+                _recentResultsDropdown.SetValueWithoutNotify("No results loaded...");
         }
 
         #endregion

@@ -1,5 +1,6 @@
 using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Simulation;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace DroneSwarmPathfinder.Core.Serialization
     /// <summary>
     /// Class representing the saveable state of the drones
     /// </summary>
-    public class DroneJSONConfig
+    public class DroneConfigJson
     {
         public List<Drone> Drones { get; set; } = new();
 
@@ -20,19 +21,31 @@ namespace DroneSwarmPathfinder.Core.Serialization
     /// <summary>
     /// Class representing the saveable state of the environment
     /// </summary>
-    public class EnvironmentJSONConfig
+    public class EnvironmentConfigJson
     {
         public List<IObstacleVolume> Obstacles { get; set; } = new();
         public ISpatialEnvironment SpatialRules { get; set; }
 
-        public EnvironmentJSONConfig(WorldEnvironment env)
+        public EnvironmentConfigJson(WorldEnvironment env)
         {
             Obstacles = env.Obstacles.ToList();
             SpatialRules = env.SpatialRules;
         }
 
-        [JsonConstructor] private EnvironmentJSONConfig() { }
+        [JsonConstructor] private EnvironmentConfigJson() { }
         // TODO: physics toggle and other environment specific variables go here
+    }
+
+    /// <summary>
+    /// Class representing the saveable state of a simulation result
+    /// </summary>
+    public class ResultsJson
+    {
+        // In case this needs to hold more info, just add it as a variable and set the value in the FullResultObject conversion
+        [JsonIgnore] public SimulationResult FullResultObject => new SimulationResult() { Paths = this.Paths };
+        public IReadOnlyDictionary<int, DronePath> Paths { get; init; }
+        public ResultsJson(SimulationResult result) { this.Paths = result.Paths; }
+        [JsonConstructor] private ResultsJson() { }
     }
 
     /// <summary>
