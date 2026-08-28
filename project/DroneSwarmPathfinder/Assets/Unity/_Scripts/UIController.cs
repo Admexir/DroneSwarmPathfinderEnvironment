@@ -309,7 +309,7 @@ namespace DroneSwarmPathfinder.Unity.UI
                 {
                     var label = element as Label;
                     var drone = (Drone)_droneListView.itemsSource[index];
-                    label.text = $"Drone {drone.ID} (group: {drone.GroupId})";
+                    label.text = $"Drone {drone.ID} (group: {drone.GroupName})";
                 };
 
                 _droneListView.selectionChanged += (selection) => OnDroneListSelectionChangedEvent?.Invoke(selection);
@@ -562,7 +562,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         public void ShowDroneDetails(Drone drone, Vector3 unityPosition)
         {
             if (_droneIdInput != null) _droneIdInput.value = drone.ID.ToString();
-            _droneGroupInput?.SetValueWithoutNotify(drone.GroupId);
+            _droneGroupInput?.SetValueWithoutNotify(drone.GroupName);
             _dronePositionInput?.SetValueWithoutNotify(unityPosition);
             if (_droneDetailsPanel != null) _droneDetailsPanel.style.display = DisplayStyle.Flex;
         }

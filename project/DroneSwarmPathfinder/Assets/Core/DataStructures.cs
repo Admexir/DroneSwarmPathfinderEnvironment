@@ -55,7 +55,7 @@ namespace DroneSwarmPathfinder.Core.Models
     public class Drone : IObstacleVolume, IConfigItem
     {
         public int ID { get; init; }
-        public int GroupId { get; set; }
+        public string GroupName { get; set; }
         public TransformData Transform { get; set; }
 
         /// <summary>
@@ -72,11 +72,11 @@ namespace DroneSwarmPathfinder.Core.Models
         }
 
         [JsonConstructor]
-        public Drone(int id, TransformData transform, int groupId = 0)
+        public Drone(int id, TransformData transform, string groupId = "")
         {
             ID = id;
             Transform = transform;
-            GroupId = groupId;
+            GroupName = groupId;
         }
 
         public bool Contains(Vector3 point)

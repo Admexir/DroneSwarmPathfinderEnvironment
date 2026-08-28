@@ -26,6 +26,9 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
         // Config drone data for config editor
         public IEnumerable<Drone> AllDroneModels => _droneModels.Values;
+
+        public Dictionary<string, Color> _droneGroups = new();
+        public IReadOnlyCollection<string> DroneGroups => _droneGroups.Keys;
         //// Gameobject drone data
         //public IEnumerable<DroneView> AllDroneGameObjects => _activeDrones.Values;
 
@@ -64,7 +67,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
             var transformData = new TransformData(
                 position: new NumVector3(spawnPosition.x, spawnPosition.y, spawnPosition.z));
 
-            Drone newDrone = new Drone(newId, transformData, groupId: 0);
+            Drone newDrone = new Drone(newId, transformData);
 
             AddExistingDrone(newDrone);
             OnDroneRosterChanged?.Invoke();
@@ -88,11 +91,11 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// <summary>
         /// Updates a drone's group in config and in the scene
         /// </summary>
-        public void UpdateDroneGroup(int id, int newGroup)
+        public void UpdateDroneGroup(int id, string newGroup)
         {
             if (_droneModels.TryGetValue(id, out Drone drone))
             {
-                drone.GroupId = newGroup;
+                drone.GroupName = newGroup;
                 _droneModels[id] = drone;
 
                 // Updates color
@@ -121,12 +124,12 @@ namespace DroneSwarmPathfinder.Unity.Managers
             }
         }
 
-        //public record DroneInfo(int ID, int GroupId, Vector3 Position, Quaternion Rotation, Vector3 Size);
+        //public record DroneInfo(int ID, int GroupName, Vector3 Position, Quaternion Rotation, Vector3 Size);
         //public DroneInfo GetDroneConfigInfo(int id)
         //{
         //    if (_droneModels.TryGetValue(id, out Drone val))
         //    {
-        //        return new(id, val.GroupId, val.Transform.Position.ToUnity(), val.Transform.Rotation.ToUnity(), val.Transform.Size.ToUnity());
+        //        return new(id, val.GroupName, val.Transform.Position.ToUnity(), val.Transform.Rotation.ToUnity(), val.Transform.Size.ToUnity());
         //    }
         //    else { return null; }
         //}
@@ -154,7 +157,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
             droneObj.transform.localScale = coreDrone.Transform.Size.ToUnity();
 
             DroneView view = droneObj.GetComponent<DroneView>();
-            view.Initialize(coreDrone.ID, coreDrone.GroupId);
+            view.Initialize(coreDrone.ID, coreDrone.GroupName);
 
             _activeDrones.Add(coreDrone.ID, view);
             _droneModels.Add(coreDrone.ID, coreDrone);
@@ -178,6 +181,26 @@ namespace DroneSwarmPathfinder.Unity.Managers
                 if (!EnvironmentManager.instance.CurrentWorldEnvironment.IsEmpty(drone.Transform.Position)) { invalidDrones.Add(drone); }
             }
             return invalidDrones.Count == 0;
+        }
+
+        /// <summary>
+        /// Creates a new drone group with the given name and color
+        /// </summary>
+        public void CreateNewDroneGroup(string groupName, Color droneColor)
+        {
+            int index = 0;
+            while (!_droneGroups.TryAdd($"{groupName}{(index == 0 ? "" : "_" + index)}", droneColor)) { index++; } // To prevent key collisions
+        }
+
+        /// <summary>
+        /// Returns whether this group exists and gives the color in the out parameter
+        /// </summary>
+        /// <param name="groupName">Name of the group</param>
+        /// <param name="color">The color of that group</param>
+        /// <returns>Whether this group exists</returns>
+        public bool GetColorByGroup(string groupName, out Color color)
+        {
+            return _droneGroups.TryGetValue(groupName, out color);
         }
     }
 }

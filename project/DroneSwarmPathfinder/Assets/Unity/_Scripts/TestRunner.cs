@@ -25,8 +25,8 @@ namespace DroneSwarmPathfinder.Unity.Testing
             // Spawn initial test drones
             var drones = new List<Drone>
             {
-                new Drone(id: 0, new TransformData(new NumVector3(0, 0, 0)), groupId: 0),
-                new Drone(id: 1, new TransformData(new NumVector3(10, 0, 10)), groupId: 1)
+                new Drone(id: 0, new TransformData(new NumVector3(0, 0, 0)), groupId: "Group 1"),
+                new Drone(id: 1, new TransformData(new NumVector3(10, 0, 10)), groupId: "Group 2")
             };
             Managers.DroneManager.instance.SpawnDrones(drones);
         }

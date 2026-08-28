@@ -10,7 +10,7 @@ namespace DroneSwarmPathfinder.Unity.Visuals
         // Note: doesn't hold a reference to the source Models.Drone object, as that is a different "kind of representation",
         //      this is for the active visualisation, while Models.Drone is for the persistent config storage
         public int ID { get; private set; }
-        public int DroneGroup { get; private set; }
+        public string DroneGroup { get; private set; }
         public Color CurrentColor { get; private set; }
         private MeshRenderer _renderer;
         private static MaterialPropertyBlock _propBlock;
@@ -21,15 +21,15 @@ namespace DroneSwarmPathfinder.Unity.Visuals
         }
 
         // Called shortly after spawning (but not instantly... do not switch to Start() )
-        public void Initialize(int id, int groupId)
+        public void Initialize(int id, string groupName)
         {
             ID = id;
-            SetColorByGroup(groupId);
+            SetColorByGroup(groupName);
         }
 
-        private void SetColorByGroup(int groupId)
+        private void SetColorByGroup(string groupName)
         {
-            DroneGroup = groupId;
+            DroneGroup = groupName;
             // PropertyBlock prevents unity from creating a unique copy of a material for every drone ... should improve performance for large swarms
             if (_propBlock == null)
             {
@@ -39,7 +39,7 @@ namespace DroneSwarmPathfinder.Unity.Visuals
             // TODO: unhardcode v
             // hardcoded colors by index :)
             Color[] colors = { Color.blue, Color.red, Color.green, Color.yellow, Color.cyan, Color.magenta, Color.white };
-            Color assignedColor = colors[Mathf.Abs(groupId) % colors.Length];
+            Color assignedColor = colors[Mathf.Abs(groupName) % colors.Length];
             CurrentColor = assignedColor;
 
             _renderer.GetPropertyBlock(_propBlock);
