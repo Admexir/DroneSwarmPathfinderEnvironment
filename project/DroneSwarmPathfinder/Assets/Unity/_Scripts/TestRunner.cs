@@ -10,6 +10,7 @@ using DroneSwarmPathfinder.Algorithms;
 using NumVector3 = System.Numerics.Vector3;
 using NumQuaternion = System.Numerics.Quaternion;
 using DroneSwarmPathfinder.Unity.UI;
+using DroneSwarmPathfinder.Unity.Managers;
 
 namespace DroneSwarmPathfinder.Unity.Testing
 {
@@ -20,72 +21,17 @@ namespace DroneSwarmPathfinder.Unity.Testing
     {
         private void Start()
         {
-            Debug.LogWarning("USING TRIVIAL TEST ALGORITHM, Press 'T' to run the pathfinder");
+            Debug.LogWarning("USING TEST RUNNER TO SET UP DEFAULT SCENE!!!");
 
-            // Spawn initial test drones
+            // Spawn initial test drones and create groups for them
+            DroneManager.instance.CreateNewDroneGroup("Group 1", Color.blue);
+            DroneManager.instance.CreateNewDroneGroup("Group 2", Color.red);
             var drones = new List<Drone>
             {
                 new Drone(id: 0, new TransformData(new NumVector3(0, 0, 0)), groupName: "Group 1"),
                 new Drone(id: 1, new TransformData(new NumVector3(10, 0, 10)), groupName: "Group 2")
             };
             Managers.DroneManager.instance.SpawnDrones(drones);
-        }
-
-        private void Update()
-        {
-            // Quick keyboard shortcut to trigger the algorithm
-            if (Input.GetKeyDown(KeyCode.T))
-            {
-                RunTestAlgorithm();
-            }
-        }
-
-        public async void RunTestAlgorithm()
-        {
-            Debug.Log("Starting Trivial Pathfinder...");
-
-            // Get initial State from the drone manager TODO: make this into a separate function outside of this temp test script
-            var initialDrones = Managers.DroneManager.instance.AllDroneModels.ToDictionary(d => d.ID, d => d);
-
-            // Define targets (swap positions)
-            var targetDrones = new Dictionary<int, Drone>();
-            if (initialDrones.ContainsKey(0) && initialDrones.ContainsKey(1))
-            {
-                targetDrones[0] = new Drone(0, new TransformData(new NumVector3(10, 0, 10)), "Group 1");
-                targetDrones[1] = new Drone(1, new TransformData(new NumVector3(0, 0, 0)), "Group 2");
-            }
-
-            // Build the environment
-            var grid = new DiscreteGrid(1f);
-            var obstacles = Managers.EnvironmentManager.instance != null
-                ? Managers.EnvironmentManager.instance.AllObstacleModels
-                : new List<BoxObstacle>();
-
-            var worldEnv = new WorldEnvironment(grid, obstacles);
-
-            // Build the simulation context
-            var context = new SimulationContext
-            {
-                InitialState = initialDrones,
-                TargetState = targetDrones,
-                Environment = worldEnv
-            };
-
-            // Run the algo async
-            IPathfindingAlgorithm pathfinder = new TrivialPathfinder();
-            SimulationResult result = await pathfinder.CalculatePathsAsync(context);
-
-            // Load results to playback
-            if (result.IsSuccessful)
-            {
-                Debug.Log($"Pathfinding Successful, computed in {result.ComputationTime.TotalMilliseconds} ms");
-                Managers.SimulationPlaybackManager.instance.LoadSimulationResult(result);
-                Managers.SimulationPlaybackManager.instance.Play();
-            }
-            else
-            {
-                Debug.LogError($"Pathfinding Failed: {result.Message}");
-            }
         }
     }
 }
