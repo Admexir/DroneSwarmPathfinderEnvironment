@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using DroneSwarmPathfinder.Core.Models;
 using DroneSwarmPathfinder.Core.Environment;
+using DroneSwarmPathfinder.Unity.Managers;
 
 namespace DroneSwarmPathfinder.Unity.UI
 {
@@ -86,8 +87,13 @@ namespace DroneSwarmPathfinder.Unity.UI
         private ListView _droneListView;
         private VisualElement _droneDetailsPanel;
         private TextField _droneIdInput;
-        private IntegerField _droneGroupInput;
+        //private TextField _droneGroupInput;
         private Vector3Field _dronePositionInput;
+        private DropdownField _droneGroupDropdown;
+        private TextField _newDroneGroupInput;
+        private Button _btnRemoveGroupToggle;
+        private VisualElement _droneGroupContainer;
+        private bool _isRemoveGroupMode = false;
 
         // Obstacle inspector
         private ListView _obstacleListView;
@@ -129,8 +135,11 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         // Drones events for other scripts to subscribe to
         public event Action<IEnumerable<object>> OnDroneListSelectionChangedEvent;
-        public event Action<int> OnDroneGroupChangedEvent;
+        public event Action<string> OnDroneGroupChangedEvent;
         public event Action<Vector3> OnDronePositionChangedEvent;
+        // (drone inspector)
+        public event Action<string> OnCreateNewGroupEvent;
+        public event Action<bool> OnToggleRemoveGroupModeEvent;
 
         // Obstacles events for other scripts to subscribe to
         public event Action<IEnumerable<object>> OnObstacleListSelectionChangedEvent;
@@ -152,6 +161,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         public event Action OnExportResultClickedEvent;
         public event Action<string> OnResultSelectedEvent;
 
+        #region Helpers
         /// <summary>
         /// Gets if mouse is currently over an interactible UI element (equivalent of EventSystem.Current.IsPointerOverGameObject())
         /// </summary>
@@ -168,6 +178,27 @@ namespace DroneSwarmPathfinder.Unity.UI
             return picked != null;
         }
 
+        /// <summary>
+        /// Helper method called when the user submits a new group name in the group selection
+        /// </summary>
+        private void SubmitNewGroup()
+        {
+            if (_newDroneGroupInput == null || _newDroneGroupInput.style.display == DisplayStyle.None) return;
+
+            string newGroup = _newDroneGroupInput.value.Trim();
+
+            // Revert UI visuals back to dropdown
+            _newDroneGroupInput.style.display = DisplayStyle.None;
+            if (_droneGroupContainer != null) _droneGroupContainer.style.display = DisplayStyle.Flex;
+
+            if (!string.IsNullOrEmpty(newGroup))
+            {
+                OnCreateNewGroupEvent?.Invoke(newGroup);
+            }
+        }
+        #endregion
+
+        #region Bindders (register callbacks and assign references)
         private void OnEnable()
         {
             _uiDocument = GetComponent<UIDocument>();
@@ -299,7 +330,10 @@ namespace DroneSwarmPathfinder.Unity.UI
             _droneListView = root.Q<ListView>("drone-list-view");
             _droneDetailsPanel = root.Q<VisualElement>("drone-details-panel");
             _droneIdInput = root.Q<TextField>("input-drone-id");
-            _droneGroupInput = root.Q<IntegerField>("input-drone-group");
+            _droneGroupContainer = root.Q<VisualElement>("drone-group-container");
+            _droneGroupDropdown = root.Q<DropdownField>("dropdown-drone-group");
+            _newDroneGroupInput = root.Q<TextField>("input-new-drone-group");
+            _btnRemoveGroupToggle = root.Q<Button>("btn-toggle-remove-group");
             _dronePositionInput = root.Q<Vector3Field>("input-drone-position");
 
             if (_droneListView != null)
@@ -315,10 +349,57 @@ namespace DroneSwarmPathfinder.Unity.UI
                 _droneListView.selectionChanged += (selection) => OnDroneListSelectionChangedEvent?.Invoke(selection);
             }
 
-            _droneGroupInput?.RegisterValueChangedCallback(evt => OnDroneGroupChangedEvent?.Invoke(evt.newValue));
             _dronePositionInput?.RegisterValueChangedCallback(evt => OnDronePositionChangedEvent?.Invoke(evt.newValue));
 
             if (_droneDetailsPanel != null) _droneDetailsPanel.style.display = DisplayStyle.None;
+
+
+            // GROUP SELECTION UI LOGIC (has to be more complex to call correct callback depending on the current action - removing, adding new group, ...)
+            if (_droneGroupDropdown != null)
+            {
+                _droneGroupDropdown.RegisterValueChangedCallback(evt =>
+                {
+                    if (evt.newValue == "+ New Group")
+                    {
+                        // Switch UI to text input mode
+                        if (_droneGroupContainer != null) _droneGroupContainer.style.display = DisplayStyle.None;
+                        if (_newDroneGroupInput != null)
+                        {
+                            _newDroneGroupInput.style.display = DisplayStyle.Flex;
+                            _newDroneGroupInput.value = "";
+                            // Delay to give time for ui to load before focusing TODO: weird way to do this, find other way?
+                            _newDroneGroupInput.schedule.Execute(() => _newDroneGroupInput.Focus()).StartingIn(10);
+                        }
+                    }
+                    else
+                    {
+                        OnDroneGroupChangedEvent?.Invoke(evt.newValue);
+                    }
+                });
+            }
+            // New drone group name input
+            if (_newDroneGroupInput != null)
+            {
+                // Submit by pressing enter
+                _newDroneGroupInput.RegisterCallback<KeyDownEvent>(evt =>
+                {
+                    if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
+                        SubmitNewGroup();
+                });
+                // Submit by clicking away
+                _newDroneGroupInput.RegisterCallback<FocusOutEvent>(evt => SubmitNewGroup());
+            }
+            // Group selection remove mode
+            if (_btnRemoveGroupToggle != null)
+            {
+                _btnRemoveGroupToggle.clicked += () =>
+                {
+                    _isRemoveGroupMode = !_isRemoveGroupMode;
+                    // TODO: unhardcode color
+                    _btnRemoveGroupToggle.style.backgroundColor = _isRemoveGroupMode ? new StyleColor(new Color(0.8f, 0.2f, 0.2f)) : new StyleColor(new Color(0.3f, 0.15f, 0.15f));
+                    OnToggleRemoveGroupModeEvent?.Invoke(_isRemoveGroupMode);
+                };
+            }
         }
 
         private void BindObstacleUI(VisualElement root)
@@ -386,6 +467,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_btnMove != null) _btnMove.clicked += () => OnToolClickedEvent?.Invoke(EditorToolMode.Move);
             if (_btnScale != null) _btnScale.clicked += () => OnToolClickedEvent?.Invoke(EditorToolMode.Scale);
         }
+        #endregion
 
         #region Toolbar Dragging Logic (UI Toolkit)
 
@@ -562,7 +644,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         public void ShowDroneDetails(Drone drone, Vector3 unityPosition)
         {
             if (_droneIdInput != null) _droneIdInput.value = drone.ID.ToString();
-            _droneGroupInput?.SetValueWithoutNotify(drone.GroupName);
+            PopulateDroneGroupDropdown(DroneManager.instance.DroneGroups, drone.GroupName);
             _dronePositionInput?.SetValueWithoutNotify(unityPosition);
             if (_droneDetailsPanel != null) _droneDetailsPanel.style.display = DisplayStyle.Flex;
         }
@@ -678,6 +760,28 @@ namespace DroneSwarmPathfinder.Unity.UI
                 _recentResultsDropdown.SetValueWithoutNotify(resultNames[0]);
             else
                 _recentResultsDropdown.SetValueWithoutNotify("No results loaded...");
+        }
+
+
+        /// <summary>
+        /// Updates (and populates) the drone group selection dropdown
+        /// </summary>
+        /// <param name="groupNames">readonly collection of offered choices</param>
+        /// <param name="currentGroup">the active choice, if empty, remains unchaged</param>
+        public void PopulateDroneGroupDropdown(IReadOnlyCollection<string> groupNames, string currentGroup = "")
+        {
+            if (_droneGroupDropdown == null) return;
+
+            // Add the New Group option to the end
+            var choices = new List<string>(groupNames);
+            if (!choices.Contains("+ New Group"))
+            {
+                choices.Add("+ New Group");
+            }
+
+            if(currentGroup == "") { currentGroup = _droneGroupDropdown.value; }
+            _droneGroupDropdown.choices = choices;
+            _droneGroupDropdown.SetValueWithoutNotify(currentGroup);
         }
 
         #endregion

@@ -25,8 +25,8 @@ namespace DroneSwarmPathfinder.Unity.Testing
             // Spawn initial test drones
             var drones = new List<Drone>
             {
-                new Drone(id: 0, new TransformData(new NumVector3(0, 0, 0)), groupId: "Group 1"),
-                new Drone(id: 1, new TransformData(new NumVector3(10, 0, 10)), groupId: "Group 2")
+                new Drone(id: 0, new TransformData(new NumVector3(0, 0, 0)), groupName: "Group 1"),
+                new Drone(id: 1, new TransformData(new NumVector3(10, 0, 10)), groupName: "Group 2")
             };
             Managers.DroneManager.instance.SpawnDrones(drones);
         }
@@ -51,8 +51,8 @@ namespace DroneSwarmPathfinder.Unity.Testing
             var targetDrones = new Dictionary<int, Drone>();
             if (initialDrones.ContainsKey(0) && initialDrones.ContainsKey(1))
             {
-                targetDrones[0] = new Drone(0, new TransformData(new NumVector3(10, 0, 10)), 0);
-                targetDrones[1] = new Drone(1, new TransformData(new NumVector3(0, 0, 0)), 1);
+                targetDrones[0] = new Drone(0, new TransformData(new NumVector3(10, 0, 10)), "Group 1");
+                targetDrones[1] = new Drone(1, new TransformData(new NumVector3(0, 0, 0)), "Group 2");
             }
 
             // Build the environment

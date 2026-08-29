@@ -27,7 +27,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
         // Config drone data for config editor
         public IEnumerable<Drone> AllDroneModels => _droneModels.Values;
 
-        public Dictionary<string, Color> _droneGroups = new();
+        public Dictionary<string, Color> _droneGroups = new() { { "default", Color.white } };
         public IReadOnlyCollection<string> DroneGroups => _droneGroups.Keys;
         //// Gameobject drone data
         //public IEnumerable<DroneView> AllDroneGameObjects => _activeDrones.Values;
@@ -103,6 +103,18 @@ namespace DroneSwarmPathfinder.Unity.Managers
                 {
                     view.Initialize(id, newGroup);
                 }
+            }
+        }
+
+        public void RemoveDroneGroup(string groupName)
+        {
+            if (_droneGroups.ContainsKey(groupName))
+            {
+                foreach(DroneView d in _activeDrones.Values.Where(x => x.DroneGroup == groupName))
+                {
+                    UpdateDroneGroup(d.ID, "default");
+                }
+                _droneGroups.Remove(groupName);
             }
         }
 

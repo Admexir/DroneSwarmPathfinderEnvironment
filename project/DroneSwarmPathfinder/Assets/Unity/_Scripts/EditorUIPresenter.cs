@@ -112,6 +112,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnDronePositionChangedEvent += OnDronePositionChanged;
             _view.OnDronePositionChangedEvent += OnDroneObstaclePositionChange;
             _view.OnDroneListSelectionChangedEvent += OnDroneListSelectionChanged;
+            _view.OnCreateNewGroupEvent += OnCreateNewGroup;
+            _view.OnToggleRemoveGroupModeEvent += OnToggleRemoveGroupMode;
 
             // Details panel editing (Obstacles)
             _view.OnObstaclePositionChangedEvent += OnObstaclePositionChanged;
@@ -472,12 +474,6 @@ namespace DroneSwarmPathfinder.Unity.UI
             HandleDroneSceneSelectionChanged(selectedIds);
         }
 
-        private void OnDroneGroupChanged(int newGroup)
-        {
-            if (_currentlySelectedDrone == null) return;
-            DroneManager.instance.UpdateDroneGroup(_currentlySelectedDrone.ID, newGroup);
-        }
-
         private void OnDronePositionChanged(Vector3 newPosition)
         {
             if (_currentlySelectedDrone == null) return;
@@ -519,6 +515,42 @@ namespace DroneSwarmPathfinder.Unity.UI
             }
         }
         private void OnDroneObstaclePositionChange(Vector3 _) => OnDroneObstaclePositionChange();
+
+        private bool groupRemoveModeActive = false;
+        private void OnDroneGroupChanged(string selectedGroup)
+        {
+            if (_currentlySelectedDrone == null) return;
+
+            // Remove mode active
+            if (groupRemoveModeActive)
+            {
+                var currentGroup = _currentlySelectedDrone.GroupName;
+                if (currentGroup == selectedGroup)
+                {
+                    currentGroup = "default";
+                    DroneManager.instance.UpdateDroneGroup(_currentlySelectedDrone.ID, currentGroup);
+                }
+
+                DroneManager.instance.RemoveDroneGroup(selectedGroup);
+                _view.PopulateDroneGroupDropdown(DroneManager.instance.DroneGroups, currentGroup);
+            }
+            else // Normal assignment
+            {
+                DroneManager.instance.UpdateDroneGroup(_currentlySelectedDrone.ID, selectedGroup);
+            }
+        }
+
+        private void OnCreateNewGroup(string newGroupName)
+        {
+            DroneManager.instance.CreateNewDroneGroup(newGroupName, new Color(Random.value, Random.value, Random.value)); // TODO: unrandomize color
+            _view.PopulateDroneGroupDropdown(DroneManager.instance.DroneGroups, newGroupName);
+            DroneManager.instance.UpdateDroneGroup(_currentlySelectedDrone.ID, newGroupName); // update the selected drones group too
+        }
+
+        private void OnToggleRemoveGroupMode(bool isRemoveMode)
+        {
+            groupRemoveModeActive = isRemoveMode;
+        }
 
         #endregion
 

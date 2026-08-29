@@ -1,3 +1,4 @@
+using DroneSwarmPathfinder.Unity.Managers;
 using UnityEngine;
 
 namespace DroneSwarmPathfinder.Unity.Visuals
@@ -38,8 +39,9 @@ namespace DroneSwarmPathfinder.Unity.Visuals
 
             // TODO: unhardcode v
             // hardcoded colors by index :)
-            Color[] colors = { Color.blue, Color.red, Color.green, Color.yellow, Color.cyan, Color.magenta, Color.white };
-            Color assignedColor = colors[Mathf.Abs(groupName) % colors.Length];
+            //Color[] colors = { Color.blue, Color.red, Color.green, Color.yellow, Color.cyan, Color.magenta, Color.white };
+            //Color assignedColor = colors[Mathf.Abs(groupName) % colors.Length];
+            if (!DroneManager.instance.GetColorByGroup(groupName, out Color assignedColor)) assignedColor = Color.black;
             CurrentColor = assignedColor;
 
             _renderer.GetPropertyBlock(_propBlock);

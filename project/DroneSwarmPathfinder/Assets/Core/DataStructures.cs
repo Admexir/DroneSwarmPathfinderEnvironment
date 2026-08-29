@@ -72,11 +72,11 @@ namespace DroneSwarmPathfinder.Core.Models
         }
 
         [JsonConstructor]
-        public Drone(int id, TransformData transform, string groupId = "")
+        public Drone(int id, TransformData transform, string groupName = "default")
         {
             ID = id;
             Transform = transform;
-            GroupName = groupId;
+            GroupName = groupName;
         }
 
         public bool Contains(Vector3 point)
