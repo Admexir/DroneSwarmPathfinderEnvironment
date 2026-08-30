@@ -12,8 +12,39 @@ namespace DroneSwarmPathfinder.Core.Serialization
     /// </summary>
     public class DroneConfigJson
     {
+        /// <summary>
+        /// List of all drones in the swarm
+        /// </summary>
         public List<Drone> Drones { get; set; } = new();
 
+        /// <summary>
+        /// Dictionary of all drone groups
+        /// </summary>
+        [JsonIgnore]
+        public Dictionary<string, List<Drone>> Groups
+        {
+            get
+            {
+                // Generate the groups dictionary from the drones list if it hasn't been generated before
+                if(_groups == null)
+                {
+                    _groups = new Dictionary<string, List<Drone>>();
+                    foreach (var drone in Drones)
+                    {
+                        if (_groups.TryGetValue(drone.GroupName, out var list)) { list.Add(drone); }
+                        else { _groups[drone.GroupName] = new List<Drone>() { drone }; }
+                    }
+                    if (!_groups.ContainsKey("default")) _groups["default"] = new(); // Edge case for when no drone uses default group so it doesn't get deleted
+                }
+                return _groups;
+            }
+        }
+        [JsonIgnore]
+        private Dictionary<string, List<Drone>> _groups;
+
+        /// <summary>
+        /// List of all items contained in this file (currently only the drones)
+        /// </summary>
         [JsonIgnore]
         public IEnumerable<IConfigItem> AllConfigItems => Drones.Cast<IConfigItem>();
     }
@@ -23,7 +54,13 @@ namespace DroneSwarmPathfinder.Core.Serialization
     /// </summary>
     public class EnvironmentConfigJson
     {
+        /// <summary>
+        /// List of all the obstacles
+        /// </summary>
         public List<IObstacleVolume> Obstacles { get; set; } = new();
+        /// <summary>
+        /// Spatial rules of the environment (grid size)
+        /// </summary>
         public ISpatialEnvironment SpatialRules { get; set; }
 
         public EnvironmentConfigJson(WorldEnvironment env)
@@ -42,7 +79,14 @@ namespace DroneSwarmPathfinder.Core.Serialization
     public class ResultsJson
     {
         // In case this needs to hold more info, just add it as a variable and set the value in the FullResultObject conversion
+
+        /// <summary>
+        /// Conversion to SimulationResult
+        /// </summary>
         [JsonIgnore] public SimulationResult FullResultObject => new SimulationResult() { Paths = this.Paths };
+        /// <summary>
+        /// Dictionary of all drones as keys and their paths as values
+        /// </summary>
         public IReadOnlyDictionary<int, DronePath> Paths { get; init; }
         public ResultsJson(SimulationResult result) { this.Paths = result.Paths; }
         [JsonConstructor] private ResultsJson() { }

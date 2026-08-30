@@ -21,9 +21,9 @@ Allow to save simulation results to files and load them + result visualisation i
 	C2- add logging feature to API - allow drones to save logs depending from their script for easier pathfinding script debugging
 
 Drone groups logic changes
-	- change drone groups to strings to allow naming them
-	- change group input field UI to a dropdown with existing groups + " + New Group" which allows to add new groups
-		- add groups to serialization of configs + update check for compatibility
+	x- change drone groups to strings to allow naming them
+	x- change group input field UI to a dropdown with existing groups + " + New Group" which allows to add new groups
+	x	- add groups to serialization of configs + update check for compatibility
 	- add a checkbox to drones for "allow any drone from group x" which removes the specificity of a drone in a target state
 		- add a warning next to saving config that when using these placeholders, it can only be used as a target state 
 		- add a bool to serialized configs whether they use these placeholders

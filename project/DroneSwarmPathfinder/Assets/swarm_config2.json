@@ -2,12 +2,12 @@
   "Drones": [
     {
       "ID": 0,
-      "GroupId": 0,
+      "GroupName": "Group 1",
       "Transform": {
         "Position": {
-          "X": 18.0,
+          "X": 0.0,
           "Y": 0.0,
-          "Z": 0.0
+          "Z": 7.0
         },
         "Rotation": {
           "X": 0.0,
@@ -25,12 +25,12 @@
     },
     {
       "ID": 1,
-      "GroupId": 1,
+      "GroupName": "asdf",
       "Transform": {
         "Position": {
-          "X": 18.0,
-          "Y": 3.0,
-          "Z": 0.0
+          "X": 0.0,
+          "Y": 2.0,
+          "Z": 7.0
         },
         "Rotation": {
           "X": 0.0,
