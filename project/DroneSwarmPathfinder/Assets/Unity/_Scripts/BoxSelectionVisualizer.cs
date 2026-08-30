@@ -70,7 +70,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             if (selectionRect.width < 10 && selectionRect.height < 10) return;
 
             // Box select drones
-            var droneArr = DroneManager.instance.AllDroneModels.ToArray();
+            var droneArr = DroneManager.instance.AllDroneItems.ToArray();
             foreach (var coreDrone in droneArr)
             {
                 var droneView = DroneManager.instance.GetDroneView(coreDrone.ID);

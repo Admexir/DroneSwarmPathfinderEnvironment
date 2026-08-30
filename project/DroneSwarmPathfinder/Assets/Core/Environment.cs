@@ -119,7 +119,7 @@ namespace DroneSwarmPathfinder.Core.Environment
     /// <summary>
     /// Class representing an obstacle in the 3D scene
     /// </summary>
-    public class BoxObstacle : IObstacleVolume, Serialization.IConfigItem
+    public class BoxObstacle : IObstacleVolume, Serialization.IEnvironmentConfigItem
     {
         public int ID { get; init; }
         public TransformData Transform { get; set; }

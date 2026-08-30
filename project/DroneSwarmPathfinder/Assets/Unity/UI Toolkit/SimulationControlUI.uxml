@@ -15,6 +15,7 @@
                     </ui:VisualElement>
                     <ui:Label text="EDITOR TOOLS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
                     <ui:Button text="Add Drone" name="btn-add-drone" class="EditorToolsButton"/>
+                    <ui:Button text="Add Drone Target Position" name="btn-add-drone-target-position" class="EditorToolsButton"/>
                     <ui:Button text="Add Obstacle" name="btn-add-obstacle" class="EditorToolsButton"/>
                     <ui:Button text="Remove Selected" name="btn-remove-selected" class="EditorToolsButton"/>
                     <ui:Label text="ENVIRONMENT SETTINGS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px; margin-top: 10px;"/>

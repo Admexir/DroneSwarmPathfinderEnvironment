@@ -40,6 +40,13 @@ namespace DroneSwarmPathfinder.Core.Models
             Rotation = rotation;
             Size = size;
         }
+        public TransformData(Vector3 position, Vector3 size)
+        {
+            this = default;
+            Position = position;
+            Rotation = Quaternion.Identity;
+            Size = size;
+        }
     }
 
     public static class TransformExtensions
@@ -52,7 +59,7 @@ namespace DroneSwarmPathfinder.Core.Models
     /// <summary>
     /// Class representing one agent in the simulation
     /// </summary>
-    public class Drone : IObstacleVolume, IConfigItem
+    public class Drone : IObstacleVolume, IDroneConfigItem
     {
         public int ID { get; init; }
         public string GroupName { get; set; }
@@ -73,6 +80,45 @@ namespace DroneSwarmPathfinder.Core.Models
 
         [JsonConstructor]
         public Drone(int id, TransformData transform, string groupName = "default")
+        {
+            ID = id;
+            Transform = transform;
+            GroupName = groupName;
+        }
+
+        public bool Contains(Vector3 point)
+        {
+            float currentRadius = CollisionRadius;
+            float radiusSquared = currentRadius * currentRadius;
+
+            return Vector3.DistanceSquared(Transform.Position, point) <= radiusSquared;
+        }
+    }
+
+    /// <summary>
+    /// Class representing a position for a drone to move to (target position of a drone)
+    /// </summary>
+    public class DroneTargetPosition : IObstacleVolume, IDroneConfigItem
+    {
+        public int ID { get; init; }
+        public string GroupName { get; set; }
+        public TransformData Transform { get; set; }
+
+        /// <summary>
+        /// Takes the largest dimension from Transform and divides it by two
+        /// </summary>
+        [JsonIgnore] // We don't need to save calculated properties to JSON
+        public float CollisionRadius
+        {
+            get
+            {
+                float maxDimension = Math.Max(Math.Max(Transform.Size.X, Transform.Size.Y), Transform.Size.Z);
+                return maxDimension / 2f;
+            }
+        }
+
+        [JsonConstructor]
+        public DroneTargetPosition(int id, TransformData transform, string groupName)
         {
             ID = id;
             Transform = transform;

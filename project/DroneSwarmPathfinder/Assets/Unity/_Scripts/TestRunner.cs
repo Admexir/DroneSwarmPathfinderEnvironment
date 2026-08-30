@@ -31,7 +31,7 @@ namespace DroneSwarmPathfinder.Unity.Testing
                 new Drone(id: 0, new TransformData(new NumVector3(0, 0, 0)), groupName: "Group 1"),
                 new Drone(id: 1, new TransformData(new NumVector3(10, 0, 10)), groupName: "Group 2")
             };
-            Managers.DroneManager.instance.SpawnDrones(drones);
+            Managers.DroneManager.instance.ClearAndSpawnDrones(drones);
         }
     }
 }

@@ -1,5 +1,6 @@
 using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Serialization;
 using DroneSwarmPathfinder.Core.Simulation;
 using DroneSwarmPathfinder.Unity.EditorTools;
 using DroneSwarmPathfinder.Unity.Managers;
@@ -21,7 +22,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         public static EditorUIPresenter instance;
 
         private UIController _view;
-        private Drone _currentlySelectedDrone;
+        private IDroneConfigItem _currentlySelectedDrone;
         private IObstacleVolume _currentlySelectedObstacle; //ASDFGH
         private IFileBrowserService _fileBrowser;
 
@@ -90,6 +91,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Editor actions
             _view.OnAddDroneClickedEvent += OnAddDroneClicked;
             _view.OnAddDroneClickedEvent += OnDroneObstaclePositionChange;
+            _view.OnAddDroneTargetPositionClickedEvent += OnAddDronePositionClicked;
+            _view.OnAddDroneTargetPositionClickedEvent += OnDroneObstaclePositionChange;
             _view.OnAddObstacleClickedEvent += OnAddObstacleClicked;
             _view.OnAddObstacleClickedEvent += OnDroneObstaclePositionChange;
             _view.OnRemoveSelectedClickedEvent += OnRemoveSelectedClicked;
@@ -146,7 +149,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         /// </summary>
         public void RefreshDroneList()
         {
-            var drones = DroneManager.instance.AllDroneModels.ToList();
+            var drones = DroneManager.instance.AllDroneItems.ToList();
             _view.PopulateDroneList(drones);
         }
 
@@ -299,7 +302,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.DroneConfigJson>(json);
             if (config != null)
             {
-                DroneManager.instance.SpawnDrones(config.Drones);
+                DroneManager.instance.ClearAndSpawnDrones(config.AllConfigItems);
                 ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
                 Debug.Log("Swarm configuration loaded successfully");
             }
@@ -318,7 +321,8 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             var config = new Core.Serialization.DroneConfigJson
             {
-                Drones = DroneManager.instance.AllDroneModels.ToList()
+                Drones = DroneManager.instance.AllDroneModelsOnly.ToList(),
+                TargetPositions = DroneManager.instance.AllDroneTargetPositionsOnly.ToList()
             };
 
             // Use the generic serializer
@@ -474,6 +478,17 @@ namespace DroneSwarmPathfinder.Unity.UI
             HandleDroneSceneSelectionChanged(selectedIds);
         }
 
+        private void OnAddDronePositionClicked()
+        {
+            Debug.Log("Adding new drone target position...");
+            var newDronePos = DroneManager.instance.CreateNewDronePosition(Vector3.zero);
+
+            // auto-select the newly created drone
+            var selectedIds = new List<int> { newDronePos.ID };
+            ConfigEditorManager.instance.SetDroneSelectionFromUI(selectedIds);
+            HandleDroneSceneSelectionChanged(selectedIds);
+        }
+
         private void OnDronePositionChanged(Vector3 newPosition)
         {
             if (_currentlySelectedDrone == null) return;
@@ -490,13 +505,13 @@ namespace DroneSwarmPathfinder.Unity.UI
                 return;
             }
 
-            var selectedDrone = (Drone)selectedItems.FirstOrDefault();
+            var selectedDrone = (IDroneConfigItem)selectedItems.FirstOrDefault();
             _currentlySelectedDrone = selectedDrone;
 
             Vector3 currentPos = selectedDrone.Transform.Position.ToUnity();
             _view.ShowDroneDetails(selectedDrone, currentPos);
 
-            var selectedIds = selectedItems.Cast<Drone>().Select(d => d.ID).ToList();
+            var selectedIds = selectedItems.Cast<IDroneConfigItem>().Select(d => d.ID).ToList();
             ConfigEditorManager.instance.SetDroneSelectionFromUI(selectedIds);
         }
 
@@ -717,7 +732,7 @@ namespace DroneSwarmPathfinder.Unity.UI
                 _view.ShowDroneDetails(drone, drone.Transform.Position.ToUnity());
 
                 // Select all selected drones in the UI list
-                var models = DroneManager.instance.AllDroneModels.ToList();
+                var models = DroneManager.instance.AllDroneItems.ToList();
                 var indices = selectedDroneIds.Select(id => models.FindIndex(m => m.ID == id)).Where(index => index != -1).ToList();
                 _view.SetDroneListSelectionWithoutNotify(indices);
             }

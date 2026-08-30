@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Serialization;
 using DroneSwarmPathfinder.Core.Simulation;
 
 namespace DroneSwarmPathfinder.Algorithms
@@ -37,10 +38,11 @@ namespace DroneSwarmPathfinder.Algorithms
                 int droneId = kvp.Key;
                 Drone startDrone = kvp.Value;
 
-                // Drone stays still if it has no targets
-                Drone targetDrone = context.TargetState.ContainsKey(droneId)
-                    ? context.TargetState[droneId]
-                    : startDrone;
+                // Drone looks if it has exact index match, if not then for a group match, and if neither stays still (should always have at least 1 so configs pass compatibility checks)
+                IDroneConfigItem targetDrone = context.DroneSpecificTargets.ContainsKey(droneId)
+                    ? context.DroneSpecificTargets[droneId]
+                    : (context.TryGetTargetFromGroup(startDrone.GroupName, out var target) 
+                        ? target : startDrone);
 
                 var path = new DronePath { DroneId = droneId };
 

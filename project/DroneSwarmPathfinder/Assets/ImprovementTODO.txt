@@ -24,11 +24,11 @@ Drone groups logic changes
 	x- change drone groups to strings to allow naming them
 	x- change group input field UI to a dropdown with existing groups + " + New Group" which allows to add new groups
 	x	- add groups to serialization of configs + update check for compatibility
-	- add a checkbox to drones for "allow any drone from group x" which removes the specificity of a drone in a target state
-		- add a warning next to saving config that when using these placeholders, it can only be used as a target state 
-		- add a bool to serialized configs whether they use these placeholders
-		- adjust compatibility check to counting drone group sizes
-	- change SimulationContext to improve working with drone groups (...add something like Dict<string, Enum<Drone>>)
+	x- add a checkbox to drones for "allow any drone from group x" which removes the specificity of a drone in a target state
+	x	- add a warning next to saving config that when using these placeholders, it can only be used as a target state 
+	x	- add a bool to serialized configs whether they use these placeholders
+	x	- adjust compatibility check to counting drone group sizes
+	x- change SimulationContext to improve working with drone groups (...add something like Dict<string, Enum<Drone>>)
 
 Other changes
 	- add Name and Description fields to drones/positions
@@ -51,3 +51,6 @@ Physics based API
 	- future improvement: allow for movement inaccuracies and conditions to deal with them
 
 		
+
+TODO CRITICAL: ADD UI FOR SELECTING ENVIRONMENT WHEN NOT USING CURRENT SCENE AS START CONFIG
+TODO: Add clear results button

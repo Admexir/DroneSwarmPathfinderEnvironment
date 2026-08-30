@@ -759,6 +759,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   dronePrefab: {fileID: 1822019228919180031, guid: 3ed3fc92c1c29e3488d358ba815b61cc, type: 3}
+  droneTargetPrefab: {fileID: 1822019228919180031, guid: 5e82c08da0a696f459747aafe7cac313, type: 3}
   dronesHolder: {fileID: 33758217}
 --- !u!4 &339913119
 Transform:

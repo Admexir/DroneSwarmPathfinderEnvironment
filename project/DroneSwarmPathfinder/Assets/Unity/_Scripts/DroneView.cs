@@ -22,13 +22,13 @@ namespace DroneSwarmPathfinder.Unity.Visuals
         }
 
         // Called shortly after spawning (but not instantly... do not switch to Start() )
-        public void Initialize(int id, string groupName)
+        public void Initialize(int id, string groupName, bool isTargetPosition = false)
         {
             ID = id;
-            SetColorByGroup(groupName);
+            SetColorByGroup(groupName, isTargetPosition);
         }
 
-        private void SetColorByGroup(string groupName)
+        private void SetColorByGroup(string groupName, bool isTargetPosition = false)
         {
             DroneGroup = groupName;
             // PropertyBlock prevents unity from creating a unique copy of a material for every drone ... should improve performance for large swarms
@@ -41,10 +41,14 @@ namespace DroneSwarmPathfinder.Unity.Visuals
             // hardcoded colors by index :)
             //Color[] colors = { Color.blue, Color.red, Color.green, Color.yellow, Color.cyan, Color.magenta, Color.white };
             //Color assignedColor = colors[Mathf.Abs(groupName) % colors.Length];
+            _renderer.GetPropertyBlock(_propBlock);
             if (!DroneManager.instance.GetColorByGroup(groupName, out Color assignedColor)) assignedColor = Color.black;
+            if (isTargetPosition)
+            {
+                assignedColor = new Color(assignedColor.r, assignedColor.g, assignedColor.b, 0.5f);
+            }
             CurrentColor = assignedColor;
 
-            _renderer.GetPropertyBlock(_propBlock);
             _propBlock.SetColor("_Color", assignedColor);
             _renderer.SetPropertyBlock(_propBlock);
         }

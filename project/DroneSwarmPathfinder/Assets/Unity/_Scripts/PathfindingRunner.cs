@@ -50,13 +50,19 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             }
             else
             {
-                initialDrones = DroneManager.instance.AllDroneModels.ToDictionary(d => d.ID, d => d);
+                initialDrones = DroneManager.instance.AllDroneItems.ToDictionary(d => d.ID, d => new Drone(d.ID, d.Transform, d.GroupName));
                 environment = new EnvironmentConfigJson(EnvironmentManager.instance.CurrentWorldEnvironment);
             }
             string targetJson = System.IO.File.ReadAllText(targetConfigPath);
             var targetConfig = JSONSerializer.Deserialize<DroneConfigJson>(targetJson);
             var targetDrones = targetConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
+            var groupTargets = targetConfig?.TargetPositions.GroupBy(d => d.GroupName).ToDictionary(g => g.Key, g => g.ToList()) ?? new Dictionary<string, List<DroneTargetPosition>>();
+            //Debug.Log(string.Join(" ;;; ", groupTargets.Select(kvp =>
+            //    $"[{kvp.Key}]: {string.Join(", ", kvp.Value.Select(pos => pos.ID))}"
+            //)));
+            //Debug.Log(string.Join(", ", targetDrones.Select(kvp => kvp.Key)));
 
+            //Debug.Log(string.Join(", ", initialDrones.Select(kvp => kvp.Key)));
 
             // Get environment
             var worldEnv = new WorldEnvironment(environment.SpatialRules, environment.Obstacles);
@@ -64,9 +70,13 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             var context = new SimulationContext
             {
                 InitialState = initialDrones,
-                TargetState = targetDrones,
+                DroneSpecificTargets = targetDrones,
+                GroupTargets = groupTargets,
                 Environment = worldEnv
             };
+
+            //Debug.Log($"context: {context.InitialState.Count}, {context.DroneSpecificTargets.Count}, {context.GroupTargets.Count}, {context.TryGetTargetFromGroup("default", out var target)}: {target}");
+            //while (context.TryGetTargetFromGroup("default", out var targetPos)) Debug.Log($"target: {targetPos}");
 
             // Run algorithm async
             _cancellationTokenSource = new CancellationTokenSource();

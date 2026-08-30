@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 using DroneSwarmPathfinder.Core.Models;
 using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Unity.Managers;
+using DroneSwarmPathfinder.Core.Serialization;
 
 namespace DroneSwarmPathfinder.Unity.UI
 {
@@ -126,6 +127,7 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         // Editor actions events for other scripts to subscribe to
         public event Action OnAddDroneClickedEvent;
+        public event Action OnAddDroneTargetPositionClickedEvent;
         public event Action OnAddObstacleClickedEvent;
         public event Action OnRemoveSelectedClickedEvent;
         public event Action OnLoadConfigClickedEvent;
@@ -342,7 +344,7 @@ namespace DroneSwarmPathfinder.Unity.UI
                 _droneListView.bindItem = (element, index) =>
                 {
                     var label = element as Label;
-                    var drone = (Drone)_droneListView.itemsSource[index];
+                    var drone = (IDroneConfigItem)_droneListView.itemsSource[index];
                     label.text = $"Drone {drone.ID} (group: {drone.GroupName})";
                 };
 
@@ -433,6 +435,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         private void BindConfigEditorUI(VisualElement root)
         {
             var addDroneButton = root.Q<Button>("btn-add-drone");
+            var addDroneTargetPositionButton = root.Q<Button>("btn-add-drone-target-position");
             var addObstacleButton = root.Q<Button>("btn-add-obstacle");
             var removeSelectedButton = root.Q<Button>("btn-remove-selected");
             _gridSizeInput = root.Q<IntegerField>("input-grid-size");
@@ -440,6 +443,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _droneWarningLabel = root.Q<Label>("label-drone-warning");
 
             if (addDroneButton != null) addDroneButton.clicked += () => OnAddDroneClickedEvent?.Invoke();
+            if (addDroneTargetPositionButton != null) addDroneTargetPositionButton.clicked += () => OnAddDroneTargetPositionClickedEvent?.Invoke();
             if (addObstacleButton != null) addObstacleButton.clicked += () => OnAddObstacleClickedEvent?.Invoke();
             if (removeSelectedButton != null) removeSelectedButton.clicked += () => OnRemoveSelectedClickedEvent?.Invoke();
             if (_gridSizeInput != null) _gridSizeInput.RegisterValueChangedCallback(evt => OnGridSizeChangedEvent?.Invoke(evt.newValue));
@@ -621,7 +625,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_btnScale != null) _btnScale.style.backgroundColor = (mode == EditorToolMode.Scale) ? activeColor : defaultColor;
         }
 
-        public void PopulateDroneList(List<Drone> drones)
+        public void PopulateDroneList(List<IDroneConfigItem> drones)
         {
             if (_droneListView == null) return;
             _droneListView.itemsSource = drones;
@@ -641,7 +645,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _droneListView?.ClearSelection();
         }
 
-        public void ShowDroneDetails(Drone drone, Vector3 unityPosition)
+        public void ShowDroneDetails(IDroneConfigItem drone, Vector3 unityPosition)
         {
             if (_droneIdInput != null) _droneIdInput.value = drone.ID.ToString();
             PopulateDroneGroupDropdown(DroneManager.instance.DroneGroups, drone.GroupName);

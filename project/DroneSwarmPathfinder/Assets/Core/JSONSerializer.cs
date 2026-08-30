@@ -16,23 +16,27 @@ namespace DroneSwarmPathfinder.Core.Serialization
         /// List of all drones in the swarm
         /// </summary>
         public List<Drone> Drones { get; set; } = new();
+        /// <summary>
+        /// List of all general target drone positions ("any drone from group x")
+        /// </summary>
+        public List<DroneTargetPosition> TargetPositions { get; set; } = new();
 
         /// <summary>
         /// Dictionary of all drone groups
         /// </summary>
         [JsonIgnore]
-        public Dictionary<string, List<Drone>> Groups
+        public Dictionary<string, List<IDroneConfigItem>> Groups
         {
             get
             {
                 // Generate the groups dictionary from the drones list if it hasn't been generated before
                 if(_groups == null)
                 {
-                    _groups = new Dictionary<string, List<Drone>>();
-                    foreach (var drone in Drones)
+                    _groups = new Dictionary<string, List<IDroneConfigItem>>();
+                    foreach (var drone in AllConfigItems)
                     {
                         if (_groups.TryGetValue(drone.GroupName, out var list)) { list.Add(drone); }
-                        else { _groups[drone.GroupName] = new List<Drone>() { drone }; }
+                        else { _groups[drone.GroupName] = new List<IDroneConfigItem>() { drone }; }
                     }
                     if (!_groups.ContainsKey("default")) _groups["default"] = new(); // Edge case for when no drone uses default group so it doesn't get deleted
                 }
@@ -40,13 +44,13 @@ namespace DroneSwarmPathfinder.Core.Serialization
             }
         }
         [JsonIgnore]
-        private Dictionary<string, List<Drone>> _groups;
+        private Dictionary<string, List<IDroneConfigItem>> _groups;
 
         /// <summary>
         /// List of all items contained in this file (currently only the drones)
         /// </summary>
         [JsonIgnore]
-        public IEnumerable<IConfigItem> AllConfigItems => Drones.Cast<IConfigItem>();
+        public IEnumerable<IDroneConfigItem> AllConfigItems => Drones.Cast<IDroneConfigItem>().Concat(TargetPositions.Cast<IDroneConfigItem>());
     }
 
     /// <summary>
@@ -68,6 +72,9 @@ namespace DroneSwarmPathfinder.Core.Serialization
             Obstacles = env.Obstacles.ToList();
             SpatialRules = env.SpatialRules;
         }
+
+        [JsonIgnore]
+        public IEnumerable<IEnvironmentConfigItem> AllConfigItems => Obstacles.Cast<IEnvironmentConfigItem>();
 
         [JsonConstructor] private EnvironmentConfigJson() { }
         // TODO: physics toggle and other environment specific variables go here

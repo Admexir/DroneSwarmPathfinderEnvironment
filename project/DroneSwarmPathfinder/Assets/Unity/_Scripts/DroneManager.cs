@@ -7,6 +7,7 @@ using UnityEngine;
 using NumVector3 = System.Numerics.Vector3;
 using NumQuaternion = System.Numerics.Quaternion;
 using DroneSwarmPathfinder.Unity.EditorTools;
+using DroneSwarmPathfinder.Core.Serialization;
 
 namespace DroneSwarmPathfinder.Unity.Managers
 {
@@ -14,18 +15,25 @@ namespace DroneSwarmPathfinder.Unity.Managers
     {
         public static DroneManager instance;
         private void Awake() => instance = this;
+        public const int DRONEPOSITIONINDEXOFFSET = 10000;
 
         [Header("Config")]
         [SerializeField] private GameObject dronePrefab;
+        [SerializeField] private GameObject droneTargetPrefab;
         [SerializeField] private Transform dronesHolder;
 
         public event System.Action OnDroneRosterChanged; // Callback for UI
 
         private Dictionary<int, DroneView> _activeDrones = new(); // Visualisation drone data
         private Dictionary<int, Drone> _droneModels = new(); // Config drone data
+        private Dictionary<int, DroneTargetPosition> _droneTargets = new(); // Config drone data
+        //private Dictionary<int, IDroneConfigItem> _droneAllItems = //It'd be beneficial to have a combined dictionary to reduce copy-paste code, but it'd affect performance (regenerating any time you'd want to access it) or you'd have to set up callbacks for whenever you'd update drone models or targets
 
         // Config drone data for config editor
-        public IEnumerable<Drone> AllDroneModels => _droneModels.Values;
+        public bool HasNoTargetPositions => _droneTargets.Count == 0;
+        public IEnumerable<Drone> AllDroneModelsOnly => _droneModels.Values;
+        public IEnumerable<DroneTargetPosition> AllDroneTargetPositionsOnly => _droneTargets.Values;
+        public IEnumerable<IDroneConfigItem> AllDroneItems => _droneModels.Values.Cast<IDroneConfigItem>().Concat(_droneTargets.Values.Cast<IDroneConfigItem>());
 
         public Dictionary<string, Color> _droneGroups = new() { { "default", Color.white } };
         public IReadOnlyCollection<string> DroneGroups => _droneGroups.Keys;
@@ -34,13 +42,15 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
         // Unique ID counter
         private int _nextDroneId = 0;
+        private int _nextDronePositionId = DRONEPOSITIONINDEXOFFSET;
 
-        public void SpawnDrones(IEnumerable<Drone> coreDrones)
+        public void ClearAndSpawnDrones(IEnumerable<IDroneConfigItem> coreDrones)
         {
             ClearDrones();
             foreach (var coreDrone in coreDrones)
             {
-                AddExistingDrone(coreDrone);
+                if(coreDrone is Drone) AddExistingDrone((Drone)coreDrone);
+                if (coreDrone is DroneTargetPosition) AddExistingDrone((DroneTargetPosition)coreDrone);
                 if (coreDrone.ID >= _nextDroneId) _nextDroneId = coreDrone.ID + 1;
             }
             OnDroneRosterChanged?.Invoke();
@@ -54,7 +64,9 @@ namespace DroneSwarmPathfinder.Unity.Managers
             }
             _activeDrones.Clear();
             _droneModels.Clear();
+            _droneTargets.Clear();
             _nextDroneId = 0;
+            _nextDronePositionId = DRONEPOSITIONINDEXOFFSET;
             OnDroneRosterChanged?.Invoke();
         }
 
@@ -65,13 +77,27 @@ namespace DroneSwarmPathfinder.Unity.Managers
         {
             int newId = _nextDroneId++;
             var transformData = new TransformData(
-                position: new NumVector3(spawnPosition.x, spawnPosition.y, spawnPosition.z));
+                position: new NumVector3(spawnPosition.x, spawnPosition.y, spawnPosition.z),
+                size: new NumVector3(1f, 0.4f, 1f));
 
             Drone newDrone = new Drone(newId, transformData);
 
             AddExistingDrone(newDrone);
             OnDroneRosterChanged?.Invoke();
             return newDrone;
+        }
+
+        public DroneTargetPosition CreateNewDronePosition(Vector3 spawnPosition)
+        {
+            int newId = _nextDronePositionId++;
+            var transformData = new TransformData(
+                position: new NumVector3(spawnPosition.x, spawnPosition.y, spawnPosition.z));
+
+            DroneTargetPosition newDronePos = new DroneTargetPosition(newId, transformData, "default");
+
+            AddExistingDrone(newDronePos);
+            OnDroneRosterChanged?.Invoke();
+            return newDronePos;
         }
 
         /// <summary>
@@ -85,6 +111,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
                 _activeDrones.Remove(id);
             }
             _droneModels.Remove(id);
+            _droneTargets.Remove(id);
             OnDroneRosterChanged?.Invoke();
         }
 
@@ -93,15 +120,32 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// </summary>
         public void UpdateDroneGroup(int id, string newGroup)
         {
-            if (_droneModels.TryGetValue(id, out Drone drone))
+            if (id >= DRONEPOSITIONINDEXOFFSET)
             {
-                drone.GroupName = newGroup;
-                _droneModels[id] = drone;
-
-                // Updates color
-                if (_activeDrones.TryGetValue(id, out DroneView view))
+                if (_droneTargets.TryGetValue(id, out DroneTargetPosition drone))
                 {
-                    view.Initialize(id, newGroup);
+                    drone.GroupName = newGroup;
+                    _droneTargets[id] = drone;
+
+                    // Updates color
+                    if (_activeDrones.TryGetValue(id, out DroneView view))
+                    {
+                        view.Initialize(id, newGroup, true);
+                    }
+                }
+            }
+            else
+            {
+                if (_droneModels.TryGetValue(id, out Drone drone))
+                {
+                    drone.GroupName = newGroup;
+                    _droneModels[id] = drone;
+
+                    // Updates color
+                    if (_activeDrones.TryGetValue(id, out DroneView view))
+                    {
+                        view.Initialize(id, newGroup);
+                    }
                 }
             }
         }
@@ -123,34 +167,46 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// </summary>
         public void UpdateDronePosition(int id, Vector3 newPosition)
         {
-            if (_droneModels.TryGetValue(id, out Drone drone))
+            if(id >= DRONEPOSITIONINDEXOFFSET)
             {
-                drone.Transform = drone.Transform.WithPosition(newPosition.ToNumerics());
-                _droneModels[id] = drone;
-
-                // Updates position
-                if (_activeDrones.TryGetValue(id, out DroneView view))
+                // Drone position
+                if (_droneTargets.TryGetValue(id, out DroneTargetPosition drone))
                 {
-                    view.transform.position = newPosition;
+                    drone.Transform = drone.Transform.WithPosition(newPosition.ToNumerics());
+                    _droneTargets[id] = drone;
+
+                    // Updates position
+                    if (_activeDrones.TryGetValue(id, out DroneView view))
+                    {
+                        view.transform.position = newPosition;
+                    }
+                }
+            }
+            else
+            {
+                // Actual Drone
+                if (_droneModels.TryGetValue(id, out Drone drone))
+                {
+                    drone.Transform = drone.Transform.WithPosition(newPosition.ToNumerics());
+                    _droneModels[id] = drone;
+
+                    // Updates position
+                    if (_activeDrones.TryGetValue(id, out DroneView view))
+                    {
+                        view.transform.position = newPosition;
+                    }
                 }
             }
         }
 
-        //public record DroneInfo(int ID, int GroupName, Vector3 Position, Quaternion Rotation, Vector3 Size);
-        //public DroneInfo GetDroneConfigInfo(int id)
-        //{
-        //    if (_droneModels.TryGetValue(id, out Drone val))
-        //    {
-        //        return new(id, val.GroupName, val.Transform.Position.ToUnity(), val.Transform.Rotation.ToUnity(), val.Transform.Size.ToUnity());
-        //    }
-        //    else { return null; }
-        //}
-
-        public Drone GetDroneDataFromID(int id)
+        public IDroneConfigItem GetDroneDataFromID(int id)
         {
-            if (_droneModels.TryGetValue(id, out Drone val))
+            if (id < DRONEPOSITIONINDEXOFFSET &&  _droneModels.TryGetValue(id, out Drone val))
             {
                 return val;
+            }else if(id >= DRONEPOSITIONINDEXOFFSET && _droneTargets.TryGetValue(id, out DroneTargetPosition val2))
+            {
+                return val2;
             }
             else { return null; }
         }
@@ -158,7 +214,6 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// <summary>
         /// Adds a drone from config to the scene
         /// </summary>
-        /// <param name="coreDrone"></param>
         private void AddExistingDrone(Drone coreDrone)
         {
             GameObject droneObj = Instantiate(dronePrefab, dronesHolder);
@@ -174,6 +229,25 @@ namespace DroneSwarmPathfinder.Unity.Managers
             _activeDrones.Add(coreDrone.ID, view);
             _droneModels.Add(coreDrone.ID, coreDrone);
         }
+        /// <summary>
+        /// Adds a drone target position from config to the scene
+        /// </summary>
+        private void AddExistingDrone(DroneTargetPosition coreDrone)
+        {
+            GameObject droneObj = Instantiate(droneTargetPrefab, dronesHolder);
+            droneObj.name = $"Drone Pos {coreDrone.ID} (group: {coreDrone.GroupName})";
+            //droneObj.layer = ConfigEditorManager.instance.droneLayer;
+
+            droneObj.transform.position = coreDrone.Transform.Position.ToUnity();
+            droneObj.transform.rotation = coreDrone.Transform.Rotation.ToUnity();
+            droneObj.transform.localScale = coreDrone.Transform.Size.ToUnity();
+
+            DroneView view = droneObj.GetComponent<DroneView>();
+            view.Initialize(coreDrone.ID, coreDrone.GroupName, true);
+
+            _activeDrones.Add(coreDrone.ID, view);
+            _droneTargets.Add(coreDrone.ID, coreDrone);
+        }
 
         public DroneView GetDroneView(int id)
         {
@@ -185,10 +259,10 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// </summary>
         /// <param name="invalidDrones">List of drones in invalid places</param>
         /// <returns>True if all drones are in valid places</returns>
-        public bool CheckDronePositionValidity(out List<Drone> invalidDrones)
+        public bool CheckDronePositionValidity(out List<IDroneConfigItem> invalidDrones)
         {
-            invalidDrones = new List<Drone>();
-            foreach(var drone in AllDroneModels)
+            invalidDrones = new List<IDroneConfigItem>();
+            foreach(var drone in AllDroneItems)
             {
                 if (!EnvironmentManager.instance.CurrentWorldEnvironment.IsEmpty(drone.Transform.Position)) { invalidDrones.Add(drone); }
             }
