@@ -25,8 +25,6 @@ namespace DroneSwarmPathfinder.Unity.Visuals
 
             if (paths == null) return;
 
-            Debug.Log($"Paths: {string.Join(";;; ", paths.Values)}");
-
             foreach (var kvp in paths)
             {
                 int droneId = kvp.Key;

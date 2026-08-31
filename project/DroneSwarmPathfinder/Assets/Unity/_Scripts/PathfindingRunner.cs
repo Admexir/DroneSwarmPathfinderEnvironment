@@ -1,14 +1,16 @@
 using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Serialization;
 using DroneSwarmPathfinder.Core.Simulation;
-using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.EditorTools;
+using DroneSwarmPathfinder.Unity.Managers;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using DroneSwarmPathfinder.Core.Serialization;
 
 namespace DroneSwarmPathfinder.Unity.Simulation
 {
@@ -85,6 +87,7 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             var progress = new System.Progress<float>(p => Debug.Log($"Calculating... {p * 100:F0}%"));
 
             SimulationResult result = await algorithm.CalculatePathsAsync(context, progress, _cancellationTokenSource.Token);
+            if (result.SimulationContext == null) result.SimulationContext = context;
 
             // Load results
             if (result.IsSuccessful)
@@ -99,6 +102,7 @@ namespace DroneSwarmPathfinder.Unity.Simulation
 
             return result;
         }
+
 
         public void CancelCalculation()
         {

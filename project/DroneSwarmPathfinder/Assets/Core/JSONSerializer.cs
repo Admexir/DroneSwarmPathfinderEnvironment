@@ -90,12 +90,13 @@ namespace DroneSwarmPathfinder.Core.Serialization
         /// <summary>
         /// Conversion to SimulationResult
         /// </summary>
-        [JsonIgnore] public SimulationResult FullResultObject => new SimulationResult() { Paths = this.Paths };
+        [JsonIgnore] public SimulationResult FullResultObject => new SimulationResult() { Paths = this.Paths, SimulationContext = this.Context };
         /// <summary>
         /// Dictionary of all drones as keys and their paths as values
         /// </summary>
         public IReadOnlyDictionary<int, DronePath> Paths { get; init; }
-        public ResultsJson(SimulationResult result) { this.Paths = result.Paths; }
+        public SimulationContext Context { get; init; }
+        public ResultsJson(SimulationResult result) { this.Paths = result.Paths; this.Context = result.SimulationContext; }
         [JsonConstructor] private ResultsJson() { }
     }
 

@@ -408,6 +408,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (result != null && result.FullResultObject != null)
             {
                 CacheResultForDropdown(result.FullResultObject, System.IO.Path.GetFileNameWithoutExtension(path));
+
                 SimulationPlaybackManager.instance.LoadSimulationResult(result.FullResultObject);
                 Debug.Log("Results loaded successfully");
             }
@@ -429,7 +430,7 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             var result = new Core.Serialization.ResultsJson
             (
-                SimulationPlaybackManager.instance.LatersResult
+                SimulationPlaybackManager.instance.LatestResult
             );
 
             string json = Core.Serialization.JSONSerializer.Serialize(result);

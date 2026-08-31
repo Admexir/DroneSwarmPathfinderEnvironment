@@ -1,5 +1,8 @@
+using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Serialization;
 using DroneSwarmPathfinder.Core.Simulation;
+using DroneSwarmPathfinder.Unity.EditorTools;
 using DroneSwarmPathfinder.Unity.Visuals;
 using System;
 using System.Collections.Generic;
@@ -46,7 +49,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
         private IReadOnlyDictionary<int, DronePath> _currentPaths;
         private SimulationResult _latestResult;
-        public SimulationResult LatersResult { get =>  _latestResult; }
+        public SimulationResult LatestResult { get =>  _latestResult; }
 
         private void Update()
         {
@@ -71,6 +74,8 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// </summary>
         public void LoadSimulationResult(SimulationResult result)
         {
+            LoadConfigForResults(result.SimulationContext.InitialState.Values, result.SimulationContext.Environment);
+
             _latestResult = result;
             _currentPaths = result.Paths;
             currentTime = 0f;
@@ -92,6 +97,31 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
             UpdateDronesPositions(0f);
         }
+        /// <summary>
+        /// Helper method to allow loading the results - first loads all the necessary drones
+        /// </summary>
+        private void LoadConfigForResults(IEnumerable<IDroneConfigItem> dronesConfig, WorldEnvironment envConfig)
+        {
+            Debug.Log($"Loading swarm configuration from selected start and environment configurations...");
+            // Drone loading
+            DroneManager.instance.ClearAndSpawnDrones(dronesConfig);
+            ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
+
+            // Environment loading
+            // Spawn the obstacles
+            EnvironmentManager.instance.SpawnObstacles(envConfig.Obstacles);
+
+            // Load the spatial rules (Grid)
+            if (envConfig.SpatialRules is DiscreteGrid grid)
+            {
+                EnvironmentManager.instance.ChangeGridSize(grid.CellSize);
+            }
+
+            // Clear UI selection state
+            ConfigEditorManager.instance.SetObstacleSelectionFromUI(new List<int>());
+            Debug.Log("Swarm configuration and environment loaded successfully");
+        }
+        private void LoadConfigForResults(IEnumerable<IDroneConfigItem> dronesConfig, EnvironmentConfigJson envConfig) => LoadConfigForResults(dronesConfig, new WorldEnvironment(envConfig.SpatialRules, envConfig.Obstacles));
 
         #region Playback controls (API)
 

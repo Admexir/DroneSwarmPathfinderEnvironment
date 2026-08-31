@@ -18,6 +18,10 @@ namespace DroneSwarmPathfinder.Core.Simulation
         public string Message { get; init; }
         public TimeSpan ComputationTime { get; init; }
         public IReadOnlyDictionary<int, DronePath> Paths { get; init; }
+        /// <summary>
+        /// Set automatically for saving purposes, doesn't need to be set by the user
+        /// </summary>
+        public SimulationContext SimulationContext { get; set; }
     }
 
     /// <summary>
