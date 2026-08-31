@@ -538,9 +538,15 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_btnEnvironmentConfig != null) _btnEnvironmentConfig.SetEnabled(!useCurrentScene);
 
             if (useCurrentScene)
+            {
                 UpdateIconVisuals(_iconEnvironmentConfig, true, "Using current scene");
+                _btnEnvironmentConfig.text = "Env: Current Scene";
+            }
             else
+            {
                 UpdateIconVisuals(_iconEnvironmentConfig, hasFile, hasFile ? fileName : "No file selected");
+                _btnEnvironmentConfig.text = hasFile ? "Env: " + fileName : "Select Environment";
+            }
         }
 
         public void UpdateTargetConfigVisuals(bool hasFile, string fileName = null)

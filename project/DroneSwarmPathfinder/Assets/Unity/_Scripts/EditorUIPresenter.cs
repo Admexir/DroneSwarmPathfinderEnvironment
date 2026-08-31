@@ -383,7 +383,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (Simulation.PathfindingRunner.instance != null)
             {
                 SimulationResult result = await Simulation.PathfindingRunner.instance.RunAlgorithmAsync(algorithm);
-                CacheResultForDropdown(result, "Calculated Result");
+                CacheResultForDropdown(result, $"{System.DateTime.Now:HH:mm} Result: {algorithm.AlgorithmName}");
             }
             else { Debug.LogError("PathfindingRunner instance is missing from the scene :)"); }
         }
