@@ -44,10 +44,12 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         // File panel UI
         private Button _btnStartConfig;
+        private Button _btnEnvironmentConfig;
         private Button _btnTargetConfig;
         private Toggle _toggleCurrentScene;
         private VisualElement _iconStartConfig;
         private VisualElement _iconTargetConfig;
+        private VisualElement _iconEnvironmentConfig;
         private Toggle _usePhysicsToggle;
         [SerializeField] private Texture2D _fileIcon;
         private VisualElement _configWarningContainer;
@@ -151,6 +153,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         // File panel events for other scripts to subscribe to
         public event Action OnSelectStartConfigClickedEvent;
         public event Action OnSelectTargetConfigClickedEvent;
+        public event Action OnSelectEnvironmentConfigClickedEvent;
         public event Action<bool> OnUseCurrentSceneToggledEvent;
         public event Action OnLoadEnvironmentClickedEvent;
         public event Action OnExportEnvironmentClickedEvent;
@@ -226,10 +229,14 @@ namespace DroneSwarmPathfinder.Unity.UI
             _btnLoadAlgorithm = root.Q<Button>("btn-load-algorithm");
             _algorithmDropdown = root.Q<DropdownField>("dropdown-algorithms");
             _playSimulationButton = root.Q<Button>("btn-play-sim");
-            
+            _btnEnvironmentConfig = root.Q<Button>("btn-environment");
+            _iconEnvironmentConfig = root.Q<VisualElement>("icon-environment");
+
+
             if (_algorithmDropdown != null) _algorithmDropdown.RegisterValueChangedCallback(evt => OnAlgorithmSelectedEvent?.Invoke(evt.newValue));
             if (_btnLoadAlgorithm != null) _btnLoadAlgorithm.clicked += () => OnLoadAlgorithmClickedEvent?.Invoke();
             if (_playSimulationButton != null) _playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
+            if (_btnEnvironmentConfig != null) _btnEnvironmentConfig.clicked += () => OnSelectEnvironmentConfigClickedEvent?.Invoke();
 
             // Bind environment settings
             _usePhysicsToggle = root.Q<Toggle>("toggle-use-physics");
@@ -524,6 +531,16 @@ namespace DroneSwarmPathfinder.Unity.UI
                 UpdateIconVisuals(_iconStartConfig, hasFile, hasFile ? fileName : "No File Selected");
                 _btnStartConfig.text = hasFile ? "S: " + fileName : "Select Start Config";
             }
+        }
+
+        public void UpdateEnvironmentConfigVisuals(bool useCurrentScene, bool hasFile, string fileName = null)
+        {
+            if (_btnEnvironmentConfig != null) _btnEnvironmentConfig.SetEnabled(!useCurrentScene);
+
+            if (useCurrentScene)
+                UpdateIconVisuals(_iconEnvironmentConfig, true, "Using current scene");
+            else
+                UpdateIconVisuals(_iconEnvironmentConfig, hasFile, hasFile ? fileName : "No file selected");
         }
 
         public void UpdateTargetConfigVisuals(bool hasFile, string fileName = null)

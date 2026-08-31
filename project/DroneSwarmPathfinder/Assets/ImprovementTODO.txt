@@ -52,5 +52,8 @@ Physics based API
 
 		
 
-TODO CRITICAL: ADD UI FOR SELECTING ENVIRONMENT WHEN NOT USING CURRENT SCENE AS START CONFIG
+x: ADD UI FOR SELECTING ENVIRONMENT WHEN NOT USING CURRENT SCENE AS START CONFIG
+TODO: load the environment and swarm config upon running an algorithm with custom start config+env
+		+ change text on select env button to "Env: Current Scene" when using current scene
+
 TODO: Add clear results button

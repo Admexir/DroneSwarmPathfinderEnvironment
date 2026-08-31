@@ -129,6 +129,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnSelectStartConfigClickedEvent += OnSelectStartConfigClicked;
             _view.OnSelectTargetConfigClickedEvent += OnSelectTargetConfigClicked;
             _view.OnUseCurrentSceneToggledEvent += OnUseCurrentSceneToggled;
+            _view.OnSelectEnvironmentConfigClickedEvent += OnSelectEnvironmentConfigClicked;
 
             // Results loading
             _view.OnLoadResultClickedEvent += OnLoadResultClicked;
@@ -698,11 +699,23 @@ namespace DroneSwarmPathfinder.Unity.UI
             string targetFileName = hasTargetFile ? System.IO.Path.GetFileName(scenario.TargetConfigPath) : null;
             _view.UpdateTargetConfigVisuals(hasTargetFile, targetFileName);
 
+            bool hasEnvFile = !string.IsNullOrEmpty(scenario.EnvironmentConfigPath);
+            string envFileName = hasEnvFile ? System.IO.Path.GetFileName(scenario.EnvironmentConfigPath) : null;
+            _view.UpdateEnvironmentConfigVisuals(scenario.UseCurrentSceneForStart, hasEnvFile, envFileName);
+
             string compatibilityError;
             bool isCompatible = scenario.CheckConfigCompatibility(out compatibilityError);
             if (isCompatible) _view.HideConfigWarning();
             else _view.ShowConfigWarning(compatibilityError);
 
+        }
+        private void OnSelectEnvironmentConfigClicked()
+        {
+            string path = _fileBrowser.RequestLoadPath("Select Environment Configuration", "json");
+            if (!string.IsNullOrEmpty(path))
+            {
+                ConfigSelectionManager.instance.SetEnvironmentConfigPath(path);
+            }
         }
         #endregion
 
