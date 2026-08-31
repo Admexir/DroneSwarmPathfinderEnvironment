@@ -61,7 +61,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         // Algorithm UI
         private DropdownField _algorithmDropdown;
         private Button _btnLoadAlgorithm;
-        private Button _playSimulationButton;
+        private Button _runSimulationButton;
 
 
         // Tab UI
@@ -133,7 +133,6 @@ namespace DroneSwarmPathfinder.Unity.UI
         public event Action OnAddObstacleClickedEvent;
         public event Action OnRemoveSelectedClickedEvent;
         public event Action OnLoadConfigClickedEvent;
-        public event Action OnPlaySimulationClickedEvent;
         public event Action OnExportConfigClickedEvent;
         public event Action<int> OnGridSizeChangedEvent;
 
@@ -151,6 +150,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         public event Action<Vector3> OnObstacleSizeChangedEvent;
 
         // File panel events for other scripts to subscribe to
+        public event Action OnRunAlgorithmClickedEvent;
         public event Action OnSelectStartConfigClickedEvent;
         public event Action OnSelectTargetConfigClickedEvent;
         public event Action OnSelectEnvironmentConfigClickedEvent;
@@ -228,14 +228,14 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Bind algorithm loading
             _btnLoadAlgorithm = root.Q<Button>("btn-load-algorithm");
             _algorithmDropdown = root.Q<DropdownField>("dropdown-algorithms");
-            _playSimulationButton = root.Q<Button>("btn-play-sim");
+            _runSimulationButton = root.Q<Button>("btn-run-algo");
             _btnEnvironmentConfig = root.Q<Button>("btn-environment");
             _iconEnvironmentConfig = root.Q<VisualElement>("icon-environment");
 
 
             if (_algorithmDropdown != null) _algorithmDropdown.RegisterValueChangedCallback(evt => OnAlgorithmSelectedEvent?.Invoke(evt.newValue));
             if (_btnLoadAlgorithm != null) _btnLoadAlgorithm.clicked += () => OnLoadAlgorithmClickedEvent?.Invoke();
-            if (_playSimulationButton != null) _playSimulationButton.clicked += () => OnPlaySimulationClickedEvent?.Invoke();
+            if (_runSimulationButton != null) _runSimulationButton.clicked += () => OnRunAlgorithmClickedEvent?.Invoke();
             if (_btnEnvironmentConfig != null) _btnEnvironmentConfig.clicked += () => OnSelectEnvironmentConfigClickedEvent?.Invoke();
 
             // Bind environment settings
@@ -590,9 +590,9 @@ namespace DroneSwarmPathfinder.Unity.UI
 
         public void SetPlaySimulationEnabled(bool isEnabled)
         {
-            if (_playSimulationButton != null)
+            if (_runSimulationButton != null)
             {
-                _playSimulationButton.SetEnabled(isEnabled);
+                _runSimulationButton.SetEnabled(isEnabled);
             }
         }
 

@@ -102,7 +102,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Config and simulation
             _view.OnLoadConfigClickedEvent += OnLoadConfigClicked;
             _view.OnLoadConfigClickedEvent += OnDroneObstaclePositionChange;
-            _view.OnPlaySimulationClickedEvent += OnPlaySimulationClicked;
+            _view.OnRunAlgorithmClickedEvent += OnRunAlgorithmClicked;
             _view.OnExportConfigClickedEvent += OnExportConfigClicked;
             _view.OnLoadAlgorithmClickedEvent += OnLoadAlgorithmClicked;
             _view.OnAlgorithmSelectedEvent += OnAlgorithmSelected;
@@ -259,22 +259,6 @@ namespace DroneSwarmPathfinder.Unity.UI
             Debug.Log("Restart Clicked");
             SimulationPlaybackManager.instance.Restart();
         }
-
-        private async void OnPlaySimulationClicked()
-        {
-            var algorithm = AlgorithmManager.instance.SelectedAlgorithm;
-            if (algorithm == null) return;
-
-            Debug.Log($"Preparing to run: {algorithm.AlgorithmName}...");
-            _view.SetActiveTab(UITabMode.Playback);
-
-            if (Simulation.PathfindingRunner.instance != null)
-            {
-                SimulationResult result = await Simulation.PathfindingRunner.instance.RunAlgorithmAsync(algorithm);
-                CacheResultForDropdown(result, "Calculated Result");
-            }
-            else { Debug.LogError("PathfindingRunner instance is missing from the scene :)"); }
-        }
         #endregion
 
         #region View event callbacks (file managment)
@@ -386,6 +370,22 @@ namespace DroneSwarmPathfinder.Unity.UI
             string json = Core.Serialization.JSONSerializer.Serialize(config);
             System.IO.File.WriteAllText(path, json);
             Debug.Log("Environment exported successfully");
+        }
+
+        private async void OnRunAlgorithmClicked()
+        {
+            var algorithm = AlgorithmManager.instance.SelectedAlgorithm;
+            if (algorithm == null) return;
+
+            Debug.Log($"Preparing to run: {algorithm.AlgorithmName}...");
+            _view.SetActiveTab(UITabMode.Playback);
+
+            if (Simulation.PathfindingRunner.instance != null)
+            {
+                SimulationResult result = await Simulation.PathfindingRunner.instance.RunAlgorithmAsync(algorithm);
+                CacheResultForDropdown(result, "Calculated Result");
+            }
+            else { Debug.LogError("PathfindingRunner instance is missing from the scene :)"); }
         }
 
         private void OnLoadResultClicked()
