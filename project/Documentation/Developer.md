@@ -16,8 +16,8 @@ To enforce the strict division of Unity/Core parts, the codebase is split using 
 
 ### Model-View-Presenter UI Pattern
 The user interface is built using Unity's UI Toolkit (UXML) and is governed by a MVP pattern:
-* **The View (`UIController.cs,`):** Responsible *only* for binding to UXML elements, handling visuals, and invoking events (`OnToolClickedEvent`, `OnPlayClickedEvent`). It contains no business logic.
-* **The Presenter (`EditorUIPresenter.cs`):** Acts as the connecting piece between the Model and View. It listens to View events, delegates work to other managers and updates the View.
+* **The View (`UIController.cs`, `PauseMenuUIController.cs`):** Responsible *only* for binding callbacks to UXML elements, handling visuals, and invoking events (`OnToolClickedEvent`, `OnPlayClickedEvent`). It contains no business logic.
+* **The Presenter (`EditorUIPresenter.cs`, `PauseMenuPresenter.cs`):** Act as the connecting pieces between the Model and View. It listens to View events, delegates work to other managers and updates the Views.
 * **The Models (`DroneManager`, `ObstacleManager`, `AlgorithmManager`):** Hold the single source of truth for the applications state. They report state changes by invoking events (ex. `OnObstacleRosterChanged`) for the Presenter (which updates the View).
 
 ### Abstraction of User Editor Tools
@@ -36,7 +36,7 @@ The project's architecture is divided into three primary namespace domains to se
 Algorithms in this project run asynchronously on a background thread. This allows complex pathfinding algorithms to calculate without causing the Unity main thread (the user editor) to freeze.
 
 ### Using External Algorithms
-All algorithms must implement the `IPathfindingAlgorithm` interface found in `Core/IPathfinder.cs`, view the [README](./README.md#creating-custom-scripts) for a template of an implementation. These algorithms are then discovered and called using **Reflection**.  
+All algorithms must implement the `IPathfindingAlgorithm` interface found in `Core/IPathfinder.cs`, view the [README](./README.md#creating-custom-scripts) for a template of an implementation or this [example script](./TrivialDemoAlgorithm.cs). These algorithms are then discovered and called using **Reflection**.  
 The definition of the `IPathfindingAlgorithm`:
 ```csharp
 public interface IPathfindingAlgorithm
@@ -56,76 +56,3 @@ Parameters:
 * CancellationToken: Monitored via cancellationToken.ThrowIfCancellationRequested() to allow the user to abort heavy calculations mid-flight.
   
 ---
-
-Or an example implementation of a trivial pathfinding script:  
-```C#
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Numerics;
-using System.Threading;
-using System.Threading.Tasks;
-using DroneSwarmPathfinder.Core.Models;
-using DroneSwarmPathfinder.Core.Simulation;
-
-namespace DroneSwarmPathfinder.Algorithms
-{
-    /// <summary>
-    /// A simple demo algorithm that draws a straight line to the target
-    /// </summary>
-    public class TrivialPathfinder : IPathfindingAlgorithm
-    {
-        public string AlgorithmName => "External Trivial Demo Algorithm";
-        public string Description => "Moves drones in a straight line to their targets, ignores all collisions";
-
-        public async Task<SimulationResult> CalculatePathsAsync(
-            SimulationContext context,
-            IProgress<float> progress = null,
-            CancellationToken cancellationToken = default)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var paths = new Dictionary<int, DronePath>();
-
-            int totalDrones = context.InitialState.Count;
-            int processedCount = 0;
-
-            foreach (var kvp in context.InitialState)
-            {
-                cancellationToken.ThrowIfCancellationRequested(); // Check for cancellation token
-
-                int droneId = kvp.Key;
-                Drone startDrone = kvp.Value;
-
-                // Drone stays still if it has no targets
-                Drone targetDrone = context.TargetState.ContainsKey(droneId)
-                    ? context.TargetState[droneId]
-                    : startDrone;
-
-                var path = new DronePath { DroneId = droneId };
-
-                // Create a trivial 2-step path Start->End
-                path.Waypoints.Add(new Waypoint(0, startDrone.Transform.Position, startDrone.Transform.Rotation));
-
-                // Assign second step to "step 10" so simulation can interpolate nicely
-                path.Waypoints.Add(new Waypoint(10, targetDrone.Transform.Position, targetDrone.Transform.Rotation));
-
-                paths.Add(droneId, path);
-
-                // Report progress back
-                processedCount++;
-                progress?.Report((float)processedCount / totalDrones);
-            }
-
-            stopwatch.Stop();
-
-            return new SimulationResult
-            {
-                IsSuccessful = true,
-                Message = "Trivial path calculated successfully",
-                ComputationTime = stopwatch.Elapsed,
-                Paths = paths
-            };
-        }
-    }
-}
-```

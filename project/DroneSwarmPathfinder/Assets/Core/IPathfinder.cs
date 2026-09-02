@@ -29,13 +29,31 @@ namespace DroneSwarmPathfinder.Core.Simulation
     /// </summary>
     public record SimulationContext
     {
+        /// <summary>
+        /// Dictionary ID -> drone of the starting swarm configuration
+        /// </summary>
         public IReadOnlyDictionary<int, Drone> InitialState { get; init; }
+        /// <summary>
+        /// Dictionary ID -> drone of the target swarm configuration (for "exactly drone with x ID" targets)
+        /// </summary>
         public IReadOnlyDictionary<int, Drone> DroneSpecificTargets { get; init; }
+        /// <summary>
+        /// Dictionary string -> drone of the target swarm configuration (for "any drone of x group" targets)
+        /// </summary>
         public IReadOnlyDictionary<string, List<DroneTargetPosition>> GroupTargets { get; init; }
+        /// <summary>
+        /// Contains information about the obstacles and spatial rules
+        /// </summary>
         public WorldEnvironment Environment { get; init; }
 
         #region Helpers for convenience of use
         private Dictionary<string, int> _groupTargetIndexes;
+        /// <summary>
+        /// Helper function that takes the first not-yet-returned group target position of the given group
+        /// </summary>
+        /// <param name="groupName">The group from which the returned position will be</param>
+        /// <param name="targetPosition">The returned position, if none found is null</param>
+        /// <returns>Whether a position was sucesfully found</returns>
         public bool TryGetTargetFromGroup(string groupName, out DroneTargetPosition? targetPosition) 
         { 
             if (_groupTargetIndexes == null)
