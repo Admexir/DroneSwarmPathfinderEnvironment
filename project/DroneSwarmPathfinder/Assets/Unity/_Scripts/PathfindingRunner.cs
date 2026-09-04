@@ -24,7 +24,7 @@ namespace DroneSwarmPathfinder.Unity.Simulation
 
         private CancellationTokenSource _cancellationTokenSource;
 
-        public async Task<SimulationResult> RunAlgorithmAsync(IPathfindingAlgorithm algorithm)
+        public async Task<SimulationResult> RunAlgorithmAsync(IPathfindingAlgorithm algorithm, IProgress<float> uiProgress = null)
         {
             if (algorithm == null) return new SimulationResult { IsSuccessful = false, Message = "Missing algorithm" };
 
@@ -84,7 +84,11 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             _cancellationTokenSource = new CancellationTokenSource();
 
             // TODO: add a progress bar
-            var progress = new System.Progress<float>(p => Debug.Log($"Calculating... {p * 100:F0}%"));
+            var progress = new System.Progress<float>(p =>
+            {
+                Debug.Log($"Calculating... {p * 100:F0}%");
+                uiProgress?.Report(p);
+            });
 
             SimulationResult result = await algorithm.CalculatePathsAsync(context, progress, _cancellationTokenSource.Token);
             if (result.SimulationContext == null) result.SimulationContext = context;

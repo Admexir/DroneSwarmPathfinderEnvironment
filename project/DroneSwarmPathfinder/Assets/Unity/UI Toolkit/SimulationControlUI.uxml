@@ -47,6 +47,7 @@
                         <ui:DropdownField name="dropdown-algorithms" style="margin-left: 0; margin-right: 0; margin-bottom: 5px; color: black; flex-grow: 1; width: 100%;"/>
                         <ui:Button text="Import External DLL..." name="btn-load-algorithm" class="ConfigToolsButton" style="height: 30px; margin-bottom: 10px;"/>
                         <ui:Button text="Run Algorithm" name="btn-run-algo" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold; margin-bottom: 5px; background-color: rgba(50, 120, 50, 0.8);"/>
+                        <ui:ProgressBar name="progress-simulation" title="Calculating... 0%" value="0" high-value="100" style="margin-bottom: 10px; display: none;"/>
                         <ui:Label text="SCENARIO SETTINGS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px; margin-top: 5px;"/>
                         <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 2px;">
                             <ui:Button text="Select Starting Config" name="btn-start-config" class="ConfigToolsButton" style="flex-grow: 1; height: 30px; margin-right: 5px;"/>

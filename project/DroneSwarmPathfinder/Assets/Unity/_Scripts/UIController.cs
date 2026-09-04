@@ -62,6 +62,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         private DropdownField _algorithmDropdown;
         private Button _btnLoadAlgorithm;
         private Button _runSimulationButton;
+        private ProgressBar _simulationProgressBar;
 
 
         // Tab UI
@@ -231,6 +232,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _runSimulationButton = root.Q<Button>("btn-run-algo");
             _btnEnvironmentConfig = root.Q<Button>("btn-environment");
             _iconEnvironmentConfig = root.Q<VisualElement>("icon-environment");
+            _simulationProgressBar = root.Q<ProgressBar>("progress-simulation");
 
 
             if (_algorithmDropdown != null) _algorithmDropdown.RegisterValueChangedCallback(evt => OnAlgorithmSelectedEvent?.Invoke(evt.newValue));
@@ -809,6 +811,32 @@ namespace DroneSwarmPathfinder.Unity.UI
             if(currentGroup == "") { currentGroup = _droneGroupDropdown.value; }
             _droneGroupDropdown.choices = choices;
             _droneGroupDropdown.SetValueWithoutNotify(currentGroup);
+        }
+
+        /// <summary>
+        /// Shows the algorithm calculation progress bar
+        /// </summary>
+        public void SetCalculationProgressVisibility(bool isVisible)
+        {
+            if (_simulationProgressBar != null)
+            {
+                _simulationProgressBar.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
+                if (isVisible) _simulationProgressBar.value = 0f; // Reset on show
+            }
+        }
+
+        /// <summary>
+        /// Updates the text of algorithm calculation progress bar. If message is null, default is used: "Calculating... {value}"
+        /// </summary>
+        public void UpdateCalculationProgress(float percentage, string message = null)
+        {
+            if (_simulationProgressBar != null)
+            {
+                _simulationProgressBar.value = percentage;
+                _simulationProgressBar.title = !string.IsNullOrEmpty(message)
+                    ? message
+                    : $"Calculating... {Mathf.RoundToInt(percentage)}%";
+            }
         }
 
         #endregion

@@ -8,6 +8,7 @@ using DroneSwarmPathfinder.Unity.Services;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace DroneSwarmPathfinder.Unity.UI
@@ -378,14 +379,26 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (algorithm == null) return;
 
             Debug.Log($"Preparing to run: {algorithm.AlgorithmName}...");
-            _view.SetActiveTab(UITabMode.Playback);
+            _view.SetCalculationProgressVisibility(true);
+            _view.UpdateCalculationProgress(0f, "Initializing...");
 
             if (Simulation.PathfindingRunner.instance != null)
             {
-                SimulationResult result = await Simulation.PathfindingRunner.instance.RunAlgorithmAsync(algorithm);
-                CacheResultForDropdown(result, $"{System.DateTime.Now:HH:mm} Result: {algorithm.AlgorithmName}");
+                try
+                {
+                    var progressTracker = new System.Progress<float>(p => { _view.UpdateCalculationProgress(p * 100f); });
+                    SimulationResult result = await Simulation.PathfindingRunner.instance.RunAlgorithmAsync(algorithm, progressTracker);
+                    if (result != null && result.IsSuccessful)
+                    {
+                        CacheResultForDropdown(result, $"{System.DateTime.Now:HH:mm} Result: {algorithm.AlgorithmName}");
+                    }
+                }
+                finally
+                {
+                    _view.SetCalculationProgressVisibility(false);
+                }
             }
-            else { Debug.LogError("PathfindingRunner instance is missing from the scene :)"); }
+            else { Debug.LogError("PathfindingRunner instance is missing from the scene :)"); _view.SetCalculationProgressVisibility(false); }
         }
 
         private void OnLoadResultClicked()
