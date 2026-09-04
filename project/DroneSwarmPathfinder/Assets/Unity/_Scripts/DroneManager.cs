@@ -223,6 +223,8 @@ namespace DroneSwarmPathfinder.Unity.Managers
             droneObj.transform.rotation = coreDrone.Transform.Rotation.ToUnity();
             droneObj.transform.localScale = coreDrone.Transform.Size.ToUnity();
 
+            if (!_droneGroups.ContainsKey(coreDrone.GroupName)) CreateNewDroneGroup(coreDrone.GroupName, new Color(Random.value, Random.value, Random.value)); //TODO: allow user to choose color, then add it to serialization and load it here instead of randomising
+
             DroneView view = droneObj.GetComponent<DroneView>();
             view.Initialize(coreDrone.ID, coreDrone.GroupName);
 
