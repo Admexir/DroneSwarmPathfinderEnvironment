@@ -19,8 +19,10 @@ namespace DroneSwarmPathfinder.Unity.Testing
     /// </summary>
     public class SimulationTester : MonoBehaviour
     {
+        public bool USETESTRUNNER;
         private void Start()
         {
+            if (!USETESTRUNNER) return;
             Debug.LogWarning("USING TEST RUNNER TO SET UP DEFAULT SCENE!!!");
 
             // Spawn initial test drones and create groups for them
