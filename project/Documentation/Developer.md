@@ -27,7 +27,8 @@ User editor interactions (selection, gizmo dragging) use the `ISelectableView` i
 The project's architecture is divided into three primary namespace domains to separate the three parts of the project - Core, Algorithms and Unity.
 * **`DroneSwarmPathfinder.Core`** namespaces (which include `.Models`, `.Environment`, `.Simulation`, and `.Serialization`) contain pure C# logic. They define the fundamental data structures (like `Drone` and `TransformData`), spatial grid rules, JSON serialization protocols, and the `IPathfindingAlgorithm` API.
 * **`DroneSwarmPathfinder.Algorithms`** namespace is dedicated to the concrete implementations of these custom pathfinding plugins, such as the `TrivialPathfinder`, allowing them to execute entirely independently of the visual engine.
-* **`DroneSwarmPathfinder.Unity`** namespaces act as the integration layer with the Unity Engine. This domain is further subdivided into `.Managers` (for managing application state, rosters, and simulation playback), `.UI` (housing the Model-View-Presenter logic described above for the UI), `.EditorTools` (handling mouse input, raycasting, and gizmo manipulation), and `.Visuals` / `.Environment` (managing the physical 3D GameObjects and rendering of the drones, grids, and obstacles).
+* **`DroneSwarmPathfinder.Unity`** namespaces act as the integration layer with the Unity Engine. This domain is further subdivided into `.Managers` (for managing application state, rosters, and simulation playback), `.UI` (housing the Model-View-Presenter logic described above for the UI), `.EditorTools` (handling mouse input, raycasting, and gizmo manipulation), and `.Visuals` / `.Environment` (managing the physical 3D GameObjects and rendering of the drones, grids, and obstacles).  
+> A more detailed explanation of all the files, namespaces, classes and interfaces can be found in the [Class Map here](./ClassMap.md).
 
 ---
 
