@@ -70,6 +70,18 @@ namespace DroneSwarmPathfinder.Unity.Managers
         }
 
         /// <summary>
+        /// Ends the simulation and clears all the paths
+        /// </summary>
+        public void ClearSimulation()
+        {
+            isPlaying = false;
+            _currentPaths = null;
+            _pathVisualizer.ClearPaths();
+            currentTime = 0f;
+            maxSteps = 0;
+        }
+
+        /// <summary>
         /// Loads simulation results and prepares its simulation
         /// </summary>
         public void LoadSimulationResult(SimulationResult result)

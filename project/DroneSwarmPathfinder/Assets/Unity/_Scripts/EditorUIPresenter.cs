@@ -5,6 +5,7 @@ using DroneSwarmPathfinder.Core.Simulation;
 using DroneSwarmPathfinder.Unity.EditorTools;
 using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.Services;
+using DroneSwarmPathfinder.Unity.Visuals;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -288,6 +289,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.DroneConfigJson>(json);
             if (config != null)
             {
+                SimulationPlaybackManager.instance.ClearSimulation();
                 DroneManager.instance.ClearAndSpawnDrones(config.AllConfigItems);
                 ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
                 Debug.Log("Swarm configuration loaded successfully");
