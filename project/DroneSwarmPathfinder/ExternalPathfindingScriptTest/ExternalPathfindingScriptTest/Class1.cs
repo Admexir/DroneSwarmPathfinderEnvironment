@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Serialization;
 using DroneSwarmPathfinder.Core.Simulation;
 
 namespace DroneSwarmPathfinder.Algorithms
@@ -28,8 +28,8 @@ namespace DroneSwarmPathfinder.Algorithms
             int totalDrones = context.InitialState.Count;
             int processedCount = 0;
 
-            // TODO: REMOVE THIS - simulate heavy calculating load by sleeping for 500ms to test asynchronity
-            await Task.Delay(500, cancellationToken);
+            // simulate heavy calculating load by sleeping for 500ms to test asynchronity
+            //await Task.Delay(500, cancellationToken);
 
             foreach (var kvp in context.InitialState)
             {
@@ -38,18 +38,19 @@ namespace DroneSwarmPathfinder.Algorithms
                 int droneId = kvp.Key;
                 Drone startDrone = kvp.Value;
 
-                // Drone stays still if it has no targets
-                Drone targetDrone = context.TargetState.ContainsKey(droneId)
-                    ? context.TargetState[droneId]
-                    : startDrone;
+                // Drone looks if it has exact index match, if not then for a group match, and if neither stays still (should always have at least 1 so configs pass compatibility checks)
+                IDroneConfigItem targetDrone = context.DroneSpecificTargets.ContainsKey(droneId)
+                    ? context.DroneSpecificTargets[droneId]
+                    : (context.TryGetTargetFromGroup(startDrone.GroupName, out var target)
+                        ? target : startDrone);
 
                 var path = new DronePath { DroneId = droneId };
 
                 // Create a trivial 2-step path Start->End
                 path.Waypoints.Add(new Waypoint(0, startDrone.Transform.Position, startDrone.Transform.Rotation));
 
-                // TODO: REMOVE THIS - simulate calculating intermediate nodes
-                await Task.Delay(100, cancellationToken);
+                // simulate calculating intermediate nodes
+                //await Task.Delay(100, cancellationToken);
 
                 // Assign second step to "step 10" so simulation can interpolate nicely
                 path.Waypoints.Add(new Waypoint(10, targetDrone.Transform.Position, targetDrone.Transform.Rotation));
