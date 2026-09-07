@@ -5,7 +5,17 @@ Drone Swarm Pathfinder is a 3D sandbox simulation environment built in the Unity
 This application is a developer tool. It provides a visual editor to construct 3D configurations of drones and obstacles, an engine to execute external pathfinding algorithms asynchronously, and a playback system to visualize the calculated trajectories.
 
 ## Getting Started
-Open the DroneSwarmPathfinder.exe file to run the application. You will load into a 3D environment with interactible panels on the sides of the screen.
+### Build Guide
+Since this application is built using the Unity Engine, it needs to be built inside it aswell. 
+1. Import the project in Unity Hub (dropdown next to the *Open* button, add project from disk)
+2. Open the project  
+    > you might need to download the Unity Editor version 6000.4.2f1 
+3. Open build settings using `Ctrl + Shift + B`
+4. Select build platform, click build and select build folder
+5. Wait for the application to build
+6. Run `DroneSwarmPathfinder.exe` in the build folder
+  
+You will load into a 3D environment with interactible panels on the sides of the screen.
 
 ### Camera Controls
 Navigate the 3D environment using these fly-camera controls:
