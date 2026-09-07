@@ -1,4 +1,3 @@
-using DroneSwarmPathfinder.Unity.Environment;
 using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.Visuals;
 using System;

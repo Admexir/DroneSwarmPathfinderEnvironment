@@ -1,7 +1,7 @@
 using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Core.Models;
 using DroneSwarmPathfinder.Core.Serialization;
-using DroneSwarmPathfinder.Unity.Environment;
+using DroneSwarmPathfinder.Unity.Visuals;
 using System;
 using System.Collections.Generic;
 using UnityEngine;

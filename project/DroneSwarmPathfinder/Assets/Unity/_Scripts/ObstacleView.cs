@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DroneSwarmPathfinder.Unity.Environment
+namespace DroneSwarmPathfinder.Unity.Visuals
 {
     /// <summary>
     /// Visual representation of an obstacle in the unity scene
