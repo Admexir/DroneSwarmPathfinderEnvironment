@@ -4,6 +4,7 @@ using DroneSwarmPathfinder.Core.Serialization;
 using DroneSwarmPathfinder.Unity.Managers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -432,13 +433,13 @@ namespace DroneSwarmPathfinder.Unity.UI
                 if (ColorUtility.TryParseHtmlString(evt.newValue, out Color parsedColor))
                 {
                     // Valid color => reset background in case it was red and notify the presenter
-                    _droneColorInput.style.backgroundColor = new StyleColor(new Color(0, 0, 0, 0));
+                    _droneColorInput.style.color = new StyleColor(parsedColor);
                     OnDroneColorChangedEvent?.Invoke(parsedColor);
                 }
                 else
                 {
                     // Invalid color => change background to red as warning
-                    _droneColorInput.style.backgroundColor = new StyleColor(new Color(0.5f, 0, 0, 0.5f));
+                    _droneColorInput.style.color = new StyleColor(new Color(1f, 0, 0, 1f));
                 }
             });
         }
@@ -713,8 +714,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             // Format the color to hex and reset the error background
             if (_droneColorInput != null)
             {
-                _droneColorInput.SetValueWithoutNotify("#" + ColorUtility.ToHtmlStringRGBA(drone.Color.ToUnity()));
-                _droneColorInput.style.backgroundColor = new StyleColor(new Color(0, 0, 0, 0));
+                SetInspectorColorTextWithoutNotify("#" + ColorUtility.ToHtmlStringRGB(drone.Color.ToUnity()));
             }
 
             PopulateDroneGroupDropdown(DroneManager.instance.DroneGroups, drone.GroupName);
@@ -881,6 +881,25 @@ namespace DroneSwarmPathfinder.Unity.UI
                 _simulationProgressBar.title = !string.IsNullOrEmpty(message)
                     ? message
                     : $"Calculating... {Mathf.RoundToInt(percentage)}%";
+            }
+        }
+
+        /// <summary>
+        /// Sets the drone inspector color text and changes it's color without triggering any events
+        /// </summary>
+        public void SetInspectorColorTextWithoutNotify(string text)
+        {
+            _droneColorInput.SetValueWithoutNotify(text);
+            // Validate the hex using unity HTML parser
+            if (ColorUtility.TryParseHtmlString(text, out Color parsedColor))
+            {
+                // Valid color => reset background in case it was red and notify the presenter
+                _droneColorInput.style.color = new StyleColor(parsedColor);
+            }
+            else
+            {
+                // Invalid color => change background to red as warning
+                _droneColorInput.style.color = new StyleColor(new Color(1f, 0, 0, 1f));
             }
         }
 

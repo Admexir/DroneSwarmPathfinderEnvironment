@@ -164,7 +164,6 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
         public void UpdateDroneColor(int id, System.Drawing.Color newColor)
         {
-            Debug.Log("a");
             var drone = GetDroneDataFromID(id);
             if (drone != null)
             {

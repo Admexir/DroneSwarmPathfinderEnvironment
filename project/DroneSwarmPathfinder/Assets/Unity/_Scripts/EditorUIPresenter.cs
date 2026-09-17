@@ -572,14 +572,16 @@ namespace DroneSwarmPathfinder.Unity.UI
             else // Normal assignment
             {
                 DroneManager.instance.UpdateDroneGroup(_currentlySelectedDrone.ID, selectedGroup);
+                if (DroneManager.instance.GetColorByGroup(selectedGroup, out Color c)) // update color text
+                    _view.SetInspectorColorTextWithoutNotify("#" + ColorUtility.ToHtmlStringRGB(c));
             }
         }
 
         private void OnCreateNewGroup(string newGroupName)
         {
             DroneManager.instance.CreateNewDroneGroup(newGroupName, new Color(Random.value, Random.value, Random.value)); // TODO: unrandomize color
-            _view.PopulateDroneGroupDropdown(DroneManager.instance.DroneGroups, newGroupName);
-            DroneManager.instance.UpdateDroneGroup(_currentlySelectedDrone.ID, newGroupName); // update the selected drones group too
+            _view.PopulateDroneGroupDropdown(DroneManager.instance.DroneGroups, _currentlySelectedDrone.GroupName);
+            //DroneManager.instance.UpdateDroneGroup(_currentlySelectedDrone.ID, newGroupName); // update the selected drones group too
         }
 
         private void OnToggleRemoveGroupMode(bool isRemoveMode)
