@@ -1,4 +1,5 @@
 using DroneSwarmPathfinder.Core.Models;
+using System.Drawing;
 
 namespace DroneSwarmPathfinder.Core.Serialization
 {
@@ -17,6 +18,9 @@ namespace DroneSwarmPathfinder.Core.Serialization
     public interface IDroneConfigItem : IConfigItem
     {
         string GroupName { get; set; }
+        string Name { get; set; }
+        string Description { get; set; }
+        Color Color { get; set; }
     }
 
     /// <summary>

@@ -3,6 +3,7 @@ using DroneSwarmPathfinder.Core.Serialization;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Numerics;
 
 namespace DroneSwarmPathfinder.Core.Models
@@ -63,6 +64,9 @@ namespace DroneSwarmPathfinder.Core.Models
     {
         public int ID { get; init; }
         public string GroupName { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public Color Color { get; set; }
         public TransformData Transform { get; set; }
 
         /// <summary>
@@ -102,6 +106,9 @@ namespace DroneSwarmPathfinder.Core.Models
     {
         public int ID { get; init; }
         public string GroupName { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public Color Color { get; set; }
         public TransformData Transform { get; set; }
 
         /// <summary>
