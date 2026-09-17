@@ -150,6 +150,32 @@ namespace DroneSwarmPathfinder.Unity.Managers
             }
         }
 
+        public void UpdateDroneName(int id, string newName)
+        {
+            var drone = GetDroneDataFromID(id);
+            if (drone != null) drone.Name = newName;
+        }
+
+        public void UpdateDroneDescription(int id, string newDescription)
+        {
+            var drone = GetDroneDataFromID(id);
+            if (drone != null) drone.Description = newDescription;
+        }
+
+        public void UpdateDroneColor(int id, System.Drawing.Color newColor)
+        {
+            Debug.Log("a");
+            var drone = GetDroneDataFromID(id);
+            if (drone != null)
+            {
+                drone.Color = newColor;
+                if (_activeDrones.TryGetValue(id, out DroneView view))
+                {
+                    view.SetCustomColor(newColor.ToUnity(), id >= DRONEPOSITIONINDEXOFFSET);
+                }
+            }
+        }
+
         public void RemoveDroneGroup(string groupName)
         {
             if (_droneGroups.ContainsKey(groupName))
@@ -227,6 +253,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
             DroneView view = droneObj.GetComponent<DroneView>();
             view.Initialize(coreDrone.ID, coreDrone.GroupName);
+            if (coreDrone.Color.A > 0) view.SetCustomColor(coreDrone.Color.ToUnity(), false);
 
             _activeDrones.Add(coreDrone.ID, view);
             _droneModels.Add(coreDrone.ID, coreDrone);
@@ -246,6 +273,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
             DroneView view = droneObj.GetComponent<DroneView>();
             view.Initialize(coreDrone.ID, coreDrone.GroupName, true);
+            if (coreDrone.Color.A > 0) view.SetCustomColor(coreDrone.Color.ToUnity(), true);
 
             _activeDrones.Add(coreDrone.ID, view);
             _droneTargets.Add(coreDrone.ID, coreDrone);

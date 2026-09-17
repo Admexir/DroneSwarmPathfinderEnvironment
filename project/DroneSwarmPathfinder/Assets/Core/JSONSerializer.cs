@@ -21,28 +21,28 @@ namespace DroneSwarmPathfinder.Core.Serialization
         /// </summary>
         public List<DroneTargetPosition> TargetPositions { get; set; } = new();
 
-        /// <summary>
-        /// Dictionary of all drone groups
-        /// </summary>
-        [JsonIgnore]
-        public Dictionary<string, List<IDroneConfigItem>> Groups
-        {
-            get
-            {
-                // Generate the groups dictionary from the drones list if it hasn't been generated before
-                if(_groups == null)
-                {
-                    _groups = new Dictionary<string, List<IDroneConfigItem>>();
-                    foreach (var drone in AllConfigItems)
-                    {
-                        if (_groups.TryGetValue(drone.GroupName, out var list)) { list.Add(drone); }
-                        else { _groups[drone.GroupName] = new List<IDroneConfigItem>() { drone }; }
-                    }
-                    if (!_groups.ContainsKey("default")) _groups["default"] = new(); // Edge case for when no drone uses default group so it doesn't get deleted
-                }
-                return _groups;
-            }
-        }
+        ///// <summary>
+        ///// Dictionary of all drone groups
+        ///// </summary>
+        //[JsonIgnore]
+        //public Dictionary<string, List<IDroneConfigItem>> Groups
+        //{
+        //    get
+        //    {
+        //        // Generate the groups dictionary from the drones list if it hasn't been generated before
+        //        if(_groups == null)
+        //        {
+        //            _groups = new Dictionary<string, List<IDroneConfigItem>>();
+        //            foreach (var drone in AllConfigItems)
+        //            {
+        //                if (_groups.TryGetValue(drone.GroupName, out var list)) { list.Add(drone); }
+        //                else { _groups[drone.GroupName] = new List<IDroneConfigItem>() { drone }; }
+        //            }
+        //            if (!_groups.ContainsKey("default")) _groups["default"] = new(); // Edge case for when no drone uses default group so it doesn't get deleted
+        //        }
+        //        return _groups;
+        //    }
+        //}
         [JsonIgnore]
         private Dictionary<string, List<IDroneConfigItem>> _groups;
 

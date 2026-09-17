@@ -52,5 +52,20 @@ namespace DroneSwarmPathfinder.Unity.Visuals
             _propBlock.SetColor("_Color", assignedColor);
             _renderer.SetPropertyBlock(_propBlock);
         }
+
+        /// <summary>
+        /// Changes the color of the drone
+        /// </summary>
+        public void SetCustomColor(Color color, bool isTargetPosition = false)
+        {
+            if (_propBlock == null) _propBlock = new MaterialPropertyBlock();
+
+            if (isTargetPosition) color = new Color(color.r, color.g, color.b, 0.5f); // Keep targets half transparent
+
+            CurrentColor = color;
+            _renderer.GetPropertyBlock(_propBlock);
+            _propBlock.SetColor("_Color", color);
+            _renderer.SetPropertyBlock(_propBlock);
+        }
     }
 }

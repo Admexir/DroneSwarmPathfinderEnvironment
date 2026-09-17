@@ -1,11 +1,12 @@
+using DroneSwarmPathfinder.Core.Environment;
+using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Serialization;
+using DroneSwarmPathfinder.Unity.Managers;
 using System;
 using System.Collections.Generic;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using DroneSwarmPathfinder.Core.Models;
-using DroneSwarmPathfinder.Core.Environment;
-using DroneSwarmPathfinder.Unity.Managers;
-using DroneSwarmPathfinder.Core.Serialization;
 
 namespace DroneSwarmPathfinder.Unity.UI
 {
@@ -91,6 +92,10 @@ namespace DroneSwarmPathfinder.Unity.UI
         private ListView _droneListView;
         private VisualElement _droneDetailsPanel;
         private TextField _droneIdInput;
+        private TextField _droneNameInput;
+        private TextField _droneDescriptionInput;
+        private TextField _droneColorInput;
+
         //private TextField _droneGroupInput;
         private Vector3Field _dronePositionInput;
         private DropdownField _droneGroupDropdown;
@@ -144,6 +149,9 @@ namespace DroneSwarmPathfinder.Unity.UI
         // (drone inspector)
         public event Action<string> OnCreateNewGroupEvent;
         public event Action<bool> OnToggleRemoveGroupModeEvent;
+        public event Action<string> OnDroneNameChangedEvent;
+        public event Action<string> OnDroneDescriptionChangedEvent;
+        public event Action<Color> OnDroneColorChangedEvent;
 
         // Obstacles events for other scripts to subscribe to
         public event Action<IEnumerable<object>> OnObstacleListSelectionChangedEvent;
@@ -346,6 +354,9 @@ namespace DroneSwarmPathfinder.Unity.UI
             _newDroneGroupInput = root.Q<TextField>("input-new-drone-group");
             _btnRemoveGroupToggle = root.Q<Button>("btn-toggle-remove-group");
             _dronePositionInput = root.Q<Vector3Field>("input-drone-position");
+            _droneNameInput = root.Q<TextField>("input-drone-name");
+            _droneDescriptionInput = root.Q<TextField>("input-drone-description");
+            _droneColorInput = root.Q<TextField>("input-drone-color");
 
             if (_droneListView != null)
             {
@@ -354,7 +365,7 @@ namespace DroneSwarmPathfinder.Unity.UI
                 {
                     var label = element as Label;
                     var drone = (IDroneConfigItem)_droneListView.itemsSource[index];
-                    label.text = $"Drone {drone.ID} (group: {drone.GroupName})";
+                    label.text = $"{(string.IsNullOrEmpty(drone.Name) ? $"New Drone {index}" : drone.Name)} ({drone.GroupName})";
                 };
 
                 _droneListView.selectionChanged += (selection) => OnDroneListSelectionChangedEvent?.Invoke(selection);
@@ -411,6 +422,25 @@ namespace DroneSwarmPathfinder.Unity.UI
                     OnToggleRemoveGroupModeEvent?.Invoke(_isRemoveGroupMode);
                 };
             }
+
+            // Drone name, description and color
+            _droneNameInput?.RegisterValueChangedCallback(evt => OnDroneNameChangedEvent?.Invoke(evt.newValue));
+            _droneDescriptionInput?.RegisterValueChangedCallback(evt => OnDroneDescriptionChangedEvent?.Invoke(evt.newValue));
+            _droneColorInput?.RegisterValueChangedCallback(evt =>
+            {
+                // Validate the hex using unity HTML parser
+                if (ColorUtility.TryParseHtmlString(evt.newValue, out Color parsedColor))
+                {
+                    // Valid color => reset background in case it was red and notify the presenter
+                    _droneColorInput.style.backgroundColor = new StyleColor(new Color(0, 0, 0, 0));
+                    OnDroneColorChangedEvent?.Invoke(parsedColor);
+                }
+                else
+                {
+                    // Invalid color => change background to red as warning
+                    _droneColorInput.style.backgroundColor = new StyleColor(new Color(0.5f, 0, 0, 0.5f));
+                }
+            });
         }
 
         private void BindObstacleUI(VisualElement root)
@@ -650,6 +680,9 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_btnScale != null) _btnScale.style.backgroundColor = (mode == EditorToolMode.Scale) ? activeColor : defaultColor;
         }
 
+        /// <summary>
+        /// Sets the source list for the drone inspector UI and rebuilds it
+        /// </summary>
         public void PopulateDroneList(List<IDroneConfigItem> drones)
         {
             if (_droneListView == null) return;
@@ -673,8 +706,20 @@ namespace DroneSwarmPathfinder.Unity.UI
         public void ShowDroneDetails(IDroneConfigItem drone, Vector3 unityPosition)
         {
             if (_droneIdInput != null) _droneIdInput.value = drone.ID.ToString();
+
+            _droneNameInput?.SetValueWithoutNotify(drone.Name);
+            _droneDescriptionInput?.SetValueWithoutNotify(drone.Description);
+
+            // Format the color to hex and reset the error background
+            if (_droneColorInput != null)
+            {
+                _droneColorInput.SetValueWithoutNotify("#" + ColorUtility.ToHtmlStringRGBA(drone.Color.ToUnity()));
+                _droneColorInput.style.backgroundColor = new StyleColor(new Color(0, 0, 0, 0));
+            }
+
             PopulateDroneGroupDropdown(DroneManager.instance.DroneGroups, drone.GroupName);
             _dronePositionInput?.SetValueWithoutNotify(unityPosition);
+
             if (_droneDetailsPanel != null) _droneDetailsPanel.style.display = DisplayStyle.Flex;
         }
 

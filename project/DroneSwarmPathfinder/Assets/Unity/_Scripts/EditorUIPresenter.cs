@@ -119,6 +119,9 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnDroneListSelectionChangedEvent += OnDroneListSelectionChanged;
             _view.OnCreateNewGroupEvent += OnCreateNewGroup;
             _view.OnToggleRemoveGroupModeEvent += OnToggleRemoveGroupMode;
+            _view.OnDroneNameChangedEvent += OnDroneNameChanged;
+            _view.OnDroneDescriptionChangedEvent += OnDroneDescriptionChanged;
+            _view.OnDroneColorChangedEvent += OnDroneColorChanged;
 
             // Details panel editing (Obstacles)
             _view.OnObstaclePositionChangedEvent += OnObstaclePositionChanged;
@@ -584,6 +587,25 @@ namespace DroneSwarmPathfinder.Unity.UI
             groupRemoveModeActive = isRemoveMode;
         }
 
+        private void OnDroneNameChanged(string newName)
+        {
+            if (_currentlySelectedDrone == null) return;
+            DroneManager.instance.UpdateDroneName(_currentlySelectedDrone.ID, newName);
+            RefreshDroneList();
+        }
+
+        private void OnDroneDescriptionChanged(string newDescription)
+        {
+            if (_currentlySelectedDrone == null) return;
+            DroneManager.instance.UpdateDroneDescription(_currentlySelectedDrone.ID, newDescription);
+        }
+
+        private void OnDroneColorChanged(Color newColor)
+        {
+            if (_currentlySelectedDrone == null) return;
+            DroneManager.instance.UpdateDroneColor(_currentlySelectedDrone.ID, newColor.ToSystemDrawing());
+        }
+
         #endregion
 
         #region View event callbacks (obstacles)
@@ -758,6 +780,14 @@ namespace DroneSwarmPathfinder.Unity.UI
                 }
 
                 _currentlySelectedDrone = drone;
+
+                // Add this calculation to figure out the effective display color
+                Color displayColor = drone.Color.A == 0
+                    ? (DroneManager.instance.GetColorByGroup(drone.GroupName, out var groupCol) ? groupCol : UnityEngine.Color.white)
+                    : drone.Color.ToUnity();
+
+                drone.Color = displayColor.ToSystemDrawing();
+                // Update the _view.ShowDroneDetails method call:
                 _view.ShowDroneDetails(drone, drone.Transform.Position.ToUnity());
 
                 // Select all selected drones in the UI list
