@@ -31,7 +31,7 @@ Drone groups logic changes
 	x- change SimulationContext to improve working with drone groups (...add something like Dict<string, Enum<Drone>>)
 
 Other changes
-	- add Name and Description fields to drones/positions
+	x- add Name, Description and Color fields to drones/positions
 	- fix up gizmos
 		- draw on top of all other objects, allow dragging "through other objects" (can grab gizmo behind a wall)
 		- make the squares functional

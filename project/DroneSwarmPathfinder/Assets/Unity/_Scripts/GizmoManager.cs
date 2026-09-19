@@ -20,6 +20,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         // Gizmos variables
         [SerializeField] private GameObject _transformGizmoRoot;
         [SerializeField] private float _gizmoSize;
+        [SerializeField] private LayerMask gizmoLayer;
 
         // Roots for toggling visibility
         private GameObject _movementGizmosRoot;
@@ -122,7 +123,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             if (totalSelectedCount == 0 || !_transformGizmoRoot.activeSelf) return false;
 
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit)) // TODO: better way than this 3way pattern matching?
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, gizmoLayer))
             {
                 // Route raycast logic based on the active tool
                 if (CurrentToolMode == EditorToolMode.Move)

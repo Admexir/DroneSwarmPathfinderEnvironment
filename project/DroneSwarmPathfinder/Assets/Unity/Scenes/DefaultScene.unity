@@ -916,7 +916,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   selectableLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
 --- !u!114 &339913124
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -945,6 +945,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   _transformGizmoRoot: {fileID: 843790512}
   _gizmoSize: 0.1
+  gizmoLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &339913126
 MonoBehaviour:
   m_ObjectHideFlags: 0
