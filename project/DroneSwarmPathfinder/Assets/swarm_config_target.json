@@ -1,0 +1,98 @@
+{
+  "Drones": [
+    {
+      "ID": 0,
+      "GroupName": "Group 1",
+      "Transform": {
+        "Position": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 5.0
+        },
+        "Rotation": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0,
+          "W": 1.0,
+          "IsIdentity": true
+        },
+        "Size": {
+          "X": 1.0,
+          "Y": 1.0,
+          "Z": 1.0
+        }
+      }
+    },
+    {
+      "ID": 1,
+      "GroupName": "Group 2",
+      "Transform": {
+        "Position": {
+          "X": 0.0,
+          "Y": 2.0,
+          "Z": 5.0
+        },
+        "Rotation": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0,
+          "W": 1.0,
+          "IsIdentity": true
+        },
+        "Size": {
+          "X": 1.0,
+          "Y": 1.0,
+          "Z": 1.0
+        }
+      }
+    }
+  ],
+  "TargetPositions": [
+    {
+      "ID": 10000,
+      "GroupName": "default",
+      "Transform": {
+        "Position": {
+          "X": 0.0,
+          "Y": 4.0,
+          "Z": 5.0
+        },
+        "Rotation": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0,
+          "W": 1.0,
+          "IsIdentity": true
+        },
+        "Size": {
+          "X": 1.0,
+          "Y": 1.0,
+          "Z": 1.0
+        }
+      }
+    },
+    {
+      "ID": 10001,
+      "GroupName": "default",
+      "Transform": {
+        "Position": {
+          "X": 0.0,
+          "Y": -2.0,
+          "Z": 5.0
+        },
+        "Rotation": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0,
+          "W": 1.0,
+          "IsIdentity": true
+        },
+        "Size": {
+          "X": 1.0,
+          "Y": 1.0,
+          "Z": 1.0
+        }
+      }
+    }
+  ]
+}

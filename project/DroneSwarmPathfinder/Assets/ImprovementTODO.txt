@@ -1,0 +1,59 @@
+Separate environment setup (obstacles etc.) and config setup
+	x- remove obstacle/environment serialization from configs DONE
+	x- serialize obstacles DONE
+	x- serialize spatial rules (grid size) DONE
+	x	- add UI for changing spatial rules (just grid size for now) in the editor
+	x- add environment rules for physics simulation CURRENT
+	x	- for now, only simple checkbox "use physics" (gravity, acceleration)
+	x- deserialize .... DONE
+	x- add a compatibility check for selected configs (same number of drones, same IDs having same groups)
+	x- warning for when drones are inside obstacles 
+	x- add UI for loading environments DONE
+
+Allow to save simulation results to files and load them + result visualisation improvements
+	x- show lines on calculated paths (+waypoints) with corresponding drone color (+ select drone on click)
+	x- serialize results into JSON/other files (file has to contain configs, environment and the results...paths)
+	x- deserialization of results
+	x- add UI for loading/saving resutls
+		x- add dropdown with recently used results for easy comparisons
+		- improvement idea: allow user to have 2 results loaded at the same time for comparison
+	C2- add a timeline for each drone showing its waypoints
+	C2- add logging feature to API - allow drones to save logs depending from their script for easier pathfinding script debugging
+
+Drone groups logic changes
+	x- change drone groups to strings to allow naming them
+	x- change group input field UI to a dropdown with existing groups + " + New Group" which allows to add new groups
+	x	- add groups to serialization of configs + update check for compatibility
+	x- add a checkbox to drones for "allow any drone from group x" which removes the specificity of a drone in a target state
+	x	- add a warning next to saving config that when using these placeholders, it can only be used as a target state 
+	x	- add a bool to serialized configs whether they use these placeholders
+	x	- adjust compatibility check to counting drone group sizes
+	x- change SimulationContext to improve working with drone groups (...add something like Dict<string, Enum<Drone>>)
+
+Other changes
+	- add Name and Description fields to drones/positions
+	- fix up gizmos
+		- draw on top of all other objects, allow dragging "through other objects" (can grab gizmo behind a wall)
+		- make the squares functional
+	- add a timeline for playback + events console (for debug messages, collision messages, status messages,...)
+	- add notifications for collisions to the timeline 
+	- add functions to the API to simplify making scripts (AddWaypoint, WaitForSeconds, WaitUntil, MoveTo, ...)
+
+Physics based API
+	- create a separate API for physics based simulations
+	- add rigidbodies to objects when doing physics
+		- add UI for changing drone mass, acceleration speed,
+	- change results from paths (list of waypoints) to "commands"
+		- set up low level commands for drones - accelerate, rotate, 
+		- set up high level commands - MoveTo, FastMoveTo (which can go out of the optimal path for sake of speed or something), RotateTowards, MaintainPosition, 
+	- apply forces based on commands to the drones in playback (use some nice smoothing function to simulate rotors speeding up/slowing down?)
+	- update drone timeline to show these commands
+	- future improvement: allow for movement inaccuracies and conditions to deal with them
+
+		
+
+x: ADD UI FOR SELECTING ENVIRONMENT WHEN NOT USING CURRENT SCENE AS START CONFIG
+TODO: load the environment and swarm config upon running an algorithm with custom start config+env
+		+ change text on select env button to "Env: Current Scene" when using current scene
+
+TODO: Add clear results button

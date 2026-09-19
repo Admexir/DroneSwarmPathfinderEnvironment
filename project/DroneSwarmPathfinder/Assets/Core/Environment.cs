@@ -1,0 +1,146 @@
+using DroneSwarmPathfinder.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+
+
+namespace DroneSwarmPathfinder.Core.Environment
+{
+    /// <summary>
+    /// Class representing the entire physical environment, including spatial rules (grid/continuous) and obstacles
+    /// </summary>
+    public class WorldEnvironment
+    {
+        public ISpatialEnvironment SpatialRules { get; }
+
+        // Readonly collection to prevent algorithms from modifying the world state
+        public IReadOnlyList<IObstacleVolume> Obstacles { get; }
+
+        public WorldEnvironment(ISpatialEnvironment spatialRules, IEnumerable<IObstacleVolume> obstacles)
+        {
+            SpatialRules = spatialRules;
+            Obstacles = obstacles.ToList().AsReadOnly();
+        }
+
+        /// <summary>
+        /// Gets if the point in space is empty (not inside any static obstacle)
+        /// </summary>
+        public bool IsEmpty(Vector3 position)
+        {
+            foreach (var obstacle in Obstacles)
+            {
+                if (obstacle.Contains(position)) return false;
+            }
+            return true;
+        }
+    }
+
+
+    /// <summary>
+    /// Interface for any object taking up any space in the 3D simulation
+    /// </summary>
+    public interface ISpatialVolume
+    {
+        public int ID { get; }
+        public TransformData Transform { get; set; }
+        /// <summary>
+        /// Determines whether the given point is inside this volume
+        /// </summary>
+        bool Contains(Vector3 point);
+    }
+
+    /// <summary>
+    /// Interface for any non-passable-through obstacles in the 3D simulation
+    /// </summary>
+    public interface IObstacleVolume : ISpatialVolume
+    {
+
+    }
+
+    /// <summary>
+    /// Interface used for limiting valid drone positions in space
+    /// </summary>
+    public interface ISpatialEnvironment
+    {
+        Vector3 ConstrainPosition(Vector3 position);
+    }
+
+    /// <summary>
+    /// A basic 3D square discrete grid
+    /// </summary>
+    public class DiscreteGrid : ISpatialEnvironment
+    {
+        public float CellSize { get; init; }
+
+        [Newtonsoft.Json.JsonConstructor]
+        public DiscreteGrid(float cellSize = 1f)
+        {
+            CellSize = cellSize;
+        }
+
+        /// <summary>
+        /// Snaps a position to the closest spot on the grid
+        /// </summary>
+        public Vector3 ConstrainPosition(Vector3 position)
+        {
+            if (CellSize <= 0.001f) return position;
+
+            return new Vector3(
+                (float)Math.Round(position.X / CellSize, MidpointRounding.AwayFromZero) * CellSize,
+                (float)Math.Round(position.Y / CellSize, MidpointRounding.AwayFromZero) * CellSize,
+                (float)Math.Round(position.Z / CellSize, MidpointRounding.AwayFromZero) * CellSize
+            );
+        }
+
+        /// <summary>
+        /// Converts world space coordinates to grid space coordinates (node indices)
+        /// </summary>
+        public (int X, int Y, int Z) GetNodeIndex(Vector3 position)
+        {
+            if (CellSize <= 0.001f) return (0, 0, 0); // Invalid/Empty grid check
+
+            return (
+                (int)Math.Round(position.X / CellSize, MidpointRounding.AwayFromZero),
+                (int)Math.Round(position.Y / CellSize, MidpointRounding.AwayFromZero),
+                (int)Math.Round(position.Z / CellSize, MidpointRounding.AwayFromZero)
+            );
+        }
+
+        /// <summary>
+        /// Converts grid-space coordinates (node indices) to world space coordinates
+        /// </summary>
+        public Vector3 GetWorldPosition(int x, int y, int z)
+        {
+            return new Vector3(x * CellSize, y * CellSize, z * CellSize);
+        }
+    }
+
+    /// <summary>
+    /// Class representing an obstacle in the 3D scene
+    /// </summary>
+    public class BoxObstacle : IObstacleVolume, Serialization.IEnvironmentConfigItem
+    {
+        public int ID { get; init; }
+        public TransformData Transform { get; set; }
+
+        [Newtonsoft.Json.JsonConstructor]
+        public BoxObstacle(int id, TransformData transform)
+        {
+            ID = id;
+            Transform = transform;
+        }
+
+        /// <summary>
+        /// normal box collisions
+        /// (Returns whether the point is inside the obstacle)
+        /// </summary>
+        public bool Contains(Vector3 point)
+        {
+            Vector3 halfSize = Transform.Size / 2f;
+            return Math.Abs(point.X - Transform.Position.X) <= halfSize.X &&
+                   Math.Abs(point.Y - Transform.Position.Y) <= halfSize.Y &&
+                   Math.Abs(point.Z - Transform.Position.Z) <= halfSize.Z;
+        }
+    }
+}

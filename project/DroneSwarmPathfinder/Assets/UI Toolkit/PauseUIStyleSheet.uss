@@ -1,0 +1,10 @@
+:root {
+}
+
+.PauseButtons {
+    font-size: 24px;
+    -unity-text-align: middle-center;
+    margin-right: 40px;
+    margin-left: 40px;
+    margin-top: 5px;
+}
