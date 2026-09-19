@@ -32,9 +32,9 @@ Drone groups logic changes
 
 Other changes
 	x- add Name, Description and Color fields to drones/positions
-	- fix up gizmos
-		- draw on top of all other objects, allow dragging "through other objects" (can grab gizmo behind a wall)
-		- make the squares functional
+	x- fix up gizmos
+		x- draw on top of all other objects, allow dragging "through other objects" (can grab gizmo behind a wall)
+		x- make the squares functional
 	- add a timeline for playback + events console (for debug messages, collision messages, status messages,...)
 	- add notifications for collisions to the timeline 
 	- add functions to the API to simplify making scripts (AddWaypoint, WaitForSeconds, WaitUntil, MoveTo, ...)

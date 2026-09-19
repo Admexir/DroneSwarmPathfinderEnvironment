@@ -57,9 +57,9 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
             if (Input.GetMouseButtonDown(0))
             {
-                if (_gizmoController.RaycastGizmo(out Vector3 axis))
+                if (_gizmoController.RaycastGizmo(out Vector3 constraint, out bool isPlane))
                 {
-                    _gizmoController.StartGizmoDrag(axis);
+                    _gizmoController.StartGizmoDrag(constraint, isPlane);
                     return;
                 }
 
