@@ -12,7 +12,7 @@ primárním předmětem navazující bakalářské práce.
 ## 1. Základní informace
 
 ### 1.1. Popis a zaměření softwarového díla
-Jedná se o simulační prostředí vyvíjené v jazyce C# s využitím enginu Unity, které slouží k vizualizaci a testování algoritmů pro navigaci rojů dronů (např. kvadrokoptér). Software je primárně zaměřen na vytvoření *"pískoviště" (sandboxu)* – aktuální iterace se soustředí výhradně na funkční vizualizaci, správu stavů a přípravu API pro externí skripty. Samotné komplexní navigační algoritmy budou implementovány až v rámci navazující bakalářské práce. Cílovou skupinou jsou vývojáři 3D pathfinding algoritmů.
+Jedná se o simulační prostředí vyvíjené v jazyce C# s využitím enginu Unity, které slouží k vizualizaci a testování algoritmů pro navigaci rojů dronů (např. kvadrokoptér). Software je primárně zaměřen na vytvoření *"pískoviště" (sandboxu)* - aktuální iterace se soustředí výhradně na funkční vizualizaci, správu stavů a přípravu API pro externí skripty. Samotné komplexní navigační algoritmy budou implementovány až v rámci navazující bakalářské práce. Cílovou skupinou jsou vývojáři 3D pathfinding algoritmů.
 
 ### 1.2. Použité technologie
 * **Jazyk:** C#
