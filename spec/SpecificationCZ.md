@@ -1,13 +1,4 @@
-# Specification of the final project for relevant C# courses
-
-## C# Courses selection
-
-- [x] NPRG035 (Programming in C# language | Programování v jazyce C#)
-- [x] NPRG038 (Advanced C# Programming | Pokročilé programování v jazyce C#)
-- [ ] NPRG057 (Advanced .NET Programming II | Pokročilé programování pro .NET II)
-- [ ] NPRG064 (Programming user interfaces in .NET | Programování uživatelských rozhraní v .NET)
-
-## Specification
+# Specification
 
 ### Simulační prostředí pro navigaci rojů dronů
 
