@@ -140,6 +140,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             _view.OnLoadResultClickedEvent += OnLoadResultClicked;
             _view.OnExportResultClickedEvent += OnExportResultClicked;
             _view.OnResultSelectedEvent += OnResultSelected;
+            _view.OnClearResultClickedEvent += OnClearResultClicked;
 
             // Transform tools panel selection
             _view.OnToolClickedEvent += OnToolClicked;
@@ -454,6 +455,11 @@ namespace DroneSwarmPathfinder.Unity.UI
             string json = Core.Serialization.JSONSerializer.Serialize(result);
             System.IO.File.WriteAllText(path, json);
             Debug.Log("Results exported successfully");
+        }
+
+        private void OnClearResultClicked()
+        {
+            SimulationPlaybackManager.instance.ClearSimulation();
         }
 
         private Dictionary<string, SimulationResult> _loadedResultsCache = new Dictionary<string, SimulationResult>();
