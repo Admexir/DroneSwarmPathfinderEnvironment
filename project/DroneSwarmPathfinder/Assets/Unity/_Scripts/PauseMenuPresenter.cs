@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DroneSwarmPathfinder.Unity.UI
@@ -17,11 +18,26 @@ namespace DroneSwarmPathfinder.Unity.UI
             SubscribeToViewEvents();
         }
 
+        private void Start()
+        {
+            // Autoupdate the settings group list when groups are changed
+            var uiController = FindAnyObjectByType<UIController>();
+            if (uiController != null)
+            {
+                uiController.OnCreateNewGroupEvent += (_) => RefreshSettingsList();
+                uiController.OnDroneGroupChangedEvent += (_) => RefreshSettingsList();
+            }
+        }
+
         private void SubscribeToViewEvents()
         {
             _view.OnResumeClickedEvent += ResumeApplication;
             _view.OnSettingsClickedEvent += OpenSettings;
             _view.OnQuitClickedEvent += QuitApplication;
+
+            // Settings menu hooks
+            _view.OnCloseSettingsClickedEvent += CloseSettings;
+            _view.OnGroupColorChangedEvent += HandleGroupColorChanged;
         }
 
         private void Update()
@@ -49,11 +65,29 @@ namespace DroneSwarmPathfinder.Unity.UI
         {
             _isPaused = false;
             _view.SetPauseMenuVisibility(false);
+            _view.SetSettingsMenuVisibility(false, false);
         }
 
         private void OpenSettings()
         {
-            throw new System.NotImplementedException(); // ...button is disabled in the UI
+            RefreshSettingsList();
+            _view.SetSettingsMenuVisibility(true);
+        }
+        private void CloseSettings()
+        {
+            _view.SetSettingsMenuVisibility(false);
+        }
+        private void RefreshSettingsList()
+        {
+            if (Managers.DroneManager.instance != null)
+            {
+                _view.PopulateGroupColorsList(new List<string>(Managers.DroneManager.instance.DroneGroups));
+            }
+        }
+
+        private void HandleGroupColorChanged(string groupName, Color newColor)
+        {
+            Managers.DroneManager.instance.UpdateDroneGroupColor(groupName, newColor);
         }
 
         private void QuitApplication()

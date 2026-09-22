@@ -2,7 +2,9 @@ using DroneSwarmPathfinder.Core.Environment;
 using DroneSwarmPathfinder.Core.Models;
 using DroneSwarmPathfinder.Core.Simulation;
 using Newtonsoft.Json;
+using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace DroneSwarmPathfinder.Core.Serialization
@@ -20,6 +22,10 @@ namespace DroneSwarmPathfinder.Core.Serialization
         /// List of all general target drone positions ("any drone from group x")
         /// </summary>
         public List<DroneTargetPosition> TargetPositions { get; set; } = new();
+        /// <summary>
+        /// Dictionary of all group names -> their colors
+        /// </summary>
+        public Dictionary<string, Color> GroupColors { get; set; } = new();
 
         ///// <summary>
         ///// Dictionary of all drone groups

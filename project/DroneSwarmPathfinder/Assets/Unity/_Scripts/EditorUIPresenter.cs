@@ -6,6 +6,7 @@ using DroneSwarmPathfinder.Unity.EditorTools;
 using DroneSwarmPathfinder.Unity.Managers;
 using DroneSwarmPathfinder.Unity.Services;
 using DroneSwarmPathfinder.Unity.Visuals;
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -294,7 +295,11 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (config != null)
             {
                 SimulationPlaybackManager.instance.ClearSimulation();
-                DroneManager.instance.ClearAndSpawnDrones(config.AllConfigItems);
+
+                // Extract and convert colors
+                var unityGroupColors = config.GroupColors?.ToDictionary(k => k.Key, v => v.Value.ToUnity());
+
+                DroneManager.instance.ClearAndSpawnDrones(config.AllConfigItems, unityGroupColors);
                 ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
                 Debug.Log("Swarm configuration loaded successfully");
             }
@@ -314,7 +319,8 @@ namespace DroneSwarmPathfinder.Unity.UI
             var config = new Core.Serialization.DroneConfigJson
             {
                 Drones = DroneManager.instance.AllDroneModelsOnly.ToList(),
-                TargetPositions = DroneManager.instance.AllDroneTargetPositionsOnly.ToList()
+                TargetPositions = DroneManager.instance.AllDroneTargetPositionsOnly.ToList(),
+                GroupColors = DroneManager.instance._droneGroups.ToDictionary(k => k.Key, v => v.Value.ToSystemDrawing()) // Map the unity colors back to Core format
             };
 
             // Use the generic serializer
