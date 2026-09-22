@@ -9,7 +9,7 @@
     <ui:VisualElement name="settings-overlay" style="display: none; position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 500px; height: 500px; background-color: rgba(45, 45, 45, 0.98); border-radius: 8px; border-width: 1px; border-color: rgb(20, 20, 20); padding: 20px;">
         <ui:Label text="SETTINGS" style="-unity-text-align: middle-center; font-size: 30px; margin-bottom: 20px; color: white; -unity-font-style: bold;"/>
         <ui:Label text="Group Default Colors:" style="font-size: 16px; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
-        <ui:ListView name="list-group-colors" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0.4); border-radius: 4px; margin-bottom: 20px; padding: 5px;"/>
+        <ui:ListView name="list-group-colors" selection-type="None" focusable="true" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0.4); border-radius: 4px; margin-bottom: 20px; padding: 5px;"/>
         <ui:Button text="Back" name="btn-close-settings" class="PauseButtons" style="height: 40px; margin: 0;"/>
     </ui:VisualElement>
 </ui:UXML>

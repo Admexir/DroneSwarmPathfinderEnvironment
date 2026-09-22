@@ -800,8 +800,7 @@ namespace DroneSwarmPathfinder.Unity.UI
                     ? (DroneManager.instance.GetColorByGroup(drone.GroupName, out var groupCol) ? groupCol : UnityEngine.Color.white)
                     : drone.Color.ToUnity();
 
-                drone.Color = displayColor.ToSystemDrawing();
-                // Update the _view.ShowDroneDetails method call:
+                //drone.Color = displayColor.ToSystemDrawing();
                 _view.ShowDroneDetails(drone, drone.Transform.Position.ToUnity());
 
                 // Select all selected drones in the UI list

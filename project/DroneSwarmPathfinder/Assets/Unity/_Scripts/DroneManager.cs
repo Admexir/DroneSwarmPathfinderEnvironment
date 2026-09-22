@@ -135,8 +135,10 @@ namespace DroneSwarmPathfinder.Unity.Managers
             {
                 if (_droneTargets.TryGetValue(id, out DroneTargetPosition drone))
                 {
+                    drone.IsUsingGroupColor = true;
                     drone.GroupName = newGroup;
                     _droneTargets[id] = drone;
+                    if(GetColorByGroup(newGroup, out Color c)) { drone.Color = c.ToSystemDrawing(); }
 
                     // Updates color
                     if (_activeDrones.TryGetValue(id, out DroneView view))
@@ -149,8 +151,10 @@ namespace DroneSwarmPathfinder.Unity.Managers
             {
                 if (_droneModels.TryGetValue(id, out Drone drone))
                 {
+                    drone.IsUsingGroupColor = true;
                     drone.GroupName = newGroup;
                     _droneModels[id] = drone;
+                    if (GetColorByGroup(newGroup, out Color c)) { drone.Color = c.ToSystemDrawing(); }
 
                     // Updates color
                     if (_activeDrones.TryGetValue(id, out DroneView view))
@@ -178,7 +182,9 @@ namespace DroneSwarmPathfinder.Unity.Managers
             var drone = GetDroneDataFromID(id);
             if (drone != null)
             {
+                drone.IsUsingGroupColor = false;
                 drone.Color = newColor;
+                Debug.Log($"updating color of drone {id} to {newColor}");
                 if (_activeDrones.TryGetValue(id, out DroneView view))
                 {
                     view.SetCustomColor(newColor.ToUnity(), id >= DRONEPOSITIONINDEXOFFSET);
@@ -197,9 +203,9 @@ namespace DroneSwarmPathfinder.Unity.Managers
                     if (kvp.Value.DroneGroup == groupName)
                     {
                         var coreItem = GetDroneDataFromID(kvp.Key);
-                        // Color.A == 0 => uses the group default
-                        if (coreItem != null && coreItem.Color.A == 0)
+                        if (coreItem != null && coreItem.IsUsingGroupColor)
                         {
+                            coreItem.Color = newColor.ToSystemDrawing();
                             kvp.Value.Initialize(kvp.Key, groupName, coreItem is DroneTargetPosition);
                         }
                     }

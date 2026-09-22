@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.Windows;
@@ -72,6 +73,9 @@ namespace DroneSwarmPathfinder.Unity.UI
         {
             if (_groupColorsList == null) return;
 
+            _groupColorsList.selectionType = SelectionType.None;
+            _groupColorsList.fixedItemHeight = 50;
+
             // Create a row in the colors list
             _groupColorsList.makeItem = () =>
             {
@@ -90,6 +94,9 @@ namespace DroneSwarmPathfinder.Unity.UI
                 var input = new TextField();
                 input.name = "group-color-input";
                 input.style.flexGrow = 1;
+                //input.style.height = 25;
+
+                input.RegisterCallback<PointerDownEvent>(e => e.StopPropagation());
 
                 container.Add(label);
                 container.Add(input);
@@ -108,7 +115,8 @@ namespace DroneSwarmPathfinder.Unity.UI
                 // Load initial color
                 if (Managers.DroneManager.instance.GetColorByGroup(groupName, out Color c))
                 {
-                    input.SetValueWithoutNotify("<" + ColorUtility.ToHtmlStringRGB(c));
+                    input.SetValueWithoutNotify("#" + ColorUtility.ToHtmlStringRGB(c));
+                    //input.value = "#" + ColorUtility.ToHtmlStringRGB(c);
                     input.style.color = new StyleColor(c);
                 }
 

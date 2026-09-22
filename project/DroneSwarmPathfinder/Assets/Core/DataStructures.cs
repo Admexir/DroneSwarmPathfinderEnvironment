@@ -67,6 +67,7 @@ namespace DroneSwarmPathfinder.Core.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public Color Color { get; set; }
+        public bool IsUsingGroupColor { get; set; }
         public TransformData Transform { get; set; }
 
         /// <summary>
@@ -88,6 +89,8 @@ namespace DroneSwarmPathfinder.Core.Models
             ID = id;
             Transform = transform;
             GroupName = groupName;
+            Color = Color.White;
+            IsUsingGroupColor = true;
         }
 
         public bool Contains(Vector3 point)
@@ -109,6 +112,7 @@ namespace DroneSwarmPathfinder.Core.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public Color Color { get; set; }
+        public bool IsUsingGroupColor { get; set; }
         public TransformData Transform { get; set; }
 
         /// <summary>
@@ -130,6 +134,8 @@ namespace DroneSwarmPathfinder.Core.Models
             ID = id;
             Transform = transform;
             GroupName = groupName;
+            Color = Color.White;
+            IsUsingGroupColor = true;
         }
 
         public bool Contains(Vector3 point)
