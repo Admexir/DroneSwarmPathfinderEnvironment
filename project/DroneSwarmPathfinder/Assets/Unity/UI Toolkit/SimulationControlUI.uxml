@@ -1,39 +1,39 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/UI%20Toolkit/SimulationUIStyleSheet.uss?fileID=7433441132597879392&amp;guid=5e66364d4afe8fd4c97d3fd72c2048d8&amp;type=3#SimulationUIStyleSheet"/>
     <ui:VisualElement picking-mode="Ignore" style="flex-direction: row; justify-content: space-between; width: 100%; height: 100%;">
-        <ui:VisualElement name="left-container" style="width: 250px; height: 100%;">
+        <ui:VisualElement name="left-container" style="width: 30%; height: 100%; max-width: 400px;">
             <ui:VisualElement name="tab-header" style="flex-direction: row; height: 35px; margin-bottom: 5px;">
                 <ui:Button name="tab-btn-editor" text="Editor" style="flex-grow: 1; margin: 0; border-radius: 4px 0 0 4px; -unity-font-style: bold;"/>
                 <ui:Button name="tab-btn-playback" text="Playback" style="flex-grow: 1; margin: 0; border-radius: 0; -unity-font-style: bold;"/>
                 <ui:Button name="tab-btn-file" text="File" style="flex-grow: 1; margin: 0; border-radius: 0 4px 4px 0; -unity-font-style: bold;"/>
             </ui:VisualElement>
-            <ui:VisualElement name="tab-content" style="flex-grow: 1;">
-                <ui:VisualElement name="panel-editor" class="ToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px; display: flex;">
+            <ui:VisualElement name="tab-content" style="flex-grow: 1; top: auto; padding-top: 0; margin-top: -5px;">
+                <ui:VisualElement name="panel-editor" class="ToolsBackground EditorBackground" style="padding: 10px; display: flex;">
                     <ui:VisualElement name="drone-warning-container" style="flex-direction: row; align-items: center; background-color: rgb(255, 255, 255); border-color: rgb(200, 150, 0); border-width: 1px; border-radius: 4px; padding: 5px; margin-bottom: 5px; display: none;">
                         <ui:VisualElement name="icon-drone-warning" style="width: 20px; height: 20px; margin-right: 5px; -unity-background-scale-mode: scale-to-fit; background-image: url(&quot;project://database/Assets/Unity/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=-6527069497977903076&amp;guid=7d3fd71324fee9f48a7370f43b013325&amp;type=3#console.warnicon@2x&quot;);"/>
                         <ui:Label name="label-drone-warning" text="Drone/s are in invalid positions!" style="color: rgb(255, 200, 100); -unity-font-style: bold; white-space: normal; flex-shrink: 1;"/>
                     </ui:VisualElement>
-                    <ui:Label text="EDITOR TOOLS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
+                    <ui:Label text="EDITOR TOOLS" class="EditorH1" style="margin-bottom: 5px;"/>
                     <ui:Button text="Add Drone" name="btn-add-drone" class="EditorToolsButton"/>
                     <ui:Button text="Add Drone Target Position" name="btn-add-drone-target-position" class="EditorToolsButton"/>
                     <ui:Button text="Add Obstacle" name="btn-add-obstacle" class="EditorToolsButton"/>
                     <ui:Button text="Remove Selected" name="btn-remove-selected" class="EditorToolsButton"/>
-                    <ui:Label text="ENVIRONMENT SETTINGS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px; margin-top: 10px;"/>
-                    <ui:IntegerField label="Grid Size" name="input-grid-size" value="1" style="color: rgb(200, 200, 200); margin-bottom: 5px;"/>
+                    <ui:Label text="ENVIRONMENT SETTINGS" class="EditorH2" style="margin-bottom: 5px; margin-top: 10px;"/>
+                    <ui:IntegerField label="Grid Size" name="input-grid-size" value="1" class="EditorLabel" style="margin-bottom: 5px;"/>
                 </ui:VisualElement>
-                <ui:VisualElement name="panel-playback" class="ToolsBackground PlaybackToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px; display: none;">
-                    <ui:Label text="PLAYBACK" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
-                    <ui:Label text="Time Scale: 100%" name="time-scale-label" style="margin-bottom: 2px; -unity-font-style: bold; color: rgb(220, 220, 220);"/>
+                <ui:VisualElement name="panel-playback" class="ToolsBackground PlaybackToolsBackground" style="padding: 10px; display: none;">
+                    <ui:Label text="PLAYBACK" class="EditorH2 EditorH1" style="margin-bottom: 5px;"/>
+                    <ui:Label text="Time Scale: 100%" name="time-scale-label" class="EditorLabel" style="margin-bottom: 2px;"/>
                     <ui:SliderInt value="100" high-value="100" name="time-scale-slider" style="margin-bottom: 15px;"/>
                     <ui:Button text="Play" name="btn-play" class="PlaybackControlButton"/>
                     <ui:Button text="Step &gt;" name="btn-step-forward" class="PlaybackControlButton"/>
                     <ui:Button text="Step &lt;" name="btn-step-back" class="PlaybackControlButton"/>
                     <ui:Button text="Restart" name="btn-restart" class="PlaybackControlButton" style="margin-bottom: 15px;"/>
                 </ui:VisualElement>
-                <ui:VisualElement name="panel-file" class="ConfigToolsPanel ConfigToolsBackground" style="background-color: rgba(45, 45, 45, 0.2); padding: 10px; display: none; flex-direction: column;">
+                <ui:VisualElement name="panel-file" class="ConfigToolsPanel ConfigToolsBackground ToolsBackground" style="padding: 10px; display: none; flex-direction: column;">
                     <ui:ScrollView style="flex-grow: 1;">
-                        <ui:Label text="SCENE CONFIGURATIONS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
-                        <ui:Toggle label="Use Physics" name="toggle-use-physics" value="false" style="margin-bottom: 10px; color: rgb(200, 200, 200);"/>
+                        <ui:Label text="SCENE CONFIGURATIONS" class="EditorH1" style="margin-bottom: 5px;"/>
+                        <ui:Toggle label="Use Physics" name="toggle-use-physics" value="false" class="EditorLabel" style="margin-bottom: 10px;"/>
                         <ui:VisualElement style="flex-direction: row; margin-bottom: 4px;">
                             <ui:Button text="Load Swarm" name="btn-load-config" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 2px 0 0; padding: 0;"/>
                             <ui:Button text="Load Env" name="btn-load-env" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 0 0 2px; padding: 0;"/>
@@ -42,13 +42,13 @@
                             <ui:Button text="Export Swarm" name="btn-export-config" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 2px 0 0; padding: 0;"/>
                             <ui:Button text="Export Env" name="btn-export-env" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 0 0 2px; padding: 0;"/>
                         </ui:VisualElement>
-                        <ui:Label text="ALGORITHM SELECTION" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
-                        <ui:Label text="Select:" style="color: rgb(200, 200, 200); margin-bottom: 2px;"/>
+                        <ui:Label text="ALGORITHM SELECTION" class="EditorH2" style="margin-bottom: 5px;"/>
+                        <ui:Label text="Select:" class="EditorLabel" style="margin-bottom: 2px;"/>
                         <ui:DropdownField name="dropdown-algorithms" style="margin-left: 0; margin-right: 0; margin-bottom: 5px; color: black; flex-grow: 1; width: 100%;"/>
                         <ui:Button text="Import External DLL..." name="btn-load-algorithm" class="ConfigToolsButton" style="height: 30px; margin-bottom: 10px;"/>
                         <ui:Button text="Run Algorithm" name="btn-run-algo" class="ConfigToolsButton" style="height: 40px; -unity-font-style: bold; margin-bottom: 5px; background-color: rgba(50, 120, 50, 0.8);"/>
                         <ui:ProgressBar name="progress-simulation" title="Calculating... 0%" value="0" high-value="100" style="margin-bottom: 10px; display: none;"/>
-                        <ui:Label text="SCENARIO SETTINGS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px; margin-top: 5px;"/>
+                        <ui:Label text="SCENARIO SETTINGS" class="EditorH2" style="margin-bottom: 5px; margin-top: 5px;"/>
                         <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 2px;">
                             <ui:Button text="Select Starting Config" name="btn-start-config" class="ConfigToolsButton" style="flex-grow: 1; height: 30px; margin-right: 5px;"/>
                             <ui:VisualElement name="icon-start-config" tooltip="No file selected" style="width: 30px; height: 30px; background-color: rgb(150, 50, 50); border-radius: 4px; padding: 4px; align-items: center; justify-content: center;">
@@ -65,7 +65,7 @@
                                 </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <ui:Toggle label="Use Current Scene" name="toggle-current-scene" value="true" style="margin-bottom: 10px; color: rgb(200, 200, 200);"/>
+                        <ui:Toggle label="Use Current Scene" name="toggle-current-scene" value="true" class="EditorLabel" style="margin-bottom: 10px;"/>
                         <ui:VisualElement name="config-warning-container" style="flex-direction: row; align-items: center; background-color: rgb(255, 255, 255); border-color: rgb(200, 150, 0); border-width: 1px; border-radius: 4px; padding: 5px; margin-bottom: 5px; display: none;">
                             <ui:VisualElement name="icon-config-warning" style="width: 20px; height: 20px; margin-right: 5px; -unity-background-scale-mode: scale-to-fit; background-image: url(&quot;project://database/Assets/Unity/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=-6527069497977903076&amp;guid=7d3fd71324fee9f48a7370f43b013325&amp;type=3#console.warnicon@2x&quot;);"/>
                             <ui:Label name="label-config-warning" text="Configurations are incompatible!" style="color: rgb(255, 200, 100); -unity-font-style: bold; white-space: normal; flex-shrink: 1;"/>
@@ -78,50 +78,51 @@
                                 </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <ui:Label text="SIMULATION RESULTS" style="-unity-font-style: bold; color: rgb(200, 200, 200); margin-bottom: 5px; margin-top: 10px;"/>
+                        <ui:Label text="SIMULATION RESULTS" class="EditorH2" style="margin-bottom: 5px; margin-top: 10px;"/>
                         <ui:VisualElement style="flex-direction: row; margin-bottom: 5px;">
                             <ui:Button text="Load Result" name="btn-load-result" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 2px 0 0; padding: 0;"/>
                             <ui:Button text="Export Result" name="btn-export-result" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 0 0 2px; padding: 0;"/>
                         </ui:VisualElement>
-                        <ui:Label text="Recent Results:" style="color: rgb(200, 200, 200); margin-bottom: 2px;" />
-                        <ui:DropdownField name="dropdown-recent-results" style="margin-left: 0; margin-right: 0; margin-bottom: 15px; color: black; flex-grow: 1; width: 100%;" />
+                        <ui:Label text="Recent Results:" class="EditorLabel" style="margin-bottom: 2px;"/>
+                        <ui:DropdownField name="dropdown-recent-results" style="margin-left: 0; margin-right: 0; margin-bottom: 15px; color: black; flex-grow: 1; width: 100%;"/>
+                        <ui:Button text="Clear Results" name="btn-clear-result" class="ConfigToolsButton" style="flex-grow: 1; height: 35px; -unity-font-style: bold; margin: 0 0 0 2px; padding: 0;"/>
                     </ui:ScrollView>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="right-container" class="InspectorBackground" style="width: 300px; height: 100%; padding: 10px;">
+        <ui:VisualElement name="right-container" class="InspectorBackground" style="width: 30%; height: 100%; padding: 10px; max-width: 400px;">
             <ui:Label text="INSPECTOR" class="InspectorH1" style="margin-bottom: 10px;"/>
             <ui:ScrollView style="flex-grow: 1;">
                 <ui:Foldout text="Drones" name="foldout-drones" value="true" class="InspectorH2">
                     <ui:ListView name="drone-list-view" selection-type="Multiple" class="InspectorListElement" style="min-height: 100px; max-height: 250px; background-color: rgba(0, 0, 0, 0.3); margin-bottom: 5px; border-radius: 5px;"/>
                     <ui:VisualElement name="drone-details-panel">
-                    <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 5px;">
-                        <ui:Label text="Drone ID:" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
-                        <ui:TextField name="input-drone-id" readonly="true" class="InspectorLabel" style="flex-grow: 1; margin: 0; padding: 0;"/>
-                    </ui:VisualElement>
-                    <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 5px;">
-                        <ui:Label text="Name:" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
-                        <ui:TextField name="input-drone-name" class="InspectorLabel" style="flex-grow: 1; margin: 0; padding: 0;"/>
-                    </ui:VisualElement>
-                    <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 5px;">
-                        <ui:Label text="Desc:" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
-                        <ui:TextField name="input-drone-description" multiline="true" class="InspectorLabel" style="flex-grow: 1; margin: 0; padding: 0; min-height: 40px;"/>
-                    </ui:VisualElement>
-                    <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 5px;">
-                        <ui:Label text="Color (Hex):" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
-                        <ui:TextField name="input-drone-color" class="InspectorLabel" style="flex-grow: 1; margin: 0; padding: 0;"/>
-                    </ui:VisualElement>
-                    <ui:VisualElement name="drone-group-container" style="flex-direction: row; align-items: center; margin-bottom: 5px;">
-                        <ui:Label text="Group:" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
-                        <ui:DropdownField name="dropdown-drone-group" class="InspectorLabel" style="flex-grow: 1; flex-shrink: 1; margin: 0; padding: 0; overflow: hidden;"/>
-                        <ui:Button name="btn-toggle-remove-group" text="-" tooltip="Toggle Remove Group Mode" style="width: 25px; flex-shrink: 0; margin-left: 2px; padding: 0; border-radius: 3px; background-color: rgb(80, 40, 40); -unity-font-style: bold; color: rgb(255, 150, 150);"/>
-                    </ui:VisualElement>
+                        <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 5px;">
+                            <ui:Label text="Drone ID:" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
+                            <ui:TextField name="input-drone-id" readonly="true" class="InspectorLabel" style="flex-grow: 1; margin: 0; padding: 0;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 5px;">
+                            <ui:Label text="Name:" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
+                            <ui:TextField name="input-drone-name" class="InspectorLabel" style="flex-grow: 1; margin: 0; padding: 0;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 5px;">
+                            <ui:Label text="Desc:" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
+                            <ui:TextField name="input-drone-description" multiline="true" class="InspectorLabel" style="flex-grow: 1; margin: 0; padding: 0; min-height: 40px;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 5px;">
+                            <ui:Label text="Color (Hex):" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
+                            <ui:TextField name="input-drone-color" class="InspectorLabel" style="flex-grow: 1; margin: 0; padding: 0;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement name="drone-group-container" style="flex-direction: row; align-items: center; margin-bottom: 5px;">
+                            <ui:Label text="Group:" class="InspectorLabel" style="width: 80px; flex-shrink: 0; margin: 0; padding: 0; -unity-text-align: middle-left;"/>
+                            <ui:DropdownField name="dropdown-drone-group" class="InspectorLabel" style="flex-grow: 1; flex-shrink: 1; margin: 0; padding: 0; overflow: hidden;"/>
+                            <ui:Button name="btn-toggle-remove-group" text="-" tooltip="Toggle Remove Group Mode" style="width: 25px; flex-shrink: 0; margin-left: 2px; padding: 0; border-radius: 3px; background-color: rgb(80, 40, 40); -unity-font-style: bold; color: rgb(255, 150, 150);"/>
+                        </ui:VisualElement>
                         <ui:TextField label="New Group Name" name="input-new-drone-group" class="InspectorLabel" style="margin-bottom: 5px; display: none;"/>
-                    <ui:VisualElement class="InspectorLabel" style="margin-bottom: 5px;">
+                        <ui:VisualElement class="InspectorLabel" style="margin-bottom: 5px;">
                             <ui:Label text="Position" class="InspectorLabel" style="margin-bottom: 2px;"/>
                             <ui:Vector3Field name="input-drone-position" class="InspectorLabel"/>
+                        </ui:VisualElement>
                     </ui:VisualElement>
-                </ui:VisualElement>
                 </ui:Foldout>
                 <ui:Foldout text="Other" name="foldout-other" value="false" class="InspectorH2" style="margin-top: 10px;">
                     <ui:ListView name="obstacle-list-view" selection-type="Multiple" class="InspectorListElement" style="min-height: 100px; max-height: 250px; background-color: rgba(0, 0, 0, 0.3); margin-bottom: 5px; border-radius: 5px;"/>

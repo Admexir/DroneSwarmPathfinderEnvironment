@@ -21,6 +21,7 @@ namespace DroneSwarmPathfinder.Core.Serialization
         string Name { get; set; }
         string Description { get; set; }
         Color Color { get; set; }
+        bool IsUsingGroupColor { get; set; }
     }
 
     /// <summary>

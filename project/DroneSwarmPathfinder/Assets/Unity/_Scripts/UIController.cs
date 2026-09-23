@@ -175,6 +175,7 @@ namespace DroneSwarmPathfinder.Unity.UI
         public event Action OnLoadResultClickedEvent;
         public event Action OnExportResultClickedEvent;
         public event Action<string> OnResultSelectedEvent;
+        public event Action OnClearResultClickedEvent;
 
         #region Helpers
         /// <summary>
@@ -258,10 +259,12 @@ namespace DroneSwarmPathfinder.Unity.UI
             _btnLoadResult = root.Q<Button>("btn-load-result");
             _btnExportResult = root.Q<Button>("btn-export-result");
             _recentResultsDropdown = root.Q<DropdownField>("dropdown-recent-results");
+            var _btnClearResults = root.Q<Button>("btn-clear-result");
 
             if (_btnLoadResult != null) _btnLoadResult.clicked += () => OnLoadResultClickedEvent?.Invoke();
             if (_btnExportResult != null) _btnExportResult.clicked += () => OnExportResultClickedEvent?.Invoke();
             if (_recentResultsDropdown != null) _recentResultsDropdown.RegisterValueChangedCallback(evt => OnResultSelectedEvent?.Invoke(evt.newValue));
+            if (_btnClearResults != null) _btnClearResults.clicked += () => OnClearResultClickedEvent?.Invoke();
         }
         private void BindFileSceneLoading(VisualElement root)
         {

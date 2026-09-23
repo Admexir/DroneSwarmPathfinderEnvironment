@@ -74,6 +74,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// </summary>
         public void ClearSimulation()
         {
+            UpdateDronesPositions(0f);
             isPlaying = false;
             _currentPaths = null;
             _pathVisualizer.ClearPaths();

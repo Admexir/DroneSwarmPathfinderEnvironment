@@ -3,7 +3,13 @@
     <ui:VisualElement name="pause-background" style="flex-grow: 1; -unity-background-image-tint-color: rgba(123, 123, 123, 0.75); right: 50%; left: 50%; position: absolute; top: 50%; bottom: 50%; transform-origin: left top; translate: -50% -50%; width: 400px; height: 400px; -unity-material: url(&quot;&quot;); background-color: rgba(103, 103, 103, 0.81);">
         <ui:Label text="PAUSED" name="paused-title" style="-unity-text-align: middle-center; font-size: 50px; margin-top: 18px;"/>
         <ui:Button text="Resume" name="btn-resume" class="PauseButtons"/>
-        <ui:Button text="Settings" name="btn-settings" enabled="false" class="PauseButtons"/>
+        <ui:Button text="Settings" name="btn-settings" class="PauseButtons"/>
         <ui:Button text="Quit" name="btn-quit" class="PauseButtons"/>
+    </ui:VisualElement>
+    <ui:VisualElement name="settings-overlay" style="display: none; position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 500px; height: 500px; background-color: rgba(45, 45, 45, 0.98); border-radius: 8px; border-width: 1px; border-color: rgb(20, 20, 20); padding: 20px;">
+        <ui:Label text="SETTINGS" style="-unity-text-align: middle-center; font-size: 30px; margin-bottom: 20px; color: white; -unity-font-style: bold;"/>
+        <ui:Label text="Group Default Colors:" style="font-size: 16px; color: rgb(200, 200, 200); margin-bottom: 5px;"/>
+        <ui:ListView name="list-group-colors" selection-type="None" focusable="true" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0.4); border-radius: 4px; margin-bottom: 20px; padding: 5px;"/>
+        <ui:Button text="Back" name="btn-close-settings" class="PauseButtons" style="height: 40px; margin: 0;"/>
     </ui:VisualElement>
 </ui:UXML>

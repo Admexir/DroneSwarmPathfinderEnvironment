@@ -1,13 +1,13 @@
 using DroneSwarmPathfinder.Core.Models;
+using DroneSwarmPathfinder.Core.Serialization;
+using DroneSwarmPathfinder.Unity.EditorTools;
 using DroneSwarmPathfinder.Unity.Visuals;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
-using NumVector3 = System.Numerics.Vector3;
 using NumQuaternion = System.Numerics.Quaternion;
-using DroneSwarmPathfinder.Unity.EditorTools;
-using DroneSwarmPathfinder.Core.Serialization;
+using NumVector3 = System.Numerics.Vector3;
 
 namespace DroneSwarmPathfinder.Unity.Managers
 {
@@ -44,9 +44,20 @@ namespace DroneSwarmPathfinder.Unity.Managers
         private int _nextDroneId = 0;
         private int _nextDronePositionId = DRONEPOSITIONINDEXOFFSET;
 
-        public void ClearAndSpawnDrones(IEnumerable<IDroneConfigItem> coreDrones)
+        public void ClearAndSpawnDrones(IEnumerable<IDroneConfigItem> coreDrones, Dictionary<string, Color> loadedGroupColors = null)
         {
             ClearDrones();
+
+            // Load serialized colors or fallback to default
+            if (loadedGroupColors != null && loadedGroupColors.Count > 0)
+            {
+                _droneGroups = new Dictionary<string, Color>(loadedGroupColors);
+            }
+            else
+            {
+                _droneGroups = new Dictionary<string, Color>() { { "default", Color.white } };
+            }
+
             foreach (var coreDrone in coreDrones)
             {
                 if(coreDrone is Drone) AddExistingDrone((Drone)coreDrone);
@@ -124,8 +135,10 @@ namespace DroneSwarmPathfinder.Unity.Managers
             {
                 if (_droneTargets.TryGetValue(id, out DroneTargetPosition drone))
                 {
+                    drone.IsUsingGroupColor = true;
                     drone.GroupName = newGroup;
                     _droneTargets[id] = drone;
+                    if(GetColorByGroup(newGroup, out Color c)) { drone.Color = c.ToSystemDrawing(); }
 
                     // Updates color
                     if (_activeDrones.TryGetValue(id, out DroneView view))
@@ -138,8 +151,10 @@ namespace DroneSwarmPathfinder.Unity.Managers
             {
                 if (_droneModels.TryGetValue(id, out Drone drone))
                 {
+                    drone.IsUsingGroupColor = true;
                     drone.GroupName = newGroup;
                     _droneModels[id] = drone;
+                    if (GetColorByGroup(newGroup, out Color c)) { drone.Color = c.ToSystemDrawing(); }
 
                     // Updates color
                     if (_activeDrones.TryGetValue(id, out DroneView view))
@@ -167,11 +182,35 @@ namespace DroneSwarmPathfinder.Unity.Managers
             var drone = GetDroneDataFromID(id);
             if (drone != null)
             {
+                drone.IsUsingGroupColor = false;
                 drone.Color = newColor;
+                Debug.Log($"updating color of drone {id} to {newColor}");
                 if (_activeDrones.TryGetValue(id, out DroneView view))
                 {
                     view.SetCustomColor(newColor.ToUnity(), id >= DRONEPOSITIONINDEXOFFSET);
                 }
+            }
+        }
+        public void UpdateDroneGroupColor(string groupName, Color newColor)
+        {
+            if (_droneGroups.ContainsKey(groupName))
+            {
+                _droneGroups[groupName] = newColor;
+
+                // Update visuals of all drones in this group that don't have a custom color override
+                foreach (var kvp in _activeDrones)
+                {
+                    if (kvp.Value.DroneGroup == groupName)
+                    {
+                        var coreItem = GetDroneDataFromID(kvp.Key);
+                        if (coreItem != null && coreItem.IsUsingGroupColor)
+                        {
+                            coreItem.Color = newColor.ToSystemDrawing();
+                            kvp.Value.Initialize(kvp.Key, groupName, coreItem is DroneTargetPosition);
+                        }
+                    }
+                }
+                OnDroneRosterChanged?.Invoke();
             }
         }
 

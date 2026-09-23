@@ -20,16 +20,19 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
         // Gizmos variables
         [SerializeField] private GameObject _transformGizmoRoot;
         [SerializeField] private float _gizmoSize;
+        [SerializeField] private LayerMask gizmoLayer;
 
         // Roots for toggling visibility
         private GameObject _movementGizmosRoot;
         private GameObject _sizeGizmosRoot;
 
         private Transform _movementGizmoX, _movementGizmoY, _movementGizmoZ;
+        private Transform _movementGizmoXY, _movementGizmoXZ, _movementGizmoYZ;
         private Transform _sizeGizmoX, _sizeGizmoY, _sizeGizmoZ;
 
         public bool IsDraggingGizmo { get; private set; }
-        private Vector3 _dragAxis;
+        private Vector3 _dragAxisOrNormal;
+        private bool _isPlaneDrag;
         private Plane _dragPlane;
         private Vector3 _dragStartIntersection;
 
@@ -68,6 +71,14 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             _sizeGizmoX = sArrowsRoot.GetChild(0);
             _sizeGizmoY = sArrowsRoot.GetChild(1);
             _sizeGizmoZ = sArrowsRoot.GetChild(2);
+
+            var mSquaresRoot = _movementGizmosRoot.transform.Find("Movement Squares");
+            if (mSquaresRoot != null)
+            {
+                _movementGizmoXY = mSquaresRoot.GetChild(0);
+                _movementGizmoXZ = mSquaresRoot.GetChild(1);
+                _movementGizmoYZ = mSquaresRoot.GetChild(2);
+            }
 
             _movementGizmosRoot.SetActive(false);
             _sizeGizmosRoot.SetActive(false);
@@ -114,40 +125,56 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
             _transformGizmoRoot.transform.localScale = Vector3.one * (_gizmoSize * scaleFactor);
         }
 
-        public bool RaycastGizmo(out Vector3 axis)
+        public bool RaycastGizmo(out Vector3 constraint, out bool isPlane)
         {
-            axis = Vector3.zero;
+            constraint = Vector3.zero;
+            isPlane = false;
 
             int totalSelectedCount = _selectionManager.SelectedDrones.Count + _selectionManager.SelectedObstacles.Count;
             if (totalSelectedCount == 0 || !_transformGizmoRoot.activeSelf) return false;
 
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit)) // TODO: better way than this 3way pattern matching?
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, gizmoLayer))
             {
                 // Route raycast logic based on the active tool
                 if (CurrentToolMode == EditorToolMode.Move)
                 {
-                    if (hit.collider.gameObject == _movementGizmoX.gameObject) { axis = Vector3.right; return true; }
-                    if (hit.collider.gameObject == _movementGizmoY.gameObject) { axis = Vector3.up; return true; }
-                    if (hit.collider.gameObject == _movementGizmoZ.gameObject) { axis = Vector3.forward; return true; }
+                    if (hit.collider.gameObject == _movementGizmoX.gameObject) { constraint = Vector3.right; return true; }
+                    if (hit.collider.gameObject == _movementGizmoY.gameObject) { constraint = Vector3.up; return true; }
+                    if (hit.collider.gameObject == _movementGizmoZ.gameObject) { constraint = Vector3.forward; return true; }
+
+                    if (_movementGizmoXY != null && hit.collider.gameObject == _movementGizmoXY.gameObject) { constraint = Vector3.forward; isPlane = true; return true; }
+                    if (_movementGizmoXZ != null && hit.collider.gameObject == _movementGizmoXZ.gameObject) { constraint = Vector3.up; isPlane = true; return true; }
+                    if (_movementGizmoYZ != null && hit.collider.gameObject == _movementGizmoYZ.gameObject) { constraint = Vector3.right; isPlane = true; return true; }
                 }
                 else if (CurrentToolMode == EditorToolMode.Scale)
                 {
-                    if (hit.collider.gameObject == _sizeGizmoX.gameObject) { axis = Vector3.right; return true; }
-                    if (hit.collider.gameObject == _sizeGizmoY.gameObject) { axis = Vector3.up; return true; }
-                    if (hit.collider.gameObject == _sizeGizmoZ.gameObject) { axis = Vector3.forward; return true; }
+                    if (hit.collider.gameObject == _sizeGizmoX.gameObject) { constraint = Vector3.right; return true; }
+                    if (hit.collider.gameObject == _sizeGizmoY.gameObject) { constraint = Vector3.up; return true; }
+                    if (hit.collider.gameObject == _sizeGizmoZ.gameObject) { constraint = Vector3.forward; return true; }
                 }
             }
             return false;
         }
 
-        public void StartGizmoDrag(Vector3 axis)
+        public void StartGizmoDrag(Vector3 constraint, bool isPlane)
         {
             IsDraggingGizmo = true;
-            _dragAxis = axis;
+            _dragAxisOrNormal = constraint;
+            _isPlaneDrag = isPlane;
 
-            Vector3 planeNormal = _cam.transform.forward * -1;
-            if (axis == Vector3.up) planeNormal = Vector3.Cross(_cam.transform.right, Vector3.up);
+            Vector3 planeNormal;
+            // If dragging a plane, the constraint is the normal of the drag plane
+            if (isPlane)
+            {
+                planeNormal = constraint;
+            }
+            // If dragging an axis, create a virtual plane facing the camera to raycast against
+            else
+            {
+                planeNormal = _cam.transform.forward * -1;
+                if (constraint == Vector3.up) planeNormal = Vector3.Cross(_cam.transform.right, Vector3.up);
+            }
 
             _dragPlane = new Plane(planeNormal, _transformGizmoRoot.transform.position);
 
@@ -178,7 +205,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                 Vector3 currentIntersection = ray.GetPoint(enter);
                 Vector3 moveDelta = currentIntersection - _dragStartIntersection;
 
-                float moveAmount = Vector3.Dot(moveDelta, _dragAxis);
+                float moveAmount = Vector3.Dot(moveDelta, _dragAxisOrNormal);
                 Vector3 newCenter = Vector3.zero;
 
                 foreach (var kvp in _dragStartStates)
@@ -187,12 +214,20 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
 
                     if (CurrentToolMode == EditorToolMode.Move)
                     {
-                        Vector3 startPos = kvp.Value.Position;
+                        Vector3 constrainedMove;
+                        if (_isPlaneDrag)
+                        {
+                            // Project movement on the dragging plane
+                            constrainedMove = Vector3.ProjectOnPlane(moveDelta, _dragAxisOrNormal);
+                        }
+                        else
+                        {
+                            // Project movement on the axis
+                            constrainedMove = _dragAxisOrNormal * moveAmount;
+                        }
 
-                        Vector3 constrainedMove = _dragAxis * moveAmount;
-                        Vector3 targetPos = startPos + constrainedMove;
-
-                        if (_environmentManager.Grid != null) targetPos = _environmentManager.Grid.ConstrainPosition(targetPos.ToNumerics()).ToUnity();
+                        Vector3 targetPos = kvp.Value.Position + constrainedMove;
+                        if (_environmentManager.Grid != null) targetPos = _environmentManager.Grid.ConstrainPosition(targetPos.ToNumerics()).ToUnity(); // Constrain the movement to the grid
 
                         view.transform.position = targetPos;
                     }
@@ -204,7 +239,7 @@ namespace DroneSwarmPathfinder.Unity.EditorTools
                             // Directly access the tuple value without a dictionary lookup
                             Vector3 startScale = kvp.Value.Scale;
 
-                            Vector3 constrainedScale = _dragAxis * (moveAmount * 2f);
+                            Vector3 constrainedScale = _dragAxisOrNormal * (moveAmount * 2f);
                             Vector3 targetScale = startScale + constrainedScale;
 
                             // Prevent edge case scales

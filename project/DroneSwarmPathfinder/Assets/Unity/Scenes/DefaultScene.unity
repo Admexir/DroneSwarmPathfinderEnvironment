@@ -916,7 +916,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   selectableLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
 --- !u!114 &339913124
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -945,6 +945,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   _transformGizmoRoot: {fileID: 843790512}
   _gizmoSize: 0.1
+  gizmoLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &339913126
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2255,8 +2258,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 417851778}
   - {fileID: 1698967378}
+  - {fileID: 417851778}
   - {fileID: 990884944}
   m_Father: {fileID: 448538019}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

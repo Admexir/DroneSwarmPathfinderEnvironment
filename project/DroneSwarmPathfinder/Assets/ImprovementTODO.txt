@@ -31,10 +31,10 @@ Drone groups logic changes
 	x- change SimulationContext to improve working with drone groups (...add something like Dict<string, Enum<Drone>>)
 
 Other changes
-	- add Name and Description fields to drones/positions
-	- fix up gizmos
-		- draw on top of all other objects, allow dragging "through other objects" (can grab gizmo behind a wall)
-		- make the squares functional
+	x- add Name, Description and Color fields to drones/positions
+	x- fix up gizmos
+		x- draw on top of all other objects, allow dragging "through other objects" (can grab gizmo behind a wall)
+		x- make the squares functional
 	- add a timeline for playback + events console (for debug messages, collision messages, status messages,...)
 	- add notifications for collisions to the timeline 
 	- add functions to the API to simplify making scripts (AddWaypoint, WaitForSeconds, WaitUntil, MoveTo, ...)
@@ -49,11 +49,3 @@ Physics based API
 	- apply forces based on commands to the drones in playback (use some nice smoothing function to simulate rotors speeding up/slowing down?)
 	- update drone timeline to show these commands
 	- future improvement: allow for movement inaccuracies and conditions to deal with them
-
-		
-
-x: ADD UI FOR SELECTING ENVIRONMENT WHEN NOT USING CURRENT SCENE AS START CONFIG
-TODO: load the environment and swarm config upon running an algorithm with custom start config+env
-		+ change text on select env button to "Env: Current Scene" when using current scene
-
-TODO: Add clear results button
