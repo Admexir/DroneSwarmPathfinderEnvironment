@@ -1,13 +1,7 @@
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEngine.Windows;
-using static UnityEditor.ShaderData;
-using static UnityEngine.Application;
-using static UnityEngine.UIElements.UxmlAttributeDescription;
 
 namespace DroneSwarmPathfinder.Unity.UI
 {

@@ -87,7 +87,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// </summary>
         public void LoadSimulationResult(SimulationResult result)
         {
-            LoadConfigForResults(result.SimulationContext.InitialState.Values, result.SimulationContext.Environment);
+            LoadConfigForResults(result.SimulationContext.InitialState, result.SimulationContext.Environment);
 
             _latestResult = result;
             _currentPaths = result.Paths;
@@ -113,12 +113,13 @@ namespace DroneSwarmPathfinder.Unity.Managers
         /// <summary>
         /// Helper method to allow loading the results - first loads all the necessary drones
         /// </summary>
-        private void LoadConfigForResults(IEnumerable<IDroneConfigItem> dronesConfig, WorldEnvironment envConfig)
+        private void LoadConfigForResults(DroneConfigJson dronesConfig, WorldEnvironment envConfig)
         {
             Debug.Log($"Loading swarm configuration from selected start and environment configurations...");
             // Drone loading
-            DroneManager.instance.ClearAndSpawnDrones(dronesConfig);
-            ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
+            //DroneManager.instance.ClearAndSpawnDrones(dronesConfig);
+            //ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
+            ConfigSelectionManager.instance.LoadDroneConfigJson(dronesConfig);
 
             // Environment loading
             // Spawn the obstacles
@@ -134,7 +135,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
             ConfigEditorManager.instance.SetObstacleSelectionFromUI(new List<int>());
             Debug.Log("Swarm configuration and environment loaded successfully");
         }
-        private void LoadConfigForResults(IEnumerable<IDroneConfigItem> dronesConfig, EnvironmentConfigJson envConfig) => LoadConfigForResults(dronesConfig, new WorldEnvironment(envConfig.SpatialRules, envConfig.Obstacles));
+        //private void LoadConfigForResults(IEnumerable<IDroneConfigItem> dronesConfig, EnvironmentConfigJson envConfig) => LoadConfigForResults(dronesConfig, new WorldEnvironment(envConfig.SpatialRules, envConfig.Obstacles));
 
         #region Playback controls (API)
 

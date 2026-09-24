@@ -84,7 +84,7 @@ namespace DroneSwarmPathfinder.Core.Models
         }
 
         [JsonConstructor]
-        public Drone(int id, TransformData transform, string groupName = "default")
+        public Drone(int id, TransformData transform, string groupName = "default", Color? color = null, bool isUsingGroupColor = true)
         {
             ID = id;
             Transform = transform;

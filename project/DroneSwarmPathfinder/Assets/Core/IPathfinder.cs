@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace DroneSwarmPathfinder.Core.Simulation
 {
     using Models;
     using Environment;
     using DroneSwarmPathfinder.Core.Serialization;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// Record class to hold information about the simulations results
@@ -30,23 +32,66 @@ namespace DroneSwarmPathfinder.Core.Simulation
     public record SimulationContext
     {
         /// <summary>
-        /// Dictionary ID -> drone of the starting swarm configuration
+        /// An initial drone configuration object containing drone info and group info
         /// </summary>
-        public IReadOnlyDictionary<int, Drone> InitialState { get; init; }
+        public DroneConfigJson InitialState { get; init; }
+        /// <summary>
+        /// A target drone configuration object containing drone info and group info
+        /// </summary>
+        public DroneConfigJson TargetState { get; init; }
+
         /// <summary>
         /// Dictionary ID -> drone of the target swarm configuration (for "exactly drone with x ID" targets)
         /// </summary>
-        public IReadOnlyDictionary<int, Drone> DroneSpecificTargets { get; init; }
+        [JsonIgnore] public IReadOnlyDictionary<int, Drone> DroneSpecificTargets
+        {
+            get
+            {
+                if(_droneSpecificTargets == null)
+                {
+                    _droneSpecificTargets = TargetState.Drones.ToDictionary(x => x.ID, x => x);
+                }
+                return _droneSpecificTargets;
+            }
+        }
+        [JsonIgnore] public IReadOnlyDictionary<int, Drone> _droneSpecificTargets;
         /// <summary>
         /// Dictionary string -> drone of the target swarm configuration (for "any drone of x group" targets)
         /// </summary>
-        public IReadOnlyDictionary<string, List<DroneTargetPosition>> GroupTargets { get; init; }
+        [JsonIgnore] public IReadOnlyDictionary<string, List<DroneTargetPosition>> GroupTargets
+        {
+            get
+            {
+                if(_groupTargets == null)
+                {
+                    _groupTargets = TargetState.TargetPositions.GroupBy(x => x.GroupName).ToDictionary(x => x.First().GroupName, x => x.ToList());
+                }
+                return _groupTargets;
+            }
+        }
+        [JsonIgnore] public IReadOnlyDictionary<string, List<DroneTargetPosition>> _groupTargets;
         /// <summary>
         /// Contains information about the obstacles and spatial rules
         /// </summary>
         public WorldEnvironment Environment { get; init; }
 
         #region Helpers for convenience of use
+        /// <summary>
+        /// Dictionary ID -> drone of the starting swarm configuration
+        /// </summary>
+        [JsonIgnore]
+        public IReadOnlyDictionary<int, Drone> InitialDrones
+        {
+            get
+            {
+                if (_initialDrones == null)
+                {
+                    _initialDrones = InitialState.AllConfigItems.ToDictionary(d => d.ID, d => new Drone(d.ID, d.Transform, d.GroupName, d.Color, d.IsUsingGroupColor));
+                }
+                return _initialDrones;
+            }
+        }
+        [JsonIgnore] private Dictionary<int, Drone> _initialDrones;
         private Dictionary<string, int> _groupTargetIndexes;
         /// <summary>
         /// Helper function that takes the first not-yet-returned group target position of the given group

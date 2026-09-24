@@ -5,7 +5,6 @@ using DroneSwarmPathfinder.Unity.Managers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -186,11 +185,11 @@ namespace DroneSwarmPathfinder.Unity.UI
             if (_uiDocument == null || _uiDocument.rootVisualElement == null || _uiDocument.rootVisualElement.panel == null)
                 return false;
 
-            // Input.mousePosition coordinates are from bottom left corner, while UI coordinates from top left -> transform
             Vector2 mousePos = Input.mousePosition;
-            Vector2 uiPos = new Vector2(mousePos.x, Screen.height - mousePos.y);
+            Vector2 screenPos = new Vector2(mousePos.x, Screen.height - mousePos.y);
+            Vector2 panelPos = RuntimePanelUtils.ScreenToPanel(_uiDocument.rootVisualElement.panel, screenPos);
+            VisualElement picked = _uiDocument.rootVisualElement.panel.Pick(panelPos);
 
-            VisualElement picked = _uiDocument.rootVisualElement.panel.Pick(uiPos);
             return picked != null;
         }
 

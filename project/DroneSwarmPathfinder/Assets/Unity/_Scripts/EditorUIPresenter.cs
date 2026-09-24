@@ -294,14 +294,7 @@ namespace DroneSwarmPathfinder.Unity.UI
             var config = Core.Serialization.JSONSerializer.Deserialize<Core.Serialization.DroneConfigJson>(json);
             if (config != null)
             {
-                SimulationPlaybackManager.instance.ClearSimulation();
-
-                // Extract and convert colors
-                var unityGroupColors = config.GroupColors?.ToDictionary(k => k.Key, v => v.Value.ToUnity());
-
-                DroneManager.instance.ClearAndSpawnDrones(config.AllConfigItems, unityGroupColors);
-                ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
-                Debug.Log("Swarm configuration loaded successfully");
+                ConfigSelectionManager.instance.LoadDroneConfigJson(config);
             }
         }
 
@@ -316,12 +309,17 @@ namespace DroneSwarmPathfinder.Unity.UI
 
             Debug.Log($"Exporting Swarm Configuration to \"{path}\"...");
 
-            var config = new Core.Serialization.DroneConfigJson
-            {
-                Drones = DroneManager.instance.AllDroneModelsOnly.ToList(),
-                TargetPositions = DroneManager.instance.AllDroneTargetPositionsOnly.ToList(),
-                GroupColors = DroneManager.instance._droneGroups.ToDictionary(k => k.Key, v => v.Value.ToSystemDrawing()) // Map the unity colors back to Core format
-            };
+            //var config = new Core.Serialization.DroneConfigJson
+            //{
+            //    Drones = DroneManager.instance.AllDroneModelsOnly.ToList(),
+            //    TargetPositions = DroneManager.instance.AllDroneTargetPositionsOnly.ToList(),
+            //    GroupColors = DroneManager.instance._droneGroups.ToDictionary(k => k.Key, v => v.Value.ToSystemDrawing()) // Map the unity colors back to Core format
+            //};
+            var config = ConfigSelectionManager.CreateDroneConfigJson(
+                drones: DroneManager.instance.AllDroneModelsOnly,
+                targetPositions: DroneManager.instance.AllDroneTargetPositionsOnly,
+                groupColors: DroneManager.instance._droneGroups
+            );
 
             // Use the generic serializer
             string json = Core.Serialization.JSONSerializer.Serialize(config);
