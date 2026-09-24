@@ -291,7 +291,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
             DroneView view = droneObj.GetComponent<DroneView>();
             view.Initialize(coreDrone.ID, coreDrone.GroupName);
-            if (coreDrone.Color.A > 0) view.SetCustomColor(coreDrone.Color.ToUnity(), false);
+            if (!coreDrone.IsUsingGroupColor) view.SetCustomColor(coreDrone.Color.ToUnity(), false);
 
             _activeDrones.Add(coreDrone.ID, view);
             _droneModels.Add(coreDrone.ID, coreDrone);
@@ -311,7 +311,7 @@ namespace DroneSwarmPathfinder.Unity.Managers
 
             DroneView view = droneObj.GetComponent<DroneView>();
             view.Initialize(coreDrone.ID, coreDrone.GroupName, true);
-            if (coreDrone.Color.A > 0) view.SetCustomColor(coreDrone.Color.ToUnity(), true);
+            if (!coreDrone.IsUsingGroupColor) view.SetCustomColor(coreDrone.Color.ToUnity(), true);
 
             _activeDrones.Add(coreDrone.ID, view);
             _droneTargets.Add(coreDrone.ID, coreDrone);

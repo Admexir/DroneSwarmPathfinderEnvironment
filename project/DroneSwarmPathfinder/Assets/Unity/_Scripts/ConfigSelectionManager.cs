@@ -1,5 +1,6 @@
 using DroneSwarmPathfinder.Core.Models;
 using DroneSwarmPathfinder.Core.Serialization;
+using DroneSwarmPathfinder.Unity.EditorTools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,7 +114,28 @@ namespace DroneSwarmPathfinder.Unity.Managers
                 return false;
             }
         }
+        public void LoadDroneConfigJson(DroneConfigJson config)
+        {
+            SimulationPlaybackManager.instance.ClearSimulation();
+
+            // Extract and convert colors
+            var unityGroupColors = config.GroupColors?.ToDictionary(k => k.Key, v => v.Value.ToUnity());
+
+            DroneManager.instance.ClearAndSpawnDrones(config.AllConfigItems, unityGroupColors);
+            ConfigEditorManager.instance.SetDroneSelectionFromUI(new List<int>());
+            Debug.Log("Swarm configuration loaded successfully");
+        }
+        public static DroneConfigJson CreateDroneConfigJson(IEnumerable<Drone> drones, IEnumerable<DroneTargetPosition> targetPositions, Dictionary<string, UnityEngine.Color> groupColors)
+        {
+            return new Core.Serialization.DroneConfigJson
+            {
+                Drones = drones.ToList(),
+                TargetPositions = targetPositions.ToList(),
+                GroupColors = groupColors.ToDictionary(k => k.Key, v => v.Value.ToSystemDrawing()) // Map the unity colors back to Core format
+            };
+        }
     }
+
 }
 //public static class GroupsDictionaryComparerExtensions
 //{

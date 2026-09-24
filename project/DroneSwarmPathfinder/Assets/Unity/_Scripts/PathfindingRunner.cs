@@ -41,39 +41,41 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             }
 
             // Need to differentiate between "use current scene as initial config" and using file initial config
-            Dictionary<int, Drone> initialDrones;
+            //Dictionary<int, Drone> initialDrones;
+            DroneConfigJson startConfig;
             EnvironmentConfigJson environment;
             if (!ConfigSelectionManager.instance.UseCurrentSceneForStart)
             {
-                var startConfig = JSONSerializer.DeserializeFile<DroneConfigJson>(startConfigPath);
-                initialDrones = startConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
+                startConfig = JSONSerializer.DeserializeFile<DroneConfigJson>(startConfigPath);
+                //initialDrones = startConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
                 string startJson = System.IO.File.ReadAllText(startConfigPath);
                 environment = JSONSerializer.DeserializeFile<EnvironmentConfigJson>(environmentConfigPath);
             }
             else
             {
-                initialDrones = DroneManager.instance.AllDroneItems.ToDictionary(d => d.ID, d => new Drone(d.ID, d.Transform, d.GroupName));
+                //initialDrones = DroneManager.instance.AllDroneItems.ToDictionary(d => d.ID, d => new Drone(d.ID, d.Transform, d.GroupName));
+                startConfig = ConfigSelectionManager.CreateDroneConfigJson(DroneManager.instance.AllDroneModelsOnly, DroneManager.instance.AllDroneTargetPositionsOnly, DroneManager.instance._droneGroups);
                 environment = new EnvironmentConfigJson(EnvironmentManager.instance.CurrentWorldEnvironment);
             }
             string targetJson = System.IO.File.ReadAllText(targetConfigPath);
             var targetConfig = JSONSerializer.Deserialize<DroneConfigJson>(targetJson);
-            var targetDrones = targetConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
-            var groupTargets = targetConfig?.TargetPositions.GroupBy(d => d.GroupName).ToDictionary(g => g.Key, g => g.ToList()) ?? new Dictionary<string, List<DroneTargetPosition>>();
-            //Debug.Log(string.Join(" ;;; ", groupTargets.Select(kvp =>
-            //    $"[{kvp.Key}]: {string.Join(", ", kvp.Value.Select(pos => pos.ID))}"
-            //)));
-            //Debug.Log(string.Join(", ", targetDrones.Select(kvp => kvp.Key)));
-
-            //Debug.Log(string.Join(", ", initialDrones.Select(kvp => kvp.Key)));
+            //var targetDrones = targetConfig?.Drones.ToDictionary(d => d.ID, d => d) ?? new Dictionary<int, Drone>();
+            //var groupTargets = targetConfig?.TargetPositions.GroupBy(d => d.GroupName).ToDictionary(g => g.Key, g => g.ToList()) ?? new Dictionary<string, List<DroneTargetPosition>>();
 
             // Get environment
             var worldEnv = new WorldEnvironment(environment.SpatialRules, environment.Obstacles);
 
+            //var context = new SimulationContext
+            //{
+            //    InitialDrones = initialDrones,
+            //    DroneSpecificTargets = targetDrones,
+            //    GroupTargets = groupTargets,
+            //    Environment = worldEnv
+            //};
             var context = new SimulationContext
             {
-                InitialState = initialDrones,
-                DroneSpecificTargets = targetDrones,
-                GroupTargets = groupTargets,
+                InitialState = startConfig,
+                TargetState = targetConfig,
                 Environment = worldEnv
             };
 
@@ -83,7 +85,6 @@ namespace DroneSwarmPathfinder.Unity.Simulation
             // Run algorithm async
             _cancellationTokenSource = new CancellationTokenSource();
 
-            // TODO: add a progress bar
             var progress = new System.Progress<float>(p =>
             {
                 Debug.Log($"Calculating... {p * 100:F0}%");
