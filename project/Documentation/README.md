@@ -136,12 +136,14 @@ namespace DroneSwarmPathfinder.Algorithms
             // SimulationContext contains all information about the configuration:
             // public record SimulationContext
             // {
-            //     public IReadOnlyDictionary<int, Drone> InitialState { get; init; }
-            //     public IReadOnlyDictionary<int, Drone> DroneSpecificTargets { get; init; }
-            //     public IReadOnlyDictionary<string, List<DroneTargetPosition>> GroupTargets { get; init; }
+            //     public DroneConfigJson InitialState { get; init; }
+            //     public DroneConfigJson TargetState { get; init; }
             //     public WorldEnvironment Environment { get; init; }
-
+            //
             //     #region Helpers for convenience of use
+            //     public IReadOnlyDictionary<int, Drone> InitialDrones { get; }
+            //     public IReadOnlyDictionary<int, Drone> DroneSpecificTargets { get; }
+            //     public IReadOnlyDictionary<string, List<DroneTargetPosition>> GroupTargets { get; }
             //     private Dictionary<string, int> _groupTargetIndexes;
             //     public bool TryGetTargetFromGroup(string groupName, out DroneTargetPosition? targetPosition) 
             //     { 
@@ -165,7 +167,7 @@ namespace DroneSwarmPathfinder.Algorithms
             //     #endregion
             // }
             //
-            // InitialState and TargetState are dictionaries of IDs->Drone, where each Drone has an ID (int), a GroupName (string), and a Transform (containing Position, Rotation and Size))
+            // InitialDrones and DroneSpecificTargets are dictionaries of IDs->Drone, where each Drone has an ID (int), a GroupName (string), and a Transform (containing Position, Rotation and Size))
             // GroupTargets is a dictionary of Group Name->List<DroneTargetPosition>, where a GroupTargetPosition has an ID, a GroupName, and a Transform
             // WorldEnvironment has SpatialRules - a representation of a grid/special coordinate system, which allows you to call ConstrainPosition to snap a Vector3 position to the grid
             //                  and a list of Obstacles along with a method IsWalkable(Vector3), which returns whether the given position is empty
