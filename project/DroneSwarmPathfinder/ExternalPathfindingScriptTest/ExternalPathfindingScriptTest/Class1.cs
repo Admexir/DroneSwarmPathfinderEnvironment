@@ -25,13 +25,13 @@ namespace DroneSwarmPathfinder.Algorithms
             var stopwatch = Stopwatch.StartNew(); // For getting calculation time TODO: maybe implement straight into the itnerfaces
             var paths = new Dictionary<int, DronePath>();
 
-            int totalDrones = context.InitialState.Count;
+            int totalDrones = context.InitialDrones.Count;
             int processedCount = 0;
 
             // simulate heavy calculating load by sleeping for 500ms to test asynchronity
             //await Task.Delay(500, cancellationToken);
 
-            foreach (var kvp in context.InitialState)
+            foreach (var kvp in context.InitialDrones)
             {
                 cancellationToken.ThrowIfCancellationRequested(); // Check for cancellation token
 
