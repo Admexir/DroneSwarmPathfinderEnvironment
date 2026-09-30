@@ -74,4 +74,4 @@ This namespace contains the integration of the pure C# Core logic with the Unity
     * `TestRunner.cs`: Temporary MonoBehaviour (`SimulationTester`) for bootstrapping initial test states for the purposes of debugging, not used in the final build
 
 * **Namespace: `DroneSwarmPathfinder.Unity`**
-    * `VectorExtensions.cs`: Extension methods to convert between `UnityEngine.Vector3`/`UnityEngine.Quaternion` and `System.Numerics.Vector3`/`System.Numerics.Quaternion`
+    * `CoreUnityConversionExtensions.cs`: Extension methods to convert between `UnityEngine.Vector3`/`UnityEngine.Quaternion` and other UnityEngine data structures and `System.Numerics.Vector3`/`System.Numerics.Quaternion` and other System data structures

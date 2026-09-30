@@ -49,3 +49,5 @@ Physics based API
 	- apply forces based on commands to the drones in playback (use some nice smoothing function to simulate rotors speeding up/slowing down?)
 	- update drone timeline to show these commands
 	- future improvement: allow for movement inaccuracies and conditions to deal with them
+
+Add downdrag from drones
